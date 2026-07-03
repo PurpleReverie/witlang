@@ -19,8 +19,10 @@ import {
   type DocumentSymbol,
   type CompletionList,
   type CompletionItem as LspCompletionItem,
+  type TextEdit,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { format } from '@witlang/parser';
 
 import { diagnosticsFromState } from './diagnostics.js';
 import {
@@ -57,6 +59,7 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       referencesProvider: true,
       documentSymbolProvider: true,
+      documentFormattingProvider: true,
       completionProvider: { triggerCharacters: ['@', '#', ':', '.'] },
       // NOTE: do NOT declare diagnosticProvider — that would tell VS Code
       // to PULL diagnostics via textDocument/diagnostic. We use the PUSH
@@ -159,6 +162,26 @@ connection.onCompletion((params): CompletionList => {
   if (!state) return { isIncomplete: false, items: [] };
   const items = buildCompletion(state, params.position.line + 1, params.position.character + 1);
   return { isIncomplete: false, items: items.map(toLspCompletionItem) };
+});
+
+// --- Document formatting ----------------------------------------------------
+
+connection.onDocumentFormatting((params): TextEdit[] => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) return [];
+  const text = doc.getText();
+  let formatted: string;
+  try {
+    formatted = format(text);
+  } catch {
+    // Unparseable source — leave it untouched rather than mangle it.
+    return [];
+  }
+  if (formatted === text) return [];
+  return [{
+    range: { start: { line: 0, character: 0 }, end: doc.positionAt(text.length) },
+    newText: formatted,
+  }];
 });
 
 // --- Mapping helpers --------------------------------------------------------

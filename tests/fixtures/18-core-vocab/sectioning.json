@@ -4,135 +4,110 @@
       {
         "body": [
           {
-            "children": [
-              {
-                "kind": "text",
-                "value": "  "
-              },
+            "body": [
               {
                 "body": [
                   {
-                    "kind": "text",
-                    "value": "    "
-                  },
-                  {
-                    "body": [
+                    "children": [
                       {
                         "kind": "text",
                         "value": " Article Title "
                       }
                     ],
-                    "closeStyle": "named",
-                    "inline": true,
-                    "kind": "nodeUse",
-                    "name": "h1",
-                    "params": [],
-                    "paramsSource": "none"
-                  },
-                  {
-                    "kind": "text",
-                    "value": "  "
+                    "kind": "paragraph"
                   }
                 ],
                 "closeStyle": "named",
-                "inline": true,
+                "inline": false,
                 "kind": "nodeUse",
-                "name": "header",
+                "name": "h1",
                 "params": [],
                 "paramsSource": "none"
-              },
-              {
-                "kind": "text",
-                "value": "  "
-              },
+              }
+            ],
+            "closeStyle": "named",
+            "inline": false,
+            "kind": "nodeUse",
+            "name": "header",
+            "params": [],
+            "paramsSource": "none"
+          },
+          {
+            "body": [
               {
                 "body": [
                   {
-                    "kind": "text",
-                    "value": "    "
-                  },
-                  {
-                    "body": [
+                    "children": [
                       {
                         "kind": "text",
                         "value": " A first paragraph. "
                       }
                     ],
-                    "closeStyle": "named",
-                    "inline": true,
-                    "kind": "nodeUse",
-                    "name": "p",
-                    "params": [],
-                    "paramsSource": "none"
-                  },
+                    "kind": "paragraph"
+                  }
+                ],
+                "closeStyle": "named",
+                "inline": false,
+                "kind": "nodeUse",
+                "name": "p",
+                "params": [],
+                "paramsSource": "none"
+              },
+              {
+                "body": [
                   {
-                    "kind": "text",
-                    "value": "    "
-                  },
-                  {
-                    "body": [
+                    "children": [
                       {
                         "kind": "text",
                         "value": " A second paragraph. "
                       }
                     ],
-                    "closeStyle": "named",
-                    "inline": true,
-                    "kind": "nodeUse",
-                    "name": "p",
-                    "params": [],
-                    "paramsSource": "none"
-                  },
-                  {
-                    "kind": "text",
-                    "value": "  "
+                    "kind": "paragraph"
                   }
                 ],
                 "closeStyle": "named",
-                "inline": true,
+                "inline": false,
                 "kind": "nodeUse",
-                "name": "section",
+                "name": "p",
                 "params": [],
                 "paramsSource": "none"
-              },
-              {
-                "kind": "text",
-                "value": "  "
-              },
+              }
+            ],
+            "closeStyle": "named",
+            "inline": false,
+            "kind": "nodeUse",
+            "name": "section",
+            "params": [],
+            "paramsSource": "none"
+          },
+          {
+            "body": [
               {
                 "body": [
                   {
-                    "kind": "text",
-                    "value": "    "
-                  },
-                  {
-                    "body": [
+                    "children": [
                       {
                         "kind": "text",
                         "value": " Published 2024. "
                       }
                     ],
-                    "closeStyle": "named",
-                    "inline": true,
-                    "kind": "nodeUse",
-                    "name": "small",
-                    "params": [],
-                    "paramsSource": "none"
-                  },
-                  {
-                    "kind": "text",
-                    "value": "  "
+                    "kind": "paragraph"
                   }
                 ],
                 "closeStyle": "named",
-                "inline": true,
+                "inline": false,
                 "kind": "nodeUse",
-                "name": "footer",
+                "name": "small",
                 "params": [],
                 "paramsSource": "none"
               }
             ],
-            "kind": "paragraph"
+            "closeStyle": "named",
+            "inline": false,
+            "kind": "nodeUse",
+            "name": "footer",
+            "params": [],
+            "paramsSource": "none"
           }
         ],
         "closeStyle": "named",

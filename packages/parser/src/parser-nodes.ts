@@ -150,8 +150,12 @@ function detectShape(
   //     block position when nothing follows on the paragraph; a block
   //     `@name` followed by body bytes with no close stays bodied so
   //     parseBodied can diagnose the unclosed error.
+  // Parens are self-closing by default (`@img(src x)`), and promote to
+  // bodied when a matching close exists. Inline: only within the paragraph.
+  // Block: anywhere ahead — so a `@div(class x) … div@` container may span
+  // blank lines between its children, like any other block-form node.
   if (paramsSource === 'parens') {
-    return hasMatchingClose(cursor, name, true) ? 'bodied' : 'self';
+    return hasMatchingClose(cursor, name, inline) ? 'bodied' : 'self';
   }
   if (paramsSource === 'pipes' && inline) {
     return hasMatchingClose(cursor, name, true) ? 'bodied' : 'self';

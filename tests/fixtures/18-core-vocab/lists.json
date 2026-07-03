@@ -4,63 +4,61 @@
       {
         "body": [
           {
-            "children": [
+            "body": [
               {
-                "kind": "text",
-                "value": "  "
-              },
-              {
-                "body": [
+                "children": [
                   {
                     "kind": "text",
                     "value": " First item "
                   }
                 ],
-                "closeStyle": "named",
-                "inline": true,
-                "kind": "nodeUse",
-                "name": "li",
-                "params": [],
-                "paramsSource": "none"
-              },
+                "kind": "paragraph"
+              }
+            ],
+            "closeStyle": "named",
+            "inline": false,
+            "kind": "nodeUse",
+            "name": "li",
+            "params": [],
+            "paramsSource": "none"
+          },
+          {
+            "body": [
               {
-                "kind": "text",
-                "value": "  "
-              },
-              {
-                "body": [
+                "children": [
                   {
                     "kind": "text",
                     "value": " Second item "
                   }
                 ],
-                "closeStyle": "named",
-                "inline": true,
-                "kind": "nodeUse",
-                "name": "li",
-                "params": [],
-                "paramsSource": "none"
-              },
+                "kind": "paragraph"
+              }
+            ],
+            "closeStyle": "named",
+            "inline": false,
+            "kind": "nodeUse",
+            "name": "li",
+            "params": [],
+            "paramsSource": "none"
+          },
+          {
+            "body": [
               {
-                "kind": "text",
-                "value": "  "
-              },
-              {
-                "body": [
+                "children": [
                   {
                     "kind": "text",
                     "value": " Third item "
                   }
                 ],
-                "closeStyle": "named",
-                "inline": true,
-                "kind": "nodeUse",
-                "name": "li",
-                "params": [],
-                "paramsSource": "none"
+                "kind": "paragraph"
               }
             ],
-            "kind": "paragraph"
+            "closeStyle": "named",
+            "inline": false,
+            "kind": "nodeUse",
+            "name": "li",
+            "params": [],
+            "paramsSource": "none"
           }
         ],
         "closeStyle": "named",

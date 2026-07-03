@@ -105,7 +105,6 @@ document
 │       ├── param name="author" value="Smith"
 │       └── param name="year" value="2024"
 ├── nodeDef +#bibliography [shape: value-block]
-│   ├── text "\n  "
 │   └── nodeUse @cite [paramsSource: form-fill, params: 2]
 │       ├── param name="author" value="Came, H."
 │       └── param name="year" value="2024"

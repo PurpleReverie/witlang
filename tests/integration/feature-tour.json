@@ -500,10 +500,6 @@
         "additive": true,
         "body": [
           {
-            "kind": "text",
-            "value": "\n  "
-          },
-          {
             "body": [],
             "closeStyle": "named",
             "inline": true,

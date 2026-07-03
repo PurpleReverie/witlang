@@ -8,20 +8,24 @@
 // bare `<article class="wit-doc">…</article>` for embedding.
 
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { parse, WitError } from '@witlang/parser';
 import { resolve, expand, RuntimeError } from '@witlang/runtime';
-import { renderHtml, type RenderHtmlOptions } from '@witlang/render-html';
+import { renderHtml, rawThemeCss, type RenderHtmlOptions } from '@witlang/render-html';
 import { renderMarkdown } from '@witlang/render-markdown';
 import type { CliIo } from './bin.js';
 
-export type OutputFormat = 'html' | 'md';
+export type OutputFormat = 'html' | 'md' | 'pdf';
 
 export interface BuildArgs {
   file: string;
   outPath: string | undefined;
   format: OutputFormat;
   fragment: boolean;
+  raw: boolean;
 }
 
 export function runBuild(args: readonly string[], io: CliIo): number {
@@ -38,6 +42,7 @@ export function runBuild(args: readonly string[], io: CliIo): number {
     outPath: raw.outPath,
     format,
     fragment: raw.fragment,
+    raw: raw.raw,
   };
   const source = readSource(parsed.file, io);
   if (source === null) return 1;
@@ -49,6 +54,7 @@ interface RawArgs {
   outPath: string | undefined;
   format: OutputFormat | undefined;
   fragment: boolean;
+  raw: boolean;
 }
 
 function collectRawArgs(args: readonly string[], io: CliIo): RawArgs | null {
@@ -57,6 +63,7 @@ function collectRawArgs(args: readonly string[], io: CliIo): RawArgs | null {
     outPath: undefined,
     format: undefined,
     fragment: false,
+    raw: false,
   };
   for (let i = 0; i < args.length; i++) {
     const next = applyArg(args, i, raw, io);
@@ -80,6 +87,7 @@ function applyArg(args: readonly string[], i: number, raw: RawArgs, io: CliIo): 
     return i + 1;
   }
   if (a === '--fragment') { raw.fragment = true; return i; }
+  if (a === '--raw') { raw.raw = true; return i; }
   if (raw.file === undefined) { raw.file = a; return i; }
   io.stderr(`wit build: unexpected arg "${a}"\n`);
   return null;
@@ -87,11 +95,11 @@ function applyArg(args: readonly string[], i: number, raw: RawArgs, io: CliIo): 
 
 function parseFormatFlag(value: string | undefined, io: CliIo): OutputFormat | null {
   if (value === undefined) {
-    io.stderr('wit build: --format requires html|md\n');
+    io.stderr('wit build: --format requires html|md|pdf\n');
     return null;
   }
-  if (value === 'html' || value === 'md') return value;
-  io.stderr(`wit build: --format must be html or md (got "${value}")\n`);
+  if (value === 'html' || value === 'md' || value === 'pdf') return value;
+  io.stderr(`wit build: --format must be html, md or pdf (got "${value}")\n`);
   return null;
 }
 
@@ -102,7 +110,7 @@ function resolveFormat(raw: RawArgs, io: CliIo): OutputFormat | null {
   if (inferred !== null) return inferred;
   io.stderr(
     `wit build: E_UNKNOWN_OUTPUT_FORMAT: cannot infer format from "${raw.outPath}". ` +
-      `Use .html/.htm/.md/.markdown, or pass --format html|md.\n`,
+      `Use .html/.htm/.md/.markdown/.pdf, or pass --format html|md|pdf.\n`,
   );
   return null;
 }
@@ -111,6 +119,7 @@ function formatForExtension(outPath: string): OutputFormat | null {
   const ext = path.extname(outPath).toLowerCase();
   if (ext === '.html' || ext === '.htm') return 'html';
   if (ext === '.md' || ext === '.markdown') return 'md';
+  if (ext === '.pdf') return 'pdf';
   return null;
 }
 
@@ -123,27 +132,113 @@ function readSource(file: string, io: CliIo): string | null {
 }
 
 function performBuild(args: BuildArgs, source: string, io: CliIo): number {
+  let expanded: ReturnType<typeof expand>;
   try {
     const doc = parse(source, args.file);
     const resolved = resolve(doc, { rootPath: path.resolve(args.file) });
-    const expanded = expand(resolved);
-    const rendered = args.format === 'md'
-      ? renderMarkdown(expanded)
-      : renderHtml(expanded, htmlOptions(args));
-    return emit(rendered, args.outPath, io);
+    expanded = expand(resolved);
   } catch (err) {
     io.stderr(formatStageError(err, args.file));
     return 1;
   }
+  if (args.format === 'pdf') return emitPdf(expanded, args, io);
+  const rendered = args.format === 'md'
+    ? renderMarkdown(expanded)
+    : renderHtml(expanded, htmlOptions(args));
+  return emit(rendered, args.outPath, io);
 }
 
-// HTML render options. The CLI emits a complete, self-contained styled
-// document by default (so `wit build -o out.html` "just looks right"),
-// and the bare fragment only when `--fragment` is passed. The <title>
-// comes from the source filename.
+// HTML render options — three pathways:
+//   default    → self-contained styled document (batteries-included theme).
+//   --raw      → a full document with only a mechanical reset, so the file
+//                styles everything itself via @@style + wrapping nodes.
+//   --fragment → the bare <article> only, for embedding elsewhere.
+// The <title> comes from the source filename.
 function htmlOptions(args: BuildArgs): RenderHtmlOptions | undefined {
   if (args.fragment) return undefined;
-  return { mode: 'document', title: titleFromPath(args.file) };
+  const opts: RenderHtmlOptions = { mode: 'document', title: titleFromPath(args.file) };
+  if (args.raw) opts.css = rawThemeCss;
+  return opts;
+}
+
+// PDF output — render the same self-contained document (default theme, or
+// the reset-only `--raw` base), then paginate it with a headless system
+// Chrome/Chromium. No npm dependency: we drive an already-installed browser.
+// Both paths are for PDF — default gives a Word-like document, `--raw`
+// gives a fully author-designed page (its own `@page` rules in `@@style`).
+function emitPdf(
+  expanded: ReturnType<typeof expand>, args: BuildArgs, io: CliIo,
+): number {
+  if (args.outPath === undefined) {
+    io.stderr('wit build: PDF output needs an -o <file.pdf> path\n');
+    return 1;
+  }
+  const chrome = findChrome();
+  if (chrome === null) {
+    io.stderr(
+      'wit build: no headless Chrome/Chromium found for PDF output. Install ' +
+      'Google Chrome, or point WIT_CHROME at a browser executable. ' +
+      '(Or render to .html and convert with your own tool.)\n',
+    );
+    return 1;
+  }
+  const html = renderHtml(expanded, {
+    mode: 'document',
+    title: titleFromPath(args.file),
+    ...(args.raw ? { css: rawThemeCss } : {}),
+  });
+  return runChromePdf(chrome, html, path.resolve(args.outPath), args.outPath, io);
+}
+
+function runChromePdf(
+  chrome: string, html: string, outAbs: string, outLabel: string, io: CliIo,
+): number {
+  const tmpHtml = path.join(os.tmpdir(), `wit-${process.pid}-${Date.now()}.html`);
+  try {
+    fs.writeFileSync(tmpHtml, html, 'utf8');
+    const res = spawnSync(chrome, [
+      '--headless=new', '--disable-gpu', '--no-sandbox',
+      '--no-pdf-header-footer', `--print-to-pdf=${outAbs}`,
+      pathToFileURL(tmpHtml).href,
+    ], { stdio: 'ignore', timeout: 60_000 });
+    if (res.status !== 0 || !fs.existsSync(outAbs)) {
+      const why = res.error?.message ?? `chrome exit ${res.status ?? res.signal}`;
+      io.stderr(`wit build: PDF generation failed (${why}).\n`);
+      return 1;
+    }
+  } catch (err) {
+    io.stderr(`wit build: PDF generation error: ${(err as Error).message}\n`);
+    return 1;
+  } finally {
+    try { fs.unlinkSync(tmpHtml); } catch { /* best-effort cleanup */ }
+  }
+  io.stdout(`wrote ${outLabel}\n`);
+  return 0;
+}
+
+// Headless-capable browsers to try, in order. `WIT_CHROME`, when set,
+// overrides the search entirely (no fallback) so it stays testable.
+const CHROME_CANDIDATES: readonly string[] = [
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+  '/usr/bin/google-chrome',
+  '/usr/bin/google-chrome-stable',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+];
+
+function findChrome(): string | null {
+  const override = process.env['WIT_CHROME'];
+  if (override !== undefined && override !== '') {
+    return fs.existsSync(override) ? override : null;
+  }
+  for (const candidate of CHROME_CANDIDATES) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
 }
 
 function titleFromPath(file: string): string {

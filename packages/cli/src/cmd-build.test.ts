@@ -54,6 +54,37 @@ describe('runBuild', () => {
     expect(written).not.toContain('<style>');
   });
 
+  it('infers PDF from a .pdf path and errors clearly without a browser', () => {
+    const file = path.join(tmpDir, 'a.wit');
+    const out = path.join(tmpDir, 'a.pdf');
+    fs.writeFileSync(file, '@h1 Hi h1@\n');
+    const prev = process.env['WIT_CHROME'];
+    process.env['WIT_CHROME'] = path.join(tmpDir, 'no-such-browser');
+    try {
+      const { io, cap } = mkIo();
+      const code = runBuild([file, '-o', out], io);
+      expect(code).toBe(1);
+      expect(cap.err).toMatch(/chrome|chromium|browser/i);
+    } finally {
+      if (prev === undefined) delete process.env['WIT_CHROME'];
+      else process.env['WIT_CHROME'] = prev;
+    }
+  });
+
+  it('--raw emits a full document with a reset only, no default theme', () => {
+    const file = path.join(tmpDir, 'a.wit');
+    const out = path.join(tmpDir, 'a.html');
+    fs.writeFileSync(file, '@h1 Hi h1@\n');
+    const { io } = mkIo();
+    const code = runBuild([file, '-o', out, '--raw'], io);
+    expect(code).toBe(0);
+    const written = fs.readFileSync(out, 'utf8');
+    expect(written).toContain('<!doctype html>');
+    expect(written).toContain('box-sizing: border-box');
+    expect(written).not.toContain('--wit-accent'); // no default theme
+    expect(written).toContain('<h1>Hi</h1>');
+  });
+
   it('writes to -o path when given', () => {
     const file = path.join(tmpDir, 'a.wit');
     const out = path.join(tmpDir, 'a.html');
@@ -100,7 +131,7 @@ describe('runBuild', () => {
 
   it('rejects unknown -o extension with E_UNKNOWN_OUTPUT_FORMAT', () => {
     const file = path.join(tmpDir, 'a.wit');
-    const out = path.join(tmpDir, 'a.pdf');
+    const out = path.join(tmpDir, 'a.rtf');
     fs.writeFileSync(file, 'hi\n');
     const { io, cap } = mkIo();
     const code = runBuild([file, '-o', out], io);
@@ -135,7 +166,7 @@ describe('runBuild', () => {
     const file = path.join(tmpDir, 'a.wit');
     fs.writeFileSync(file, 'hi\n');
     const { io, cap } = mkIo();
-    const code = runBuild([file, '--format', 'pdf'], io);
+    const code = runBuild([file, '--format', 'docx'], io);
     expect(code).toBe(2);
     expect(cap.err).toContain('--format');
   });

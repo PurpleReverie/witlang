@@ -61,10 +61,6 @@
           {
             "children": [
               {
-                "kind": "text",
-                "value": "  "
-              },
-              {
                 "body": null,
                 "closeStyle": "parens",
                 "inline": false,
@@ -81,10 +77,6 @@
                   }
                 ],
                 "paramsSource": "pipes"
-              },
-              {
-                "kind": "text",
-                "value": "  "
               },
               {
                 "body": [

@@ -9,7 +9,7 @@
 // FUTURE-IMPROVEMENT: CRLF / bare-CR are normalized to LF in a single
 // pre-pass; error locations therefore reflect the normalized text.
 
-import { isAsciiDigit, isAsciiLetter } from './char.js';
+import { isAsciiDigit, isAsciiLetter, isHandleChar } from './char.js';
 import {
   tryAdditivePrefix,
   tryBangBang,
@@ -121,15 +121,43 @@ function emitParagraphBreak(state: LexState, endOffset: number): void {
 
 function consumeParagraphContent(state: LexState): void {
   // Walk a paragraph: recognizers fire on their respective leads;
-  // everything else accumulates into a TextRun.
+  // everything else accumulates into a TextRun. Leading indentation before a
+  // structural marker is dropped first (and again after each line break) so
+  // container trees can be indented for readability, HTML-style.
+  skipStructuralIndent(state);
   let buf: RunBuf = { value: '', start: snapshot(state.cur) };
   while (state.cur.offset < state.src.length) {
     if (scanParagraphBreak(state).endOffset !== -1) break;
     if (runRecognizers(state, buf)) { buf = freshBuf(state); continue; }
-    buf.value += state.src.charAt(state.cur.offset);
+    const c = state.src.charAt(state.cur.offset);
+    buf.value += c;
     advance(state);
+    if (c === '\n') skipStructuralIndent(state);
   }
   flushTextRun(state, buf);
+}
+
+// Leading indentation before a Wit structural marker — a node/def opener
+// (`@…`, `#…`, `+#…`) or a `name@` / `name#` close — is insignificant, so
+// authors can indent nested container trees for readability. Indentation
+// before prose or value content is left ALONE: inside a multi-line record
+// value, a form-fill body, or code, leading whitespace is significant, and
+// those lines never start with a structural marker.
+function skipStructuralIndent(state: LexState): void {
+  const { src } = state;
+  let i = state.cur.offset;
+  while (i < src.length && (src.charAt(i) === ' ' || src.charAt(i) === '\t')) i += 1;
+  if (i === state.cur.offset) return;         // no indentation to consider
+  if (!lineStartsStructural(src, i)) return;  // prose / value indent — keep it
+  while (state.cur.offset < i) advance(state);
+}
+
+function lineStartsStructural(src: string, i: number): boolean {
+  const c = src.charAt(i);
+  if (c === '@' || c === '#' || c === '+') return true; // opener / additive
+  let j = i;                                            // close: handle+ then @ or #
+  while (isHandleChar(src.charAt(j))) j += 1;
+  return j > i && (src.charAt(j) === '@' || src.charAt(j) === '#');
 }
 
 function runRecognizers(state: LexState, buf: RunBuf): boolean {

@@ -63,3 +63,6 @@ export {
   tryParseRecordFromText,
   tryParseCollectionFromText,
 } from './parser-data.js';
+
+// Structural re-indenter — `wit fmt` and the VS Code formatter share this.
+export { format, type FormatOptions } from './format.js';

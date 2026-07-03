@@ -82,4 +82,13 @@ describe('renderHtml — @table', () => {
   it('emits empty `<table></table>` when no rows param', () => {
     expect(render('@table table@')).toContain('<table></table>');
   });
+
+  it('emits a `<div class>` container from `@div(class ...)`', () => {
+    const out = render('@div(class card)\nInside the card.\ndiv@');
+    expect(out).toContain('<div class="card"><p>Inside the card.</p></div>');
+  });
+
+  it('emits an inline `<span class>`', () => {
+    expect(render('a @span(class tag) x span@ b')).toMatch(/<span class="tag">\s*x\s*<\/span>/);
+  });
 });

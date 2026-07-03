@@ -5,11 +5,17 @@
 // Usage:
 //   wit parse <file>            Parse a .wit file, print AST as JSON.
 //   wit check <file>            Parse + resolve, report errors (exit 1).
+//   wit fmt <file> [-w]         Re-indent to match structural nesting; -w
+//                               writes in place. Prose is preserved; raw
+//                               @@ bodies and values are left untouched.
 //   wit build <file> [-o out]   Render to stdout or file. Format inferred
-//                               from -o extension (.html/.md), or set
-//                               explicitly with --format html|md. HTML is
-//                               a self-contained styled document unless
-//                               --fragment is passed.
+//                               from -o extension (.html/.md/.pdf), or set
+//                               with --format html|md|pdf. HTML is a
+//                               self-contained styled document by default;
+//                               --raw drops the theme for a reset-only page
+//                               you style yourself; --fragment emits the
+//                               bare <article> for embedding. PDF paginates
+//                               the document with a headless system Chrome.
 //   wit --version | --help
 
 import { realpathSync } from 'node:fs';
@@ -17,6 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { runParse } from './cmd-parse.js';
 import { runCheck } from './cmd-check.js';
 import { runBuild } from './cmd-build.js';
+import { runFmt } from './cmd-fmt.js';
 import { runTour } from './cmd-tour.js';
 
 export const VERSION = '0.1.0';
@@ -27,7 +34,8 @@ export const HELP_TEXT = [
   'Usage:',
   '  wit parse <file>',
   '  wit check <file>',
-  '  wit build <file> [-o output.html|output.md] [--format html|md] [--fragment]',
+  '  wit fmt <file> [-w|--write]',
+  '  wit build <file> [-o out.html|out.md|out.pdf] [--format html|md|pdf] [--raw | --fragment]',
   '  wit tour <file>',
   '  wit --version | --help',
 ].join('\n');
@@ -53,6 +61,7 @@ export async function runCli(argv: readonly string[], io: CliIo): Promise<number
 async function dispatch(cmd: string, rest: readonly string[], io: CliIo): Promise<number> {
   if (cmd === 'parse') return runParse(rest, io);
   if (cmd === 'check') return runCheck(rest, io);
+  if (cmd === 'fmt') return runFmt(rest, io);
   if (cmd === 'build') return runBuild(rest, io);
   if (cmd === 'tour') return runTour(rest, io);
   io.stderr(`wit: unknown command "${cmd}"\n${HELP_TEXT}\n`);

@@ -21,6 +21,9 @@ export const CORE_VOCAB_NAMES: readonly string[] = [
   'p', 'blockquote', 'pre', 'hr',
   // Sectioning.
   'section', 'article', 'aside', 'header', 'footer', 'nav', 'main',
+  // Generic containers — the building blocks for author-defined layout
+  // (`@div class:"card" ... div@`, inline `@span`).
+  'div', 'span',
   // Other.
   'cite',
 ];

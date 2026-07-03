@@ -6,6 +6,8 @@
   "patterns": [
     { "include": "#block-comment" },
     { "include": "#line-comment" },
+    { "include": "#reference" },
+    { "include": "#form-field" },
     { "include": "#script-block" },
     { "include": "#raw-frozen" },
     { "include": "#raw-style" },
@@ -13,11 +15,15 @@
     { "include": "#raw-node" },
     { "include": "#paren-statement" },
     { "include": "#value-block-terminator" },
+    { "include": "#capture-list" },
+    { "include": "#interpolation" },
+    { "include": "#capture-interp" },
     { "include": "#additive-def" },
     { "include": "#node-def-open" },
     { "include": "#node-def-close" },
     { "include": "#node-open" },
     { "include": "#node-close" },
+    { "include": "#pipe-param" },
     { "include": "#bold" },
     { "include": "#italic" }
   ],
@@ -31,6 +37,22 @@
       "end": "~~/",
       "name": "comment.block.wit"
     },
+    "reference": {
+      "comment": "reference ./other.wit — cross-file include directive",
+      "match": "^\\s*(reference)\\s+(.+)$",
+      "captures": {
+        "1": { "name": "keyword.control.import.wit" },
+        "2": { "name": "string.unquoted.path.wit" }
+      }
+    },
+    "form-field": {
+      "comment": "key: value — a form-fill / value-block body field (indented)",
+      "match": "^(\\s+)([A-Za-z0-9_-]+)(:)(?=\\s)",
+      "captures": {
+        "2": { "name": "entity.other.attribute-name.wit" },
+        "3": { "name": "punctuation.separator.key-value.wit" }
+      }
+    },
     "script-block": {
       "begin": "<%",
       "end": "%>",
@@ -43,6 +65,39 @@
       "comment": "{{ path }} — the one active substitution inside @@ bodies/strings",
       "match": "\\{\\{\\s*[A-Za-z0-9_.-]+\\s*\\}\\}",
       "name": "variable.other.interpolation.wit"
+    },
+    "capture-interp": {
+      "comment": "::name:: — capture interpolation inside a def body",
+      "match": "(::)([A-Za-z0-9_-]+)(::)",
+      "captures": {
+        "1": { "name": "punctuation.definition.interpolation.wit" },
+        "2": { "name": "variable.other.interpolation.wit" },
+        "3": { "name": "punctuation.definition.interpolation.wit" }
+      }
+    },
+    "capture-list": {
+      "comment": "||a, b, c|| — capture (parameter) declarations on a def",
+      "begin": "\\|\\|",
+      "end": "\\|\\|",
+      "beginCaptures": { "0": { "name": "punctuation.definition.capture.wit" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.capture.wit" } },
+      "patterns": [
+        { "match": "[A-Za-z0-9_-]+", "name": "variable.parameter.wit" }
+      ]
+    },
+    "pipe-param": {
+      "comment": "|key value| — a param slot; the key reads as an attribute",
+      "begin": "\\|(?!\\|)",
+      "end": "\\|",
+      "beginCaptures": { "0": { "name": "punctuation.definition.param.wit" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.param.wit" } },
+      "patterns": [
+        {
+          "match": "\\G\\s*([A-Za-z0-9_-]+)",
+          "captures": { "1": { "name": "entity.other.attribute-name.wit" } }
+        },
+        { "include": "#capture-interp" }
+      ]
     },
     "raw-frozen": {
       "comment": "@@@name ... name@@@ — fully verbatim; {{...}} NOT interpolated",
@@ -114,13 +169,21 @@
       "name": "entity.name.tag.wit"
     },
     "paren-statement": {
+      "comment": "(if …)/(each …) statements AND (key value) node params",
       "begin": "\\(",
       "end": "\\)",
       "patterns": [
         {
           "match": "\\b(if|else|end|each|as|is|equals)\\b",
           "name": "keyword.control.wit"
-        }
+        },
+        {
+          "comment": "first identifier after ( is a param key, e.g. @div(class x)",
+          "match": "(?<=\\()([A-Za-z0-9_-]+)",
+          "name": "entity.other.attribute-name.wit"
+        },
+        { "include": "#node-open" },
+        { "include": "#capture-interp" }
       ]
     },
     "italic": {
