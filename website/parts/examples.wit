@@ -1,0 +1,170 @@
+~ examples.wit — three complete documents in wildly different shapes, all in
+~ Wit. Thesis is open by default; the creative-writing and RPG panels fold out
+~ on click (wired in script.wit). Each panel shows real Wit source and what it
+~ renders to. Exposed as #page_examples.
+
+#page_examples
+@section |class section| |id examples|
+  @div(class wrap)
+    @h2 Three documents, one language h2@
+    @p(class lead) A journal-style thesis, a novel that never indents, and a branching game script — same tool, same source rules. Click a panel to open it. p@
+
+    @div(class examples)
+      @div |class example open|
+        @div(class example-head)
+          @div(class example-title) 🎓 A thesis chapter div@
+          @div(class example-badge) Academic div@
+          @div(class example-toggle) Collapse ↑ div@
+        div@
+        @div(class example-body)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source div@
+            @div(class demo-src)
+              @@@pre
+reference ./sources.wit        ~ the bibliography, written once
+
+@h2 3 · Method 3.method@
+
+We pre-train on a masked-language objective, following
+@cite bert bert@, then fine-tune each task in turn.
+
+@figure
+  @img |src corpus.png| |alt Corpus by domain|
+  @figcaption Figure 3.1 — Corpus composition. figcaption@
+figure@
+
+@table
+  |schema [split, docs, tokens]|
+  |rows @corpus|
+table@
+
+As @xref 3.method xref@ shows, scale beats architecture —
+a point @cite sutton sutton@ makes forcefully.
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Renders to div@
+            @div(class demo-out)
+              @h2 3 · Method h2@
+              We pre-train on a masked-language objective, following @strong Devlin et al. strong@ (2019), then fine-tune each task in turn.
+
+              @table |rows [[Split, Documents, Tokens], [Train, 40k, 12.4M], [Dev, 5k, 1.5M], [Test, 5k, 1.5M]]|
+              @aside(class note) Table 3.1 — Corpus statistics by split. aside@
+
+              As @strong §3 strong@ shows, scale beats architecture — a point @strong Sutton strong@ (2019) makes forcefully.
+
+              @h3 References h3@
+              @ul
+                @li Devlin, J. et al. (2019). BERT. @em NAACL em@. li@
+                @li Sutton, R. (2019). The Bitter Lesson. li@
+              ul@
+            div@
+          div@
+          @div(class demo-vs) @strong Why not LaTeX? strong@ the citation, the table, and the cross-reference all resolve from one source — no preamble, no package hunt, no re-compile roulette. div@
+        div@
+      div@
+
+      @div |class example|
+        @div(class example-head)
+          @div(class example-title) ✍ A novel that never indents div@
+          @div(class example-badge) Prose div@
+          @div(class example-toggle) Expand ↓ div@
+        div@
+        @div(class example-body)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source — flat, no indentation div@
+            @div(class demo-src)
+              @@@pre
+@h2 One · The Harbour h2@
+
+The rain had not stopped for three days.
+
+Mara pressed her palm to the cold glass and counted
+the boats that were no longer there. @em One. Two. em@
+The third had been her father's.
+
+@break ✦ ✦ ✦ break@
+
+"You can't stay," the harbourmaster said.
+
+She said nothing. There was nothing, she had learned,
+that saying could fix.
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Renders to div@
+            @div(class demo-out)
+              @h2 One · The Harbour h2@
+              The rain had not stopped for three days.
+
+              Mara pressed her palm to the cold glass and counted the boats that were no longer there. @em One. Two. em@ The third had been her father's.
+
+              @div(class break) ✦ ✦ ✦ div@
+
+              "You can't stay," the harbourmaster said.
+
+              She said nothing. There was nothing, she had learned, that saying could fix.
+            div@
+          div@
+          @div(class demo-vs) @strong Why not Markdown? strong@ for pure prose Wit gets out of the way entirely — but a scene break, an epigraph, or a chapter component is one node away, not a drop into raw HTML. div@
+        div@
+      div@
+
+      @div |class example|
+        @div(class example-head)
+          @div(class example-title) 🎲 A branching game script div@
+          @div(class example-badge) Interactive div@
+          @div(class example-toggle) Expand ↓ div@
+        div@
+        @div(class example-body)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source — data, conditions, iteration div@
+            @div(class demo-src)
+              @@@pre
+#hero: { name - Vera, hp - 8, gold - 12 } !!
+
+@scene The Crossroads scene@
+
+::hero.name::, the road forks beneath a broken
+signpost. You are carrying ::hero.gold:: gold.
+
+(if @hero.hp is low)
+@warn You are wounded — the dark path may kill you. warn@
+(end)
+
+@choices
+  @choice |goto village| Take the lit path choice@
+  @choice |goto tower|   Take the dark path choice@
+choices@
+
+Pack: (each @hero.pack) ::this::  (end)
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Renders to (one playthrough) div@
+            @div(class demo-out)
+              @h3 The Crossroads h3@
+              @strong Vera strong@, the road forks beneath a broken signpost. You are carrying 12 gold.
+
+              @aside(class note) ⚔ You are wounded — the dark path may kill you. aside@
+
+              @strong Choose: strong@
+              @ul
+                @li → Take the @em lit em@ path toward the village li@
+                @li → Take the @em dark em@ path toward the tower li@
+              ul@
+
+              @em Pack: em@ torch · rope · a letter you should have burned.
+            div@
+          div@
+          @div(class demo-vs) @strong Why not HTML? strong@ the stats, the wounded-check, and the inventory are data and logic in the document — not a wall of tags you hand-edit for every state. div@
+        div@
+      div@
+
+    div@
+  div@
+section@
+page_examples#

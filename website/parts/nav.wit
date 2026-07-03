@@ -1,0 +1,18 @@
+~ nav.wit — the sticky top bar. Exposed as #page_nav.
+
+#page_nav
+@nav(class nav)
+  @div(class wrap)
+    @div(class nav-inner)
+      @div(class logo) @span(class grad) Wit span@ div@
+      @div(class nav-links)
+        @a |href #features| Features a@
+        @a |href #examples| Examples a@
+        @a |href #why| Why Wit a@
+        @a |href https://github.com| GitHub a@
+        @div(class toggle) ◑ Dark div@
+      div@
+    div@
+  div@
+nav@
+page_nav#

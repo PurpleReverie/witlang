@@ -1,0 +1,220 @@
+~ features.wit — why Wit beats Markdown/HTML for manuscripts. Each summary
+~ card, when clicked, spawns a full-width detail card under its row showing
+~ the Wit source, what it renders to, and the pain it avoids. The detail
+~ cards are the second half of the grid; script.wit moves the matching one
+~ into place on click (paired by order). Exposed as #page_features.
+
+#page_features
+@section |class section| |id features|
+  @div(class wrap)
+    @h2 Made for manuscripts h2@
+    @p(class lead) What Markdown and raw HTML make painful, Wit makes native. Click a card for the source, the result, and the thing you no longer do by hand. p@
+    @div(class grid)
+      @div(class feature)
+        @div(class ico) 📚 div@
+        @h3 Citations that resolve themselves h3@
+        Name a source once and cite it by idea. The reference — and the bibliography — stay in sync.
+        @div(class hint) Show example ↓ div@
+      div@
+
+      @div(class feature)
+        @div(class ico) 🧩 div@
+        @h3 Write a component once h3@
+        Define a callout, a figure, a pull quote — then reuse it. Change the design in one place.
+        @div(class hint) Show example ↓ div@
+      div@
+
+      @div(class feature)
+        @div(class ico) 📊 div@
+        @h3 Tables from data, not by hand h3@
+        Keep the data as data; the table renders from it. Edit a value, not a wall of pipes.
+        @div(class hint) Show example ↓ div@
+      div@
+
+      @div(class feature)
+        @div(class ico) 🔀 div@
+        @h3 Draft and final, one source h3@
+        Gate content on data. The same file renders a working draft and a clean final.
+        @div(class hint) Show example ↓ div@
+      div@
+
+      @div(class feature)
+        @div(class ico) 🗂 div@
+        @h3 Assemble across files h3@
+        A thesis is chapters. Reference them and emit them in order — one document, many files.
+        @div(class hint) Show example ↓ div@
+      div@
+
+      @div(class feature)
+        @div(class ico) 📄 div@
+        @h3 One source, every format h3@
+        The same manuscript becomes semantic HTML, Markdown, or a paginated, print-ready PDF.
+        @div(class hint) Show example ↓ div@
+      div@
+
+      @div(class detail-card)
+        @div(class detail-head)
+          @h3 📚 Citations that resolve themselves h3@
+          @div(class detail-close) Close ✕ div@
+        div@
+        @div(class demo)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source div@
+            @div(class demo-src)
+              @@@pre
+#weil: Simone Weil, Gravity & Grace (1952) !!
+
+Attention, as @weil argued, is the
+rarest form of generosity.
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Renders to div@
+            @div(class demo-out)
+              Attention, as Simone Weil, Gravity & Grace (1952) argued, is the rarest form of generosity.
+            div@
+          div@
+          @div(class demo-vs) @strong Markdown: strong@ retype the full citation everywhere, and keep the reference list in sync by hand. div@
+        div@
+      div@
+
+      @div(class detail-card)
+        @div(class detail-head)
+          @h3 🧩 Write a component once h3@
+          @div(class detail-close) Close ✕ div@
+        div@
+        @div(class demo)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source div@
+            @div(class demo-src)
+              @@@pre
+#tip @aside(class note) 💡 ... aside@ tip#
+
+@tip Save early. Save often. tip@
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Renders to div@
+            @div(class demo-out)
+              @aside(class note) 💡 Save early. Save often. aside@
+            div@
+          div@
+          @div(class demo-vs) @strong Markdown: strong@ no components — paste the same block of HTML every single time. div@
+        div@
+      div@
+
+      @div(class detail-card)
+        @div(class detail-head)
+          @h3 📊 Tables from data, not by hand h3@
+          @div(class detail-close) Close ✕ div@
+        div@
+        @div(class demo)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source div@
+            @div(class demo-src)
+              @@@pre
+#sites: [
+  { name - Dunmore, lit - yes }
+  { name - Carrick, lit - no }
+] !!
+
+@table |schema [name, lit]| |rows @sites|
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Renders to div@
+            @div(class demo-out)
+              @table |rows [[Name, Lit], [Dunmore, yes], [Carrick, no]]|
+            div@
+          div@
+          @div(class demo-vs) @strong Markdown: strong@ hand-align pipes; change one value and re-type the row. div@
+        div@
+      div@
+
+      @div(class detail-card)
+        @div(class detail-head)
+          @h3 🔀 Draft and final, one source h3@
+          @div(class detail-close) Close ✕ div@
+        div@
+        @div(class demo)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source div@
+            @div(class demo-src)
+              @@@pre
+(if @doc.status is draft)
+@aside Draft — do not circulate. aside@
+(end)
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Renders to (draft build) div@
+            @div(class demo-out)
+              @aside(class note) Draft — do not circulate. aside@
+            div@
+          div@
+          @div(class demo-vs) @strong Markdown: strong@ keep a second copy and remember to strip the notes. div@
+        div@
+      div@
+
+      @div(class detail-card)
+        @div(class detail-head)
+          @h3 🗂 Assemble across files h3@
+          @div(class detail-close) Close ✕ div@
+        div@
+        @div(class demo)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source div@
+            @div(class demo-src)
+              @@@pre
+reference ./intro.wit
+reference ./methods.wit
+reference ./results.wit
+
+@intro intro@  @methods methods@  @results results@
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Compiles to div@
+            @div(class demo-out)
+              intro.wit + methods.wit + results.wit → one @strong thesis.pdf strong@.
+            div@
+          div@
+          @div(class demo-vs) @strong Markdown: strong@ no includes — you bolt on a separate build tool to stitch files. div@
+        div@
+      div@
+
+      @div(class detail-card)
+        @div(class detail-head)
+          @h3 📄 One source, every format h3@
+          @div(class detail-close) Close ✕ div@
+        div@
+        @div(class demo)
+          @div(class demo-pane)
+            @div(class demo-label) Wit source div@
+            @div(class demo-src)
+              @@@pre
+wit build thesis.wit -o thesis.html
+wit build thesis.wit -o thesis.pdf
+wit build thesis.wit -o thesis.md
+pre@@@
+            div@
+          div@
+          @div(class demo-pane)
+            @div(class demo-label) Produces div@
+            @div(class demo-out)
+              @p @span(class pill) HTML span@  @span(class pill) PDF span@  @span(class pill) Markdown span@ p@
+            div@
+          div@
+          @div(class demo-vs) @strong Markdown: strong@ it is the source, and HTML is the ceiling — no route to a print-ready PDF. div@
+        div@
+      div@
+
+    div@
+  div@
+section@
+page_features#

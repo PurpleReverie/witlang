@@ -1,0 +1,107 @@
+~ script.wit — client-side behaviour. Exposed as #scripts; a literal
+~ @@script block ships straight into a <script> tag. Two jobs: the
+~ dark/light toggle, and a self-contained Wit syntax highlighter that
+~ colours the code samples (no external dependencies).
+
+#scripts
+@@@script
+// --- dark / light toggle (page defaults to light "paper") ---
+var toggle = document.querySelector('.toggle');
+if (toggle) {
+  toggle.addEventListener('click', function () {
+    var dark = document.documentElement.classList.toggle('dark');
+    toggle.textContent = dark ? '◐ Light' : '◑ Dark';
+  });
+}
+
+// --- feature cards: click one to spawn its full-width detail card under the row ---
+(function () {
+  var features = Array.prototype.slice.call(document.querySelectorAll('.feature'));
+  var details  = Array.prototype.slice.call(document.querySelectorAll('.detail-card'));
+  var openIdx = -1;
+
+  function rowLastCard(card) {          // last summary card sharing this card's row
+    var top = card.offsetTop, last = card;
+    features.forEach(function (f) { if (f.offsetTop === top) last = f; });
+    return last;
+  }
+  function setHint(i, text) {
+    var h = features[i] && features[i].querySelector('.hint');
+    if (h) h.textContent = text;
+  }
+  function close() {
+    if (openIdx < 0) return;
+    details[openIdx].style.display = 'none';
+    features[openIdx].classList.remove('active');
+    setHint(openIdx, 'Show example ↓');
+    openIdx = -1;
+  }
+  function open(i) {
+    var last = rowLastCard(features[i]);
+    last.parentNode.insertBefore(details[i], last.nextSibling);
+    details[i].style.display = 'block';
+    features[i].classList.add('active');
+    setHint(i, 'Hide example ↑');
+    openIdx = i;
+    details[i].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  features.forEach(function (card, i) {
+    card.addEventListener('click', function () {
+      var wasOpen = openIdx === i;
+      close();
+      if (!wasOpen) open(i);
+    });
+  });
+  details.forEach(function (d) {
+    d.addEventListener('click', function (e) { e.stopPropagation(); });
+    var btn = d.querySelector('.detail-close');
+    if (btn) btn.addEventListener('click', function (e) { e.stopPropagation(); close(); });
+  });
+})();
+
+// --- comprehensive examples: fold-out panels (thesis starts open) ---
+document.querySelectorAll('.example-head').forEach(function (head) {
+  head.addEventListener('click', function () {
+    var open = head.parentNode.classList.toggle('open');
+    var t = head.querySelector('.example-toggle');
+    if (t) t.textContent = open ? 'Collapse ↑' : 'Expand ↓';
+  });
+});
+
+// --- Wit syntax highlighter (single pass, ordered alternation) ---
+(function () {
+  var RE = new RegExp([
+    '(~[^\\n]*)',                        // 1 comment
+    '(@@@|@@|!!)',                       // 2 literal fences
+    '(\\((?:if|each|end)\\b[^)]*\\))',   // 3 (if…)/(each…)/(end)
+    '(\\{\\{[^}]*\\}\\})',               // 4 {{ interpolation }}
+    '(::[A-Za-z0-9_-]+::)',              // 5 ::capture::
+    '(\\|[^|\\n]*\\|)',                  // 6 |captures|
+    '((?<!\\S)reference\\b)',            // 7 reference
+    '((?<!\\S)wit(?=\\s))',              // 8 wit (CLI)
+    '(@[A-Za-z0-9_-]+)',                 // 9 @node open
+    '([A-Za-z0-9_-]+@(?!@))',            // 10 node@ close
+    '(#[A-Za-z0-9_-]+)',                 // 11 #def open
+    '([A-Za-z0-9_-]+#(?!#))',           // 12 def# close
+    '(\\.\\/[^\\s]+)'                    // 13 ./path
+  ].join('|'), 'g');
+  var CLS = ['tok-com','tok-fence','tok-ctrl','tok-interp','tok-interp','tok-cap',
+             'tok-kw','tok-kw','tok-node','tok-node','tok-def','tok-def','tok-str'];
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function highlight(code) {
+    return esc(code).replace(RE, function () {
+      for (var i = 1; i <= CLS.length; i++) {
+        if (arguments[i] !== undefined)
+          return '<span class="' + CLS[i - 1] + '">' + arguments[0] + '</span>';
+      }
+      return arguments[0];
+    });
+  }
+  document.querySelectorAll('.code-card pre, .demo-src pre').forEach(function (pre) {
+    pre.innerHTML = highlight(pre.textContent);
+  });
+})();
+script@@@
+scripts#

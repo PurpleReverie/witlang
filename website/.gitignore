@@ -1,0 +1,3 @@
+# generated output — rebuild with:
+#   node packages/cli/dist/bin.js build website/site.wit -o website/site.html --raw
+site.html

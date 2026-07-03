@@ -1,0 +1,11 @@
+~ footer.wit — the closing bar. Exposed as #page_footer.
+
+#page_footer
+@footer(class footer)
+  @div(class wrap)
+    Built with @span(class grad) Wit span@ — the whole page you're reading is one Wit project.
+
+    @p @a |href https://github.com| GitHub a@ · @a |href #features| Features a@ · MIT licensed p@
+  div@
+footer@
+page_footer#

@@ -1,0 +1,87 @@
+~ stats.wit — the "why Wit is open at the bottom" section. Wit is a parser
+~ that produces a typed AST; the renderers are just functions over it. This
+~ section makes that point, and doubles as a live demo of the pattern the
+~ user cares about: a table customised by CSS that is *defined locally* (as
+~ the #local_styles component) and *referenced inside a wrapper div*.
+~ Exposed as #page_stats.
+
+~ Local styles for this section — defined here, referenced inside the
+~ wrapper div below. Scoped by class, so they touch nothing else.
+#local_styles
+@@style
+.spec-table { max-width: 780px; margin: 0 auto; }
+.spec-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--sans);
+  font-size: 0.98rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.spec-table thead th {
+  background: var(--accent);
+  color: #fff8ef;
+  text-align: left;
+  padding: 0.85rem 1.2rem;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.spec-table td {
+  padding: 0.8rem 1.2rem;
+  border-top: 1px solid var(--border);
+}
+.spec-table tbody tr:nth-child(even) { background: var(--surface-2); }
+.spec-table tbody tr:last-child td { font-weight: 600; }
+.spec-table tbody tr:last-child td:first-child { color: var(--accent); }
+.api-card {
+  max-width: 780px;
+  margin: 2.2rem auto 0;
+  background: #1b1811;
+  border: 1px solid #2e2820;
+  border-radius: 13px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(40, 24, 16, 0.22);
+}
+.api-card pre {
+  margin: 0;
+  padding: 1.3rem 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: #d8cfbf;
+}
+.api-cap { max-width: 780px; margin: 1rem auto 0; text-align: center;
+           color: var(--muted); font-family: var(--sans); font-size: 0.9rem; }
+style@@
+local_styles#
+
+#page_stats
+@section |class section| |id why|
+  @div(class wrap)
+    @h2 It's just a parser and an AST h2@
+    @p(class lead) Wit parses your document into a small, typed AST. HTML, Markdown, and PDF are renderers over that tree — so when you need a different target, you write a function, not a fork. p@
+
+    ~ wrapper div that references the local CSS, then the table it styles
+    @div(class spec-table)
+      @local_styles local_styles@
+      @table |rows [[Format, Renderer, Output], [HTML, built in, clean semantic markup], [Markdown, built in, portable plain text], [PDF, headless Chrome, paginated pages], [Anything, a function you write, whatever you need]]| table@
+    div@
+
+    @div(class api-card)
+      @@@pre
+import { parse } from "@witlang/parser";
+
+const ast  = parse(source);      // the whole document, typed
+const html = renderHtml(ast);    // a renderer is just: AST in, string out
+const mine = myRenderer(ast);    // so bring your own target
+pre@@@
+    div@
+
+    @p(class api-cap) Every built-in renderer is written exactly this way. p@
+  div@
+section@
+page_stats#

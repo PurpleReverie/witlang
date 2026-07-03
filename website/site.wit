@@ -1,0 +1,29 @@
+~ THE WIT WEBSITE — a modern landing page, built entirely in Wit and
+~ assembled from many files into one page. Design system in theme.wit,
+~ behaviour in script.wit, each section in parts/.
+~
+~ Build:  wit build site.wit -o site.html --raw
+~ Then open site.html in a browser (the ◐ toggle switches dark/light).
+
+reference ./theme.wit
+reference ./script.wit
+reference ./parts/nav.wit
+reference ./parts/hero.wit
+reference ./parts/features.wit
+reference ./parts/examples.wit
+reference ./parts/stats.wit
+reference ./parts/footer.wit
+
+~ design system (theme.wit)
+@stylesheet stylesheet@
+
+~ the page, in order
+@page_nav page_nav@
+@page_hero page_hero@
+@page_features page_features@
+@page_examples page_examples@
+@page_stats page_stats@
+@page_footer page_footer@
+
+~ behaviour (script.wit) — last, so the DOM exists
+@scripts scripts@
