@@ -154,7 +154,7 @@ editor rather than new engine work.
 | Item | Notes |
 |---|---|
 | Word-wrap default for `.wit` | `contributes.configurationDefaults` → `"[wit]": { "editor.wordWrap": "on" }`. Ships wrap-on to every install; users can still override. |
-| Live HTML preview panel | Webview, side-by-side like Markdown preview, auto-refresh on save/change, backed by `@witlang/render-html`. Highest value-per-effort. |
+| Live HTML preview panel | Webview, side-by-side like Markdown preview, auto-refresh on save/change, backed by `@witlang/render-html`. Highest value-per-effort. Architecture: `docs/universal-render-target.md`. |
 | Snippets | `.code-snippets` for the five preferred forms: value-block def `#name: … !!`, record-arg `@x { k: v }`, colon scatter, block-form def `#name … name#`, bare reference. Scaffolds correct idiom. |
 | Code folding | Fold `#name … name#`, `#name: … !!`, and `@x … x@` regions — `folding.markers` in `language-configuration.json` or a `foldingRangeProvider`. |
 | File icon | Wire up the existing `icons/wit-file-icon.svg` via an `iconThemes` contribution so `.wit` files get the custom explorer icon. |
@@ -183,6 +183,18 @@ editor rather than new engine work.
 
 **Priority (value-per-effort):** live preview → snippets → folding +
 file icon → document links → rename.
+
+### D.2 — Literal nodes, interpolation & components (in progress)
+
+A literal-content layer that builds toward a component system. **Shipped**
+(working tree): `@@name … name@@` literal nodes and `@@@…@@@` frozen bodies;
+`{{path}}` interpolation inside `@@` bodies (single braces stay literal, so
+CSS works); `style`/`script` raw-text rendering + custom CSS in the default
+render path; VS Code 0.4.0 grammar. **Designed, not yet built**: the `body`
+param (+ `@@` ≡ `body:` literal), the `##name … name##` literal-node def,
+`{{}}` in strings and normal content, capture scope + param defaults, and
+component-CSS dedup. Full model, build order, and open bugs:
+`docs/literal-nodes-and-components.md`.
 
 ---
 

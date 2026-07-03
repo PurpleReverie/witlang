@@ -7,6 +7,10 @@
     { "include": "#block-comment" },
     { "include": "#line-comment" },
     { "include": "#script-block" },
+    { "include": "#raw-frozen" },
+    { "include": "#raw-style" },
+    { "include": "#raw-script" },
+    { "include": "#raw-node" },
     { "include": "#paren-statement" },
     { "include": "#value-block-terminator" },
     { "include": "#additive-def" },
@@ -33,6 +37,56 @@
       "name": "meta.embedded.javascript.wit",
       "patterns": [
         { "include": "source.js" }
+      ]
+    },
+    "interpolation": {
+      "comment": "{{ path }} — the one active substitution inside @@ bodies/strings",
+      "match": "\\{\\{\\s*[A-Za-z0-9_.-]+\\s*\\}\\}",
+      "name": "variable.other.interpolation.wit"
+    },
+    "raw-frozen": {
+      "comment": "@@@name ... name@@@ — fully verbatim; {{...}} NOT interpolated",
+      "begin": "@@@[A-Za-z0-9_-]+",
+      "end": "[A-Za-z0-9_-]+@@@",
+      "beginCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "endCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "name": "meta.raw.frozen.wit",
+      "contentName": "string.unquoted.raw.wit"
+    },
+    "raw-style": {
+      "comment": "@@style ... style@@ — literal CSS body, {{...}} live",
+      "begin": "@@style\\b",
+      "end": "style@@",
+      "beginCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "endCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "name": "meta.embedded.block.css.wit",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "source.css" }
+      ]
+    },
+    "raw-script": {
+      "comment": "@@script ... script@@ — literal JS body, {{...}} live",
+      "begin": "@@script\\b",
+      "end": "script@@",
+      "beginCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "endCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "name": "meta.embedded.block.js.wit",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "source.js" }
+      ]
+    },
+    "raw-node": {
+      "comment": "@@name ... name@@ — generic literal node; body inert but {{...}} live",
+      "begin": "@@[A-Za-z0-9_-]+",
+      "end": "[A-Za-z0-9_-]+@@",
+      "beginCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "endCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "name": "meta.raw.wit",
+      "contentName": "string.unquoted.raw.wit",
+      "patterns": [
+        { "include": "#interpolation" }
       ]
     },
     "value-block-terminator": {

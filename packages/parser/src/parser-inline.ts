@@ -21,6 +21,7 @@
 
 import { lex } from './lexer.js';
 import { parseNodeUse } from './parser-nodes.js';
+import { parseRawNodeUse } from './parser-raw.js';
 import {
   isScriptCallStart,
   parseScriptBlock,
@@ -105,6 +106,7 @@ function parseOneInline(cursor: TokenCursor): Inline | null {
     return takeScriptCall(cursor);
   }
   if (tok.kind === 'nodeOpen') return takeInlineNodeUse(cursor);
+  if (tok.kind === 'rawNode') return parseRawNodeUse(cursor);
   if (tok.kind === 'scriptOpen') return takeInlineScriptBlock(cursor);
   if (tok.kind === 'interpolationOpen') return takeInterpolation(cursor);
   if (tok.kind === 'bodySlotMarker') return takeBodySlot(cursor);

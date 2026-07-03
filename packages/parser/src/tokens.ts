@@ -172,6 +172,20 @@ export interface ScriptBlockContent extends HasLoc {
   text: string;
 }
 
+export interface RawNode extends HasLoc {
+  // `@@name ... name@@` — a literal-bodied node use. Everything between the
+  // doubled-`@` markers is captured verbatim (no Wit tokens emitted inside);
+  // the parser hands `text` to a NodeUse with `raw: true`. `inline` mirrors
+  // the nodeOpen rule: true when prose follows `@@name` on the same line.
+  // `frozen` is true for the triple-`@@@` form: fully verbatim, `{{...}}`
+  // interpolation is NOT applied. Double `@@` leaves `frozen` false.
+  kind: 'rawNode';
+  name: string;
+  text: string;
+  inline: boolean;
+  frozen: boolean;
+}
+
 export interface HashOpen extends HasLoc {
   // `#name` — start of a node-definition.
   kind: 'hashOpen';
@@ -275,6 +289,7 @@ export type Token =
   | ScriptOpen
   | ScriptClose
   | ScriptBlockContent
+  | RawNode
   | HashOpen
   | HashClose
   | InterpolationName

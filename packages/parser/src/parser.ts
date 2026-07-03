@@ -17,6 +17,7 @@ import { ParseError } from './parser-errors.js';
 import { TokenCursor } from './parser-cursor.js';
 import { parseInline, parseInlineComment } from './parser-inline.js';
 import { parseNodeUse } from './parser-nodes.js';
+import { parseRawNodeUse } from './parser-raw.js';
 import { parseScriptBlock } from './parser-script.js';
 import {
   isStatementStart,
@@ -76,6 +77,7 @@ function parseBlock(cursor: TokenCursor): Block | null {
   if (tok.kind === 'scriptOpen' && isBlockLevelScript(cursor)) {
     return parseScriptBlock(cursor, false);
   }
+  if (tok.kind === 'rawNode' && !tok.inline) return parseRawNodeUse(cursor);
   if (isDefStart(tok.kind)) return parseDefBlock(cursor);
   if (tok.kind === 'nodeOpen' && isBlockBodiedOpen(cursor)) {
     return parseUseBlock(cursor);

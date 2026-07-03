@@ -21,6 +21,7 @@ import {
 } from './lexer-defs.js';
 import { tryReferenceDirective } from './lexer-directives.js';
 import { tryNodeClose, tryNodeOpen, tryPipeOpen } from './lexer-nodes.js';
+import { tryRawNode } from './lexer-raw.js';
 import { tryBlockComment, tryLineComment } from './lexer-recognizers.js';
 import { tryScriptBlock } from './lexer-script.js';
 import { tryParenStatement } from './lexer-statements.js';
@@ -138,6 +139,7 @@ function runRecognizers(state: LexState, buf: RunBuf): boolean {
   if (tryReferenceDirective(state, buf)) return true;
   if (tryScriptBlock(state, buf)) return true;
   if (tryParenStatement(state, buf)) return true;
+  if (tryRawNode(state, buf)) return true;
   if (tryNodeOpen(state, buf)) return true;
   if (tryNodeClose(state, buf)) return true;
   if (tryAdditivePrefix(state, buf)) return true;

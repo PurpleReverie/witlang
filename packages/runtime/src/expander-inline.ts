@@ -345,7 +345,17 @@ export function expandDataValue(use: NodeUse, root: DataValue): Splice | null {
   return [rendered];
 }
 
-function walkAccess(
+// Scalar (leaf) value as a string, or null for containers (record /
+// collection). Used by `{{path}}` interpolation in raw bodies.
+export function scalarToString(value: DataValue): string | null {
+  if (value.kind === 'stringValue') return value.value;
+  if (value.kind === 'numberValue') return String(value.value);
+  if (value.kind === 'booleanValue') return String(value.value);
+  if (value.kind === 'nullValue') return '';
+  return null;
+}
+
+export function walkAccess(
   value: DataValue,
   segments: readonly string[],
 ): DataValue | null {

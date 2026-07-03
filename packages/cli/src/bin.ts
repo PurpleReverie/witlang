@@ -7,7 +7,9 @@
 //   wit check <file>            Parse + resolve, report errors (exit 1).
 //   wit build <file> [-o out]   Render to stdout or file. Format inferred
 //                               from -o extension (.html/.md), or set
-//                               explicitly with --format html|md.
+//                               explicitly with --format html|md. HTML is
+//                               a self-contained styled document unless
+//                               --fragment is passed.
 //   wit --version | --help
 
 import { realpathSync } from 'node:fs';
@@ -25,7 +27,7 @@ export const HELP_TEXT = [
   'Usage:',
   '  wit parse <file>',
   '  wit check <file>',
-  '  wit build <file> [-o output.html|output.md] [--format html|md]',
+  '  wit build <file> [-o output.html|output.md] [--format html|md] [--fragment]',
   '  wit tour <file>',
   '  wit --version | --help',
 ].join('\n');

@@ -29,12 +29,58 @@ import type {
 } from '@witlang/parser';
 import type { ExpandedDocument } from '@witlang/runtime';
 import { escapeHtml } from './escape.js';
+import { defaultThemeCss } from './theme.js';
 import { tryRenderCore } from './render-core-vocab.js';
 import { tryRenderTable } from './render-table.js';
 
-export function renderHtml(doc: ExpandedDocument): string {
+export interface RenderHtmlOptions {
+  /**
+   * `'fragment'` (the default) emits just the
+   * `<article class="wit-doc">…</article>` element, for embedding inside
+   * another page. `'document'` wraps that fragment in a complete,
+   * self-contained HTML page with the stylesheet inlined in `<head>` —
+   * open the output anywhere and it looks right.
+   */
+  mode?: 'fragment' | 'document';
+  /** `<title>` text in document mode. Defaults to `'Wit document'`. */
+  title?: string;
+  /** `<html lang>` value in document mode. Defaults to `'en'`. */
+  lang?: string;
+  /**
+   * CSS inlined into `<head>` in document mode. Defaults to the bundled
+   * literary theme (`defaultThemeCss`). Pass `''` for an unstyled
+   * document, or your own stylesheet to re-theme.
+   */
+  css?: string;
+}
+
+export function renderHtml(doc: ExpandedDocument, options?: RenderHtmlOptions): string {
   const inner = renderBlocks(doc.children);
-  return `<article class="wit-doc">${inner}</article>`;
+  const fragment = `<article class="wit-doc">${inner}</article>`;
+  if (options?.mode !== 'document') return fragment;
+  return wrapDocument(fragment, options);
+}
+
+function wrapDocument(fragment: string, options: RenderHtmlOptions): string {
+  const title = escapeHtml(options.title ?? 'Wit document');
+  const lang = escapeHtml(options.lang ?? 'en');
+  const css = options.css ?? defaultThemeCss;
+  // Guard against a stylesheet that contains the closing tag breaking
+  // out of the <style> element.
+  const safeCss = css.replace(/<\/(style)/gi, '<\\/$1');
+  const styleTag = safeCss.length > 0 ? `\n<style>\n${safeCss}</style>` : '';
+  return `<!doctype html>
+<html lang="${lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>${styleTag}
+</head>
+<body>
+${fragment}
+</body>
+</html>
+`;
 }
 
 // ---------------------------------------------------------------------------
@@ -67,7 +113,13 @@ function renderBlock(block: Block): string {
 }
 
 function renderParagraph(p: Paragraph): string {
-  return `<p>${renderInlines(p.children)}</p>`;
+  const inner = renderInlines(p.children);
+  // An empty paragraph (e.g. a blank-line run, or a paragraph whose only
+  // children were omitted definitions/comments) carries no content —
+  // drop it rather than emit a stray `<p></p>` that the stylesheet would
+  // then space out.
+  if (inner.trim().length === 0) return '';
+  return `<p>${inner}</p>`;
 }
 
 function renderComment(c: Comment): string {
@@ -123,10 +175,40 @@ function renderInterpolation(node: Interpolation): string {
 // ---------------------------------------------------------------------------
 
 function renderNodeUse(use: NodeUse): string {
+  if (use.raw === true) {
+    const rawEl = tryRenderRawTextElement(use);
+    if (rawEl !== null) return rawEl;
+  }
   if (use.access !== undefined && use.access.length > 0) {
     return renderUnresolvedAccess(use);
   }
   return renderNodeUseShell(use);
+}
+
+// Raw-text HTML elements (`<style>`, `<script>`) whose content must NOT be
+// HTML-escaped — CSS/JS would break. A `@@style ... style@@` literal node
+// emits its body verbatim, guarded only against a nested closing tag
+// breaking out of the element. Other raw nodes (`@@code`, `@@pre`, custom)
+// fall through to normal rendering, where their Text body IS escaped.
+const RAW_TEXT_ELEMENTS = new Set<string>(['style', 'script']);
+
+function tryRenderRawTextElement(use: NodeUse): string | null {
+  if (!RAW_TEXT_ELEMENTS.has(use.name)) return null;
+  const text = rawBodyText(use);
+  const safe = text.replace(
+    new RegExp(`</(${use.name})`, 'gi'),
+    '<\\/$1',
+  );
+  return `<${use.name}>${safe}</${use.name}>`;
+}
+
+function rawBodyText(use: NodeUse): string {
+  if (use.body === null) return '';
+  let out = '';
+  for (const child of use.body) {
+    if (child.kind === 'text') out += child.value;
+  }
+  return out;
 }
 
 function renderUnresolvedAccess(use: NodeUse): string {

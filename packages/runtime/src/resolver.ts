@@ -287,6 +287,9 @@ function bindEach(block: EachStatement, ctx: BindCtx): void {
 }
 
 function bindNodeUse(use: NodeUse, ctx: BindCtx): void {
+  // `@@name ... name@@` literal node: opaque carrier. No binding, and its
+  // body is verbatim text (no nested refs), so don't descend or track it.
+  if (use.raw) return;
   ctx.refs.add(use.name);
   if (ctx.iterScope.includes(use.name)) {
     if (use.body) bindChildren(use.body, ctx);

@@ -26,6 +26,34 @@ describe('runBuild', () => {
     expect(cap.out).toContain('<article class="wit-doc">');
   });
 
+  it('HTML output is a self-contained styled document by default', () => {
+    const file = path.join(tmpDir, 'note.wit');
+    const out = path.join(tmpDir, 'note.html');
+    fs.writeFileSync(file, '@h1 Hi h1@\n');
+    const { io } = mkIo();
+    const code = runBuild([file, '-o', out], io);
+    expect(code).toBe(0);
+    const written = fs.readFileSync(out, 'utf8');
+    expect(written).toContain('<!doctype html>');
+    expect(written).toContain('<style>');
+    // <title> is derived from the source filename (sans extension).
+    expect(written).toContain('<title>note</title>');
+    expect(written).toContain('<article class="wit-doc">');
+  });
+
+  it('--fragment emits the bare article with no document chrome', () => {
+    const file = path.join(tmpDir, 'a.wit');
+    const out = path.join(tmpDir, 'a.html');
+    fs.writeFileSync(file, '@h1 Hi h1@\n');
+    const { io } = mkIo();
+    const code = runBuild([file, '-o', out, '--fragment'], io);
+    expect(code).toBe(0);
+    const written = fs.readFileSync(out, 'utf8');
+    expect(written.startsWith('<article class="wit-doc">')).toBe(true);
+    expect(written).not.toContain('<!doctype');
+    expect(written).not.toContain('<style>');
+  });
+
   it('writes to -o path when given', () => {
     const file = path.join(tmpDir, 'a.wit');
     const out = path.join(tmpDir, 'a.html');

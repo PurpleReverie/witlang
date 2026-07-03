@@ -32,7 +32,13 @@ import type { ResolvedDocument } from './resolved-ast.js';
 import type { ExpandedDocument } from './expanded-ast.js';
 import { ExpanderError, RuntimeErrorCode } from './errors.js';
 import { isReservedNodeName } from './core-vocab.js';
-import { expandNodeDef, expandDataValue, type Splice } from './expander-inline.js';
+import {
+  expandNodeDef,
+  expandDataValue,
+  scalarToString,
+  walkAccess,
+  type Splice,
+} from './expander-inline.js';
 import { evaluateCondition, type DataLookups } from './expander-conditions.js';
 import {
   createIterEnv,
@@ -257,6 +263,10 @@ function toInlines(node: Block | Inline): Inline[] {
 // ---------------------------------------------------------------------------
 
 function expandUse(use: NodeUse, ctx: ExpandCtx): Splice {
+  // `@@name ... name@@` literal node: opaque pass-through (never bound to a
+  // def). A double-`@@` body still gets `{{path}}` interpolation; a frozen
+  // triple-`@@@` body passes through fully verbatim.
+  if (use.raw) return [expandRawUse(use, ctx)];
   const iterValue = lookupIterEnv(ctx.iterEnv, use.name);
   if (iterValue !== undefined) return expandIterRef(use, iterValue);
   const def = ctx.defs.get(use.name);
@@ -287,6 +297,63 @@ function expandUse(use: NodeUse, ctx: ExpandCtx): Splice {
     `Unresolved reference @${use.name}`,
     use.loc,
   );
+}
+
+// `{{ path }}` interpolation hole — the one active construct inside an
+// `@@` raw body. Single braces (CSS, etc.) are left alone; only a doubled
+// pair with a dotted handle path between substitutes.
+const INTERP_HOLE = /\{\{\s*([A-Za-z0-9_.-]+)\s*\}\}/g;
+
+function expandRawUse(use: NodeUse, ctx: ExpandCtx): NodeUse {
+  const clone = structuredClone(use) as NodeUse;
+  if (clone.frozen === true || clone.body === null) return clone;
+  clone.body = clone.body.map((child) =>
+    child.kind === 'text'
+      ? { ...child, value: interpolateRaw(child.value, ctx, child.loc) }
+      : child,
+  );
+  return clone;
+}
+
+function interpolateRaw(text: string, ctx: ExpandCtx, loc: Loc): string {
+  return text.replace(INTERP_HOLE, (_m, path: string) =>
+    resolveInterpScalar(path, ctx, loc),
+  );
+}
+
+function resolveInterpScalar(path: string, ctx: ExpandCtx, loc: Loc): string {
+  const segments = path.split('.');
+  const head = segments[0]!;
+  // 1. iteration variable / data def (records, collections, typed scalars) —
+  //    supports dotted access (`{{theme.accent}}`).
+  const root = lookupIterEnv(ctx.iterEnv, head) ?? ctx.dataDefs.get(head)?.value;
+  if (root !== undefined) {
+    const value = walkAccess(root, segments.slice(1));
+    const str = value === null ? null : scalarToString(value);
+    if (str !== null) return str;
+  }
+  // 2. scalar node-def (`#name: value`) — bare name only.
+  if (segments.length === 1) {
+    const defStr = nodeDefScalar(ctx.defs.get(head));
+    if (defStr !== null) return defStr;
+  }
+  throw new ExpanderError(
+    RuntimeErrorCode.E_UNRESOLVED_REFERENCE,
+    `Unresolved interpolation {{${path}}}`,
+    loc,
+  );
+}
+
+// A node-def whose body is plain text (`#accent: green`) is usable as a
+// scalar; one with rich/templated body is not (returns null → unresolved).
+function nodeDefScalar(def: NodeDef | undefined): string | null {
+  if (def === undefined) return null;
+  let out = '';
+  for (const child of def.body) {
+    if (child.kind !== 'text') return null;
+    out += child.value;
+  }
+  return out;
 }
 
 function expandReservedUse(use: NodeUse, ctx: ExpandCtx): NodeUse {

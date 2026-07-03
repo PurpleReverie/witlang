@@ -130,6 +130,14 @@ export interface NodeUse extends HasLoc {
   body: (Block | Inline)[] | null;
   inline: boolean;
   closeStyle: 'named' | 'parens' | 'bare';
+  // `@@name ... name@@` literal-bodied use. When true, `body` is a single
+  // verbatim Text node: resolve/expand must not interpolate or re-parse it,
+  // and renderers emit it as-is (escaped, or raw for raw-text elements).
+  raw?: boolean;
+  // Triple-`@@@name ... name@@@`: fully frozen — `{{...}}` interpolation is
+  // NOT applied to the body (everything passes through, e.g. downstream
+  // template syntax). Double `@@` leaves this false/undefined.
+  frozen?: boolean;
 }
 
 export interface NodeDef extends HasLoc {
