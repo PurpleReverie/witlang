@@ -1,0 +1,100 @@
+@h1 Inline marks h1@
+
+Beyond the two shorthand marks for _italic_ and *bold*, Wit gives you a small
+family of inline elements you call by name: code, underline, strike-through,
+subscript and superscript, a highlighter, small print, a work title, and a hard
+line break. Each is a node — you open it with a name and close it with the same
+name — and each maps straight to the matching HTML element.
+
+@h2 Why call them by name h2@
+
+The two mark characters cover the emphasis you reach for constantly. Everything
+else is deliberately spelled out, so your prose stays clean and the intent is
+obvious. You use these when you need a semantic element that no two-character
+mark provides.
+
+@h2 The basic shape h2@
+
+Inline marks are inline nodes: they wrap a run of text and flatten into a single
+element, with no stray paragraph inside. Inline code is the one you will reach
+for most:
+
+@@@pre
+Call @code lighthouse.foo() code@ to relight the lamp.
+pre@@@
+
+renders `Call` followed by @code lighthouse.foo() code@ as inline code, then the
+rest of the sentence.
+
+@h2 The full set h2@
+
+Every one of these is written the same way — @@@code @name … name@ code@@@ — and
+produces the same-named HTML tag:
+
+@@@pre
+@code … code@    → <code>    inline code: commands, identifiers, paths
+@u … u@       → <u>       underline (reads as a link online — use sparingly)
+@s … s@       → <s>       strike-through: retractions, "was X, now Y"
+@sub … sub@     → <sub>     subscript: chemical formulae, footnote marks
+@sup … sup@     → <sup>     superscript: exponents, ordinals, note refs
+@mark … mark@    → <mark>    highlight: draw the eye to a phrase
+@small … small@   → <small>   small print: asides, fine print
+@cite … cite@    → <cite>    the title of a referenced work
+@br br@        → <br>      a hard line break inside one paragraph
+pre@@@
+
+Here they are in a single run:
+
+@@@pre
+The result @u underlined u@, an @s edit s@, water is H@sub 2 sub@O,
+the area is 4@sup 2 sup@, a @mark highlighted mark@ phrase,
+some @small small print small@, and a work like @cite Moby-Dick cite@.
+pre@@@
+
+@h2 The hard line break h2@
+
+A lone newline in your source is a soft wrap that reads as a space. When you want
+a _real_ line break inside a single paragraph — an address block, a line of verse,
+a signature — use the self-closing break node:
+
+@@@pre
+Ada Lovelace @br br@
+12 Analytical Way @br br@
+London
+pre@@@
+
+Each break node is written @@@code @br br@ code@@@ and needs no body. In Markdown
+output a line break degrades to a space, since Markdown has no reliable inline
+break — so if hard breaks matter, keep to HTML or PDF output.
+
+@h2 They flatten to one element h2@
+
+Every inline mark is _inline-context_: it wraps its text directly, so
+@@@code @em word em@ code@@@ becomes @code <em>word</em> code@, never
+@code <em><p>word</p></em> code@. That is what lets you drop them mid-sentence
+without breaking the flow of a paragraph.
+
+@h2 Common mistakes h2@
+
+@ul
+@li _Forgetting the closing name._ An inline node you open but never close raises
+an "unclosed node" error. Every @@@code @code … code@ code@@@ needs its
+@@@code code@ code@@@. li@
+@li _Using inline code to hold an at-sign._ An inline code node that contains an
+email breaks, because the @@@code keeper@ code@@@ inside it is read as a close.
+To show an at-sign or an email in prose, use a frozen inline literal or reword.
+See @a |href /docs/write/prose/| Paragraphs & prose a@. li@
+@li _Reaching for underline for emphasis._ Online, underline reads as a link. Use
+_italic_ or *bold* for stress and keep underline for the rare case that truly
+means it. li@
+ul@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/emphasis/| Emphasis a@ — the two shorthand marks. li@
+@li @a |href /docs/write/using-nodes/| Using nodes a@ — the one node shape these
+all share. li@
+@li @a |href /docs/reference/core-vocabulary/| Core vocabulary a@ — every built-in
+node and the element it produces. li@
+ul@

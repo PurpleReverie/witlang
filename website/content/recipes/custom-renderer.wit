@@ -1,0 +1,106 @@
+@h1 Write a custom renderer h1@
+
+Walk the expanded Wit AST and emit @strong your own strong@ target format — LaTeX,
+plain text, RTF, a Slack payload, a JSON intermediate. The two shipped renderers
+(HTML and Markdown) are working references for exactly this. For developers.
+
+@h2 Step 1 — Get an expanded document h2@
+
+Run @code parse code@, @code resolve code@, @code expand code@ (add
+@code loadExternalData code@ first if the document loads data), then walk the
+children of the expanded document.
+
+@h2 Step 2 — Recurse on @code node.kind code@ h2@
+
+This walk produced correct plain-text output when verified:
+
+@@@pre
+import { parse } from '@witlang/parser';
+import { resolve, expand, isCoreVocabName, RESERVED_OPAQUE } from '@witlang/runtime';
+
+const expanded = expand(resolve(parse(src, 'doc.wit')));
+const param = (use, n) => use.params.find(p => p.name === n)?.value;
+
+function renderInline(node) {
+  switch (node.kind) {
+    case 'text':    return node.value;
+    case 'italic':  return '_'  + node.children.map(renderInline).join('') + '_';
+    case 'bold':    return '**' + node.children.map(renderInline).join('') + '**';
+    case 'nodeUse': return renderUse(node);
+    default:        return '';
+  }
+}
+
+function renderUse(use) {
+  if (use.name === RESERVED_OPAQUE) return `[node type=${param(use, 'type')}]`;
+  const body = (use.body ?? []).map(renderInline).join('');
+  if (use.name === 'h1') return `\n# ${body}\n`;
+  if (use.name === 'li') return `  - ${body}`;
+  if (isCoreVocabName(use.name)) return body;  // generic core-vocab branch
+  return body;                                 // user def already inlined by expand
+}
+pre@@@
+
+@h2 Step 3 — Dispatch a node use three ways h2@
+
+@ul
+@li @strong The opaque node. strong@ When the name equals @code RESERVED_OPAQUE code@
+(the reserved @code node code@), you're at the
+@@@code @node(type X) code@@@ extension point — read the @code type code@
+parameter and emit your widget. li@
+@li @strong Core vocabulary. strong@ When @code isCoreVocabName code@ is true,
+take your built-in branch for @code h1 code@, @code table code@, and the rest. li@
+@li @strong A user definition. strong@ Otherwise it's a definition that
+@code expand code@ has already inlined — pass the body straight through. li@
+ul@
+
+@h2 Step 4 — Read parameters h2@
+
+Each node use carries a list of parameters; find one by name and read its value,
+as the @code param code@ helper above does.
+
+@h2 Step 5 — Know what @code expand code@ removes h2@
+
+A surviving definition, conditional, iteration, interpolation, or body slot in
+the tree you're walking signals a pre-expansion tree or an expansion failure —
+error on it or drop it, don't render it.
+
+@strong Result. strong@ The walk above turned an @strong h1 strong@, a paragraph
+with italic and bold runs, and a small list into
+@code # A Tiny Report code@, @code Some _emphasised_ and **strong** prose. code@,
+and two @code - code@ bullets — verified as plain text.
+
+@h2 The AST surface h2@
+
+A block is a paragraph, comment, node use, definition, data definition,
+reference, conditional, iteration, or script block. An inline is text, italic,
+bold, interpolation, body slot, node use, script call, or comment. A node use
+carries its name, parameters, body, and flags. Inspect any file's tree first with
+@code wit parse path/to/file.wit code@, which prints the AST as JSON.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong Sync @code fileReader code@. strong@ As in embedding, @code resolve code@
+takes a synchronous @code fileReader code@, not an async @code readFile code@ —
+older prose is stale here. li@
+@li @strong Handle scripts and comments. strong@ Decide explicitly what to do with
+a script block (evaluate it if you ship a script runtime, else drop it) — the
+shipped Markdown renderer drops comments and scripts. li@
+ul@
+
+@h2 Grounding h2@
+
+The two shipped renderers are the working reference — the HTML renderer and the
+Markdown renderer, each with a green test suite. The Markdown renderer's dispatch
+— hand-rolled mappings for @code h1 code@ through @code table code@, transparent
+sectioning wrappers, and unknown uses passed through unwrapped — is the model to
+copy.
+
+@h2 See also h2@
+
+@a |href /docs/recipes/embed-parser/| Embed the Wit parser a@ shares the front
+half of the pipeline;
+@a |href /docs/project/extending/| How to add a node or renderer a@ covers the
+extension seams;
+@a |href /docs/project/architecture/| Architecture a@ maps the AST boundaries.

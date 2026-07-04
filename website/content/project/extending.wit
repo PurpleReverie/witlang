@@ -1,0 +1,78 @@
+@h1 How to add a node or renderer h1@
+
+A practical guide to extending Wit's vocabulary and emitting new output formats.
+For developers.
+
+@h2 Three ways to get a new node h2@
+
+@ul
+@li @strong A user definition strong@ — no code. Write @@@code #name … name# code@@@
+and use it. This is the right answer for almost every "new node." li@
+@li @strong A core-vocabulary addition strong@ — code in the runtime and every
+renderer. Reserve this for shapes that belong to the language itself. li@
+@li @strong The opaque pass-through strong@ — @@@code @node(type …) code@@@ carries
+its parameters straight to the renderer, which dispatches on the @code type code@
+convention. This is the seam for renderer-specific widgets. li@
+ul@
+
+@h2 Adding to the core vocabulary h2@
+
+A core node is a commitment: every renderer must handle it. The cadence is
+test-first.
+
+@ul
+@li Register the name in @code core-vocab.ts code@ so the resolver stops requiring
+a definition for it. li@
+@li Add a handler in each renderer — the HTML and Markdown renderers both need a
+branch. li@
+@li Add a fixture under the core-vocab fixtures, with its snapshot, @strong before strong@
+the change — the fixtures are the executable spec, and a core node without one
+breaks that contract. li@
+ul@
+
+@h2 Writing a custom renderer h2@
+
+Walk the expanded AST and dispatch on each node's @code kind code@. The kinds form
+a stable, serializable, exhaustive union — you can enumerate them with
+@code wit tour code@. A minimal skeleton switches on @code kind code@, recurses
+into children, and handles a node use by its name.
+
+@aside(class note) 💡 The full walkthrough, with a verified plain-text renderer,
+is @a |href /docs/recipes/custom-renderer/| Write a custom renderer a@. This page
+is the map; that recipe is the territory. aside@
+
+@h2 The opaque escape valve h2@
+
+When you need a renderer-specific widget — a chart, a map, a game-state panel —
+@@@code @node(type …) code@@@ passes its parameters through untouched. The
+resolver skips binding lookup and the expander emits the node intact, so your
+renderer sees every parameter and can build whatever it likes. User-defined
+wrappers compose over it cleanly, so authors get a friendly name and the renderer
+gets the raw payload.
+
+@h2 Wiring it in h2@
+
+Whether you drive the CLI or your own program, the shape is the same:
+@code parse code@, @code resolve code@, @code expand code@, then your renderer. A
+document that loads external data adds @code loadExternalData code@ before
+@code resolve code@.
+
+@h2 Common mistakes h2@
+
+@ul
+@li @strong A core node without a fixture. strong@ It breaks the executable-spec
+contract — add the fixture and snapshot first. li@
+@li @strong Lifting stale prose. strong@ Older reference files predate recent
+features; verify any snippet against current renderer code and a real build
+before copying it. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/project/architecture/| Architecture a@ maps the stages you hook
+into;
+@a |href /docs/recipes/custom-renderer/| Write a custom renderer a@ and
+@a |href /docs/recipes/embed-parser/| Embed the Wit parser a@ are the worked
+versions;
+@a |href /docs/project/principles/| Design principles a@ explains why the core
+stays small.

@@ -1,0 +1,80 @@
+@h1 Composing constructs h1@
+
+Once you know each primitive, the interesting question is how they stack: data
+feeding iteration feeding conditionals, captures fed by data access, definitions
+that use other definitions. This short bridge page shows the happy seams — and
+the two places where constructs intentionally do @strong not strong@ compose, so
+you meet the errors before they surprise you.
+
+@h2 Data, iteration, and conditionals together h2@
+
+The workhorse pattern — loop a collection of records, gate each with a condition:
+
+@@@pre
+#hands: [ { name - Ada, awake - true }, { name - Bo, awake - false } ]
+
+(each @hands as hand)
+  (if @hand.awake is true) @hand.name is on watch. (end)
+(end)
+pre@@@
+
+(fixture 17-combinations/record-iteration-conditional.) Data access works as a
+parameter value (access-in-param) and as a condition's left-hand side
+(access-in-condition).
+
+@h2 Captures fed by data h2@
+
+A definition's captures can be filled from a data record read with dotted
+access:
+
+@@@pre
+#weil: { author - Simone Weil, work - Gravity and Grace }
+
+#cite ||author, work|| ::author::, _::work::_. cite#
+
+@cite |author @weil.author| |work @weil.work| cite@
+pre@@@
+
+(fixture definition-with-captures-and-data.) A definition body may reference
+another definition (def-of-def), and inline emphasis composes inside a block
+body:
+
+@@@pre
+@aside She _crossed_ the *threshold* at dusk. aside@
+pre@@@
+
+(emphasis-inside-node-body.)
+
+@h2 The seams that do not compose h2@
+
+@strong Seam 1 — @@@code !! code@@@ is not a use-side closer. strong@ The
+@@@code !! code@@@ token closes a value-block @em definition em@; it does not
+short-close a node @em use em@. So an inner node left open inside a body is never
+closed by @@@code !! code@@@ and you get @code E_UNCLOSED_NODE code@ (fixture
+nested-nodes-with-params). Close inner nodes with their own
+@@@code name@ code@@@.
+
+@strong Seam 2 — an injected node still needs its closer. strong@ A bare
+@@@code @inset code@@@ on its own line opens a block that expects
+@@@code inset@ code@@@; if the surrounding body closes first, it hits the wrong
+closer — @code E_MISMATCHED_CLOSE code@ (fixture
+script-injects-rendered-content). A script that injects rendered content must
+supply balanced open/close, not a half-open node.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Using @@@code !! code@@@ to close a node use — it closes a value-block
+definition only. li@
+@li Expecting a script-injected node to auto-close — supply its
+@@@code name@ code@@@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/interpolation-captures/| Interpolation & captures a@ ·
+@a |href /docs/guides/multi-file/| Multi-file references a@ ·
+@a |href /docs/guides/derived-content/| Derived content a@ ·
+@a |href /docs/guides/gotchas/| Gotchas a@

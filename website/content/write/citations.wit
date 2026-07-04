@@ -1,0 +1,115 @@
+@h1 Citations & references h1@
+
+This is the pattern Wit was built for. Instead of scattering page numbers and
+publisher details through your sentences, you name each source once and then
+refer to it in your prose as a single idea. The same definitions feed your
+bibliography. Change a source's details in one place and every citation, plus the
+whole reference list, updates with it.
+
+@h2 The clutter problem h2@
+
+Written out longhand, a citation swamps the sentence it belongs to — author,
+title, year, publisher, page, every time. The reader loses the thread, and you
+copy the same details from note to note, hoping they stay consistent. The fix is
+to name the source and let a definition carry the details.
+
+@h2 Name your sources h2@
+
+Define each source once as a value — its bibliographic facts, defined a single
+time:
+
+@@@pre
+#weil: Simone Weil, _Gravity and Grace_, 1952 !!
+#berger: John Berger, _Ways of Seeing_, 1972 !!
+pre@@@
+
+@h2 Build an argument map h2@
+
+Now name the _ideas_ you cite — a source plus a locator — so that in prose a
+citation is two words long. A reference to a source, followed by the page, gives
+a named idea:
+
+@@@pre
+#weil_attention: @weil p. 42 !!
+#berger_looking: @berger p. 9 !!
+pre@@@
+
+@h2 Write prose that reads as ideas h2@
+
+With the map in place, your sentences stay about the argument. A named idea
+expands to its source's details and the locator you gave it:
+
+@@@pre
+Attention, as @weil_attention argued, is the rarest form of generosity.
+pre@@@
+
+Here is the whole pattern working live, from a definition to a woven citation:
+
+#weil_demo: Simone Weil, _Gravity and Grace_, 1952 !!
+
+#weil_attention_demo: @weil_demo p. 42 !!
+
+Attention, as @weil_attention_demo argued, is the rarest form of generosity.
+
+The citation reads as two words in your source and expands to the source plus the
+page in the output — no publisher details cluttering the sentence.
+
+@h2 Bare references when no locator is needed h2@
+
+When a citation needs no page or locator at all, the bare source name is enough:
+
+@@@pre
+The lamp burned, as @weil knew it would.
+pre@@@
+
+@h2 A formatted bibliography from the same sources h2@
+
+For a reference list — one entry per block, each laid out to a house style — a
+definition can capture named fields and arrange them. You declare the fields
+between double bars and drop each one in with a double-colon wrapper:
+
+@@@pre
+#ref ||author, title, year, page||
+_::title::_, ::author:: (::year::), p. ::page::
+ref#
+
+@ref
+  author: Trinity House
+  title: Lighthouse Engineering — a Practical Guide
+  year: 1981
+  page: 203
+ref@
+pre@@@
+
+The block-form definition with named captures reads best for a bibliography
+entry, because each field is spelled out at the call. Any of the parameter forms
+work against the same template — pick the one that reads clearest for your list.
+
+@aside(class note) 💡 A note on delimiters, so a citation actually builds: in a
+record argument, fields are written with a dash between key and value, as in
+@@@code { author - Berger, title - Ways of Seeing } code@@@; in a form-fill body,
+they are written with a colon, as in the reference call above. Mixing the two is
+the most common reason a citation will not build. aside@
+
+@h2 Common mistakes h2@
+
+@ul
+@li _A comma inside a field value._ Commas separate fields, so a comma in a title
+or publisher breaks the record. Keep values comma-free where the syntax splits on
+commas. li@
+@li _Using a capture in prose._ A double-colon capture only resolves inside a
+definition body, not in your sentences. li@
+@li _Mismatched field delimiters._ Dash for a record argument, colon for a
+form-fill body (above). li@
+ul@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/components/| Reusable pieces a@ — the definitions
+underneath. li@
+@li @a |href /docs/write/multi-file/| Multi-file manuscripts a@ — a shared source
+list across chapters. li@
+@li @a |href /docs/write/lists/| Lists a@ — a plain works-cited list when you do
+not need templating. li@
+ul@

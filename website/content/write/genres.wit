@@ -1,0 +1,114 @@
+@h1 Document genres h1@
+
+Every real document is a combination of the features in this section. This page
+maps a few common genres to the handful of features that carry each one, with a
+skeleton you can start from. Think of it as the bridge between learning the
+pieces and building a whole thing.
+
+@h2 Essay or article h2@
+
+The everyday genre: flowing prose, headings for structure, an epigraph to set the
+tone, maybe a table or a figure, and a works-cited list at the end. It leans on
+prose, headings, a block quotation, a table, a figure, and a numbered list.
+
+@@@pre
+@h1 On Attention h1@
+
+@blockquote
+"Attention is the rarest and purest form of generosity." — Simone Weil
+blockquote@
+
+Opening paragraph that states the argument…
+
+@h2 The evidence h2@
+
+Body prose, with a figure where it helps.
+
+@figure
+@img |src ./chart.svg| |size medium|
+@figcaption Figure 1. The trend over a decade. figcaption@
+figure@
+
+@h2 Works cited h2@
+
+@ol
+@li Weil, Simone. _Gravity and Grace_. Routledge, 1952. li@
+ol@
+pre@@@
+
+@h2 Thesis or long-form h2@
+
+A book-length work wants to be split across files, share a vocabulary, and
+accumulate a bibliography. It leans on multi-file assembly, a shared schema and
+source list, and block-form chapter wrappers pulled together by a master file —
+see @a |href /docs/write/multi-file/| Multi-file manuscripts a@ and
+@a |href /docs/write/citations/| Citations & references a@.
+
+@@@pre
+reference ./shared/sources.wit
+
+#chapter_one
+@h2 Chapter One h2@
+
+The opening of the argument…
+chapter_one#
+pre@@@
+
+@h2 Data report h2@
+
+A report built from live data: a roster, a table of figures, a chart, laid out
+in columns. It leans on a load node feeding tables and figures, arranged with
+rows and columns — see @a |href /docs/write/rendering/| Rendering a@ and
+@a |href /docs/write/layout/| Layout a@.
+
+@@@pre
+@h1 Quarterly Report h1@
+
+@table |schema [platform, downloads]| |rows @downloads|
+
+@row
+@col |size 300|
+@figure @img |src ./chart.svg| |size full| figure@
+col@
+@col
+The headline: macOS led this cycle, with Windows close behind.
+col@
+row@
+pre@@@
+
+@h2 Letter h2@
+
+A short, personal genre: a title block with hard line breaks, a date, a
+salutation, the body, and a sign-off. It leans on prose, the line break, and
+plain headings.
+
+@@@pre
+Ada Lovelace @br br@
+12 Analytical Way @br br@
+London
+
+4 July 2026
+
+Dear Mr Babbage,
+
+The engine's behaviour on the second card puzzles me…
+
+Yours faithfully, @br br@
+Ada
+pre@@@
+
+@aside(class note) 💡 An honest note: a few genre examples floating around the
+project's skill files point at sample documents that do not exist in this
+repository. Treat any such example as a _shape_ to imitate, and build your own
+version to confirm it works before relying on it. aside@
+
+@h2 See also h2@
+
+@ul
+@li Every page in @a |href /docs/write/prose/| this section a@ — a genre is a
+combination of these features. li@
+@li @a |href /docs/write/draft-workflow/| The draft workflow a@ — turning a genre
+into a shareable draft. li@
+@li @a |href /docs/write/cheatsheet/| Writer cheatsheet a@ — every construct on
+one screen. li@
+ul@

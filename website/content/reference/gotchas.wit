@@ -1,0 +1,88 @@
+@h1 Gotchas and anti-patterns h1@
+
+The traps that produce a confusing error or a silent mis-parse, each re-verified
+against the current build, plus the do/avoid checklist. Cross-linked to the
+@a |href /docs/reference/errors/| error catalogue a@.
+
+@h2 Parser gotchas h2@
+
+@h3 Comment as the first child of a container h3@
+
+A @code ~comment code@ on the @strong first strong@ line of a container body,
+with content right after, collapses the following blocks into one paragraph.
+
+@@@pre
+@section
+~ note
+@h2 T h2@
+Body
+section@
+pre@@@
+
+Emits (the heading is wrongly nested in a paragraph):
+
+@@@pre
+<section><p><h2>T</h2>Body</p></section>
+pre@@@
+
+@strong Fix: strong@ a blank line after the comment →
+@@@code <section><h2>T</h2><p>Body</p></section> code@@@.
+
+@h3 Greedy pipes-bind h3@
+
+A pipes call with no @@@code name@ code@@@ on the @strong same line strong@ binds
+to the @strong next strong@ matching close below it — often surfacing as
+@code E_UNCLOSED_NODE code@. @strong Fix: strong@ close on the same line, use a
+self-closing form, or place self-closing pipes calls @strong last strong@.
+Documented in @code 26-all-param-forms/_notes.md code@ (form 13 is last on
+purpose).
+
+@h3 Single-line def with captures h3@
+
+A single-line @@@code #def code@@@ that declares @@@code ||captures|| code@@@ renders
+the literal capture list. @strong Fix: strong@ use the block form for any def
+with captures. @strong Fixture: strong@
+@code 07-parser-defs/single-line-def-with-captures.wit code@.
+
+@h3 Form-fill needs two or more lines h3@
+
+A bare opener with a single @@@code key: value code@@@ line is read as prose, not
+a form-fill call. @strong Fix: strong@ add a second field, or use the record-arg
+form. A @code key: code@ with an empty same-line value consumes the block
+beneath; continuation must be @strong strictly deeper strong@ indented.
+
+@h3 Index access renders unresolved h3@
+
+@@@code @list.0 code@@@ and @@@code @rec.0.field code@@@ currently emit
+@@@code <span class="wit-unresolved"> code@@@ rather than the element.
+@strong Fix: strong@ reach into collections with @@@code (each) code@@@ or
+@@@code @table |rows @ref| code@@@. @strong Fixture: strong@
+@code 11-data-access/index-access.wit code@ (snapshots the AST only).
+
+@h3 The loop variable is a reference not a capture h3@
+
+Inside @@@code (each @c as item) code@@@, reference the element with
+@@@code @item code@@@ — @strong not strong@ @@@code ::item:: code@@@, which is
+capture interpolation and stays unresolved in a loop.
+
+@h3 Param-source and delimiter traps h3@
+
+@table |rows [[Trap, What happens, Fix], [mixing param forms in one call, E_MIXED_PARAM_SOURCE, close with the form you opened], [colon delimiter in a data-def record, LSP rejects it as E_MALFORMED_RECORD, use the hyphen delimiter], [multi-word colon value in parens, breaks the call, quote it or use space style], [a dotted path inside parens or record values, confuses close detection, use pipes or form-fill for path values], [an at-sign inside record values like an email, breaks parsing, keep at-strings out of record values]]| |caption Delimiter and param traps| table@
+
+@h2 Anti-patterns h2@
+
+@table |rows [[Do, Avoid], [content in the body — metadata in params, stuffing content into params], [lift duplicated lists into data plus each, hand-repeating list items], [wrap opaque nodes in named defs, scattering raw node type X calls], [name citations by idea, numbering citations by hand], [hyphen delimiter in data-defs, colon delimiter in data-defs], [conditionals and each over scripts, reaching for scripts first], [place pipes-form calls last, leaving an open pipes call before a body use], [schema-array tables, inline CSV for structured data]]| |caption Do / avoid| table@
+
+@aside(class note)
+The LSP is @strong stricter strong@ than the CLI in spots — a file can
+@code wit check code@ clean yet show IDE squiggles (notably the colon-delimiter
+record). Prefer the portable form so both agree.
+
+aside@
+
+@h2 See also h2@
+
+@a |href /docs/reference/errors/| Errors a@ ·
+@a |href /docs/reference/syntax/| Syntax a@ ·
+@a |href /docs/reference/limitations/| Limitations a@ ·
+@a |href /docs/reference/data-model/| Data model a@.

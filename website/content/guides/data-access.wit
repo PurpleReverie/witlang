@@ -1,0 +1,89 @@
+@h1 Data access h1@
+
+Data access reaches into a record or collection from prose:
+@@@code @name.field code@@@, @@@code @collection.0.field code@@@, and deeper
+chains. It is the @strong verified strong@ way to put data into a sentence —
+not @@@code {{…}} code@@@, which does not interpolate in prose.
+
+@h2 Fields and indices h2@
+
+Follow the handle with a dot and a field name. The chain reads segments until it
+hits a byte that is not part of one — a sentence-final period ends it cleanly:
+
+@@@pre
+#keeper: { name - Ada }
+
+The keeper was @keeper.name.
+pre@@@
+
+Collections index by @strong zero-based number strong@:
+
+@@@pre
+#findings: [ { claim - A, strength - high }, { claim - B, strength - low } ]
+
+First: @findings.0.claim. Second strength: @findings.1.strength.
+pre@@@
+
+(fixtures 11-data-access/field-access, index-access,
+access-into-collection-of-records.) Chains go as deep as the data:
+@@@code @keeper.history.years code@@@ (access-into-nested-record) and
+@@@code @x.y.z.w code@@@ (deep-chain).
+
+@h2 Fuzzy key matching h2@
+
+Keys match by @strong canonical form strong@: lowercase the key, then keep only
+@code [a-z0-9] code@ — spaces, hyphens, and underscores drop out, and camelCase
+collapses. So a field stored as @code years at post code@ is reachable by any
+space-free spelling:
+
+@@@pre
+#keeper: { years at post - 31 }
+
+camel @keeper.yearsAtPost, snake @keeper.years_at_post
+pre@@@
+
+Both resolve to @code 31 code@ (verified; fixtures fuzzy-match-camel,
+fuzzy-match-snake). If two different keys collapse to the same canonical form,
+the access is @code E_AMBIGUOUS_RECORD_KEY code@.
+
+@h2 A space ends the segment h2@
+
+Here is the sharp edge that contradicts an old example comment: @strong a space
+terminates the access segment strong@. So a multi-word key written with spaces
+does @em not em@ resolve:
+
+@@@pre
+#keeper: { years at post - 31 }
+
+He served @keeper.years at post here.
+pre@@@
+
+Only @@@code @keeper.years code@@@ is read — it is unresolved, and @code at post
+code@ trails as prose (verified; fixture fuzzy-match-spaces). @strong Multi-word
+keys are reachable only through the space-free camel or snake forms above. strong@
+
+@h2 Missing keys degrade, not fail h2@
+
+A missing field is @strong not a parse error strong@ — it is resolved at expand
+time and rendered as an unresolved marker
+(@code <span class="wit-unresolved"> code@), so a typo shows up in the output
+rather than breaking the build (fixture missing-field).
+
+@h2 Common mistakes h2@
+
+@ul
+@li Typing spaces into an access, like @@@code @keeper.years at post code@@@ —
+use the camel or snake form. li@
+@li Expecting a missing field to fail the build — it degrades gracefully at
+expand time. li@
+@li Reaching for @@@code {{…}} code@@@ to read data in prose — use
+@@@code @field code@@@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/data/| Data: records & collections a@ ·
+@a |href /docs/guides/typed-scalars/| Type-classified scalars a@ ·
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/guides/interpolation-captures/| Interpolation & captures a@

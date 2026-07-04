@@ -1,0 +1,68 @@
+@h1 Faceted content h1@
+
+One source, many gated views — a draft with editorial notes and a clean final, a
+public edition and an internal one, a build per target. Wit does this with data
+flags, conditionals, and multiple build roots. This page covers the verified
+path and, honestly, the two things people reach for that do not exist.
+
+@h2 The verified path h2@
+
+Model each facet as @strong data strong@ and gate content on it with a
+conditional:
+
+@@@pre
+#doc: { audience - public, status - draft }
+
+(if @doc.status is draft)
+  @aside Editorial: tighten this section. aside@
+(end)
+
+(if @doc.audience is internal)
+  @section Internal appendix: raw figures. section@
+(end)
+pre@@@
+
+Flip the flag in @@@code #doc code@@@ and the gated blocks appear or vanish. You
+can also iterate over annotated sections and gate each, and use @code ~ code@
+line comments for scratch notes that never render at all.
+
+@h2 Membership without contains h2@
+
+There is @strong no strong@ @code contains code@ operator. To model membership —
+"is this in the internal set?" — compare a single flag with @code is code@ or
+@code equals code@, or keep one flag per facet:
+
+@@@pre
+#doc: { public - true, internal - false }
+
+(if @doc.public) … visible in the public build … (end)
+pre@@@
+
+For anything richer, filter in a @@@code <% %> code@@@ script.
+
+@h2 Build roots, not conditional references h2@
+
+To ship genuinely different @strong subsets of files strong@, use @strong
+multiple build roots strong@ — a small master per edition, each referencing the
+files that edition includes. What you @strong cannot strong@ do is wrap a
+@@@code reference code@@@ in an @@@code (if) code@@@: conditional references are
+not supported (see @a |href /docs/guides/multi-file/| Multi-file references a@).
+Choose the build root instead.
+
+@aside(class note) 💡 Per-target dispatch — rendering differently for HTML vs slides — lives in a @@@code <% %> code@@@ script through a renderer-provided target value, not in the core language. Cross-link @a |href /docs/guides/derived-content/| Derived content a@. aside@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Reaching for @code contains code@ — model membership as a flag compared with
+@code is code@ / @code equals code@. li@
+@li Wrapping a @@@code reference code@@@ in an @@@code (if) code@@@ — pick a build
+root per edition. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/multi-file/| Multi-file references a@ ·
+@a |href /docs/guides/derived-content/| Derived content a@ ·
+@a |href /docs/guides/self-organising/| Self-organising documents a@

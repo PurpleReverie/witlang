@@ -1,0 +1,123 @@
+@h1 Data: records, collections, scalars h1@
+
+Wit lets you declare structured data inline with @@@code #name: value code@@@,
+where the value is a @strong record strong@ @@@code { … } code@@@, a @strong
+collection strong@ @@@code [ … ] code@@@, or a @strong scalar strong@. This is
+the single source of truth that a self-organising document reads from — declare
+it once, render it many ways.
+
+@@@pre
+#world: { location - Bag End, time - night, storm - true }
+pre@@@
+
+@h2 Records h2@
+
+A record is a set of @code key/value code@ fields. The separator is a @strong
+spaced hyphen strong@ @code  -  code@ or a @strong colon strong@ — both produce
+the same field:
+
+@@@pre
+#point: { x - 3, y - 7 }
+#point: { x: 3, y: 7 }
+pre@@@
+
+(fixtures 09-records/inline-single-field, colon-separator.) A nested value omits
+the separator entirely — the brace or bracket is the signal:
+@@@code { history { years - 31 } } code@@@ and @@@code { tags [ a, b ] } code@@@
+(nested-record).
+
+Fields are separated by a @strong comma or a newline strong@, never by bare
+whitespace, so inline and block records are identical:
+
+@@@pre
+#report: {
+  title: Q3 Review
+  quarter: 2024
+  final: true
+}
+pre@@@
+
+A trailing comma is tolerated (trailing-comma) and an empty @@@code { } code@@@ is
+legal (empty-record). Multi-word keys are stored verbatim —
+@code years at post code@ (multi-word-key) — and multi-word values are trimmed
+(multi-word-value).
+
+@h2 The comma-in-value trap h2@
+
+An @strong unquoted comma splits fields strong@, because the parser reads it as
+a field boundary:
+
+@@@pre
+#cite: { author - Boud, D., year - 2024 }   ~ E_MALFORMED_RECORD
+pre@@@
+
+That is @code E_MALFORMED_RECORD code@ — "record field missing key" (fixture
+09-records/comma-in-value). Quote the value:
+
+@@@pre
+#cite: { author: "Boud, D.", year: 2024 }
+pre@@@
+
+A quoted string makes its bytes literal (commas, newlines become content) and
+forces a string type; only @code \" code@ and @code \\ code@ are recognised
+inside, and an unterminated quote is @code E_UNTERMINATED_STRING code@ (fixtures
+quoted-string-value, quoted-string-multi-line). A multi-line record value uses
+the @code key: code@ / indented-block shape, terminated by a top-level comma or
+the closing brace (block-record-multi-line-value and its
+-with-close / -with-comma-terminator siblings).
+
+@h2 Collections h2@
+
+A collection is an ordered list in @code [ … ] code@. Items are separated by a
+@strong comma or newline — not whitespace strong@. That distinction trips
+everyone once:
+
+@@@pre
+#a: [ x y z ]     ~ ONE item, the string "x y z"
+#b: [ x, y, z ]   ~ THREE items
+pre@@@
+
+(fixtures 10-collections/whitespace-separator, inline-values — both verified.)
+Multi-word items are kept whole (multi-word-items); per-item typing is mixed
+(mixed-types); collections may hold records inline (inline-records) or in blocks
+(multi-line-records, multi-line-values) and may nest (nested-collection); a
+trailing comma is tolerated (trailing-comma) and an empty @code [ ] code@ is
+legal (empty-collection).
+
+@h2 Scalars are typed eagerly h2@
+
+A bareword value is classified at parse time: @code true code@ / @code false
+code@ become boolean, @code null code@ becomes null, a plain integer or decimal
+becomes a number, and everything else is a string.
+
+@@@pre
+#report: { title - Q3 Review, quarter - 2024, final - true }
+pre@@@
+
+Here @code title code@ is a string, @code quarter code@ a number, @code final
+code@ a boolean (scalar-types). This classification drives conditionals,
+iteration, and interpolation — see
+@a |href /docs/guides/typed-scalars/| Type-classified scalars a@.
+
+@h2 The value-block form h2@
+
+A complex value that spans lines or contains nodes is wrapped as a value-block
+def: @@@code #name: code@@@ … @@@code !! code@@@. This is why some data
+definitions end in @@@code !! code@@@ — the block form lets the value hold
+markup a single line could not.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Leaving an unquoted comma in a value (it splits fields). li@
+@li Expecting @@@code [ a b c ] code@@@ to be three items — it is one. li@
+@li Expecting @code .5 code@ or @code 1e3 code@ to be numbers — they are strings
+(see Typed scalars). li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/data-access/| Data access a@ ·
+@a |href /docs/guides/typed-scalars/| Type-classified scalars a@ ·
+@a |href /docs/guides/record-arg/| Record-arg (same grammar) a@ ·
+@a |href /docs/guides/escapes/| Escapes & quoting a@

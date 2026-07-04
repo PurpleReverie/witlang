@@ -1,0 +1,100 @@
+@h1 Data model h1@
+
+The value system that data-defs, records, collections, captures, and
+@code load code@ all share: six value kinds, their JSON mapping, access paths,
+conditions, and text coercion. Source: @code packages/parser/src/ast.ts code@.
+
+@h2 The six DataValue kinds h2@
+
+@table |rows [[Kind, Literal form, Standalone render], [stringValue, prose or a quoted string, escaped text], [numberValue, 42 or 3.14, the number as text], [booleanValue, true or false, true or false as text], [nullValue, null, empty in a table cell], [record, a brace map, a wit-record table], [collection, a bracket list, a wit-collection list]]| |caption DataValue kinds| table@
+
+@@@pre
+#title: Field notes          ~ stringValue
+#count: 42                    ~ numberValue
+#draft: true                  ~ booleanValue
+#note: null                   ~ nullValue
+#site: { name - Docs, year - 2026 }   ~ record
+#tags: [ ref, spec, wit ]     ~ collection
+pre@@@
+
+Records carry an ordered @code fields code@ list of key/value pairs; collections
+carry an ordered @code items code@ list. Data-def records need the
+@strong hyphen strong@ delimiter; the colon form is call-site only.
+
+@h2 Access paths h2@
+
+A dotted lookup selects a field. Access is @strong fuzzy strong@: camelCase,
+snake_case, and spaced keys all match.
+
+@@@pre
+#person: { firstName - Ada, role - Author }
+
+Name is @person.first_name → Name is Ada
+pre@@@
+
+@aside(class note)
+@strong Numeric index access renders unresolved. strong@ Verified:
+@@@code @tags.0 code@@@ and @@@code @findings.0.claim code@@@ both emit
+@@@code <span class="wit-unresolved"> code@@@ in the current build. Reach into a
+collection with @@@code (each) code@@@ (below) or feed it to
+@@@code @table |rows @ref| code@@@ instead. See
+@a |href /docs/reference/limitations/| limitations a@.
+
+aside@
+
+@h2 Iteration h2@
+
+@@@code (each @collection as item) … (end) code@@@ binds each element to
+@code item code@. Inside the loop, reference it with @@@code @item code@@@ (a
+bare reference), or @@@code @item.field code@@@ for a record field —
+@strong not strong@ @@@code ::item:: code@@@ (that is capture interpolation, a
+different mechanism).
+
+@@@pre
+#hands: [ { name - Marlow }, { name - Singleton } ]
+
+@ul
+(each @hands as item) @li @item.name li@ (end)
+ul@
+pre@@@
+
+Iterating a non-collection raises @code E_NOT_ITERABLE code@.
+@strong Fixture: strong@ @code 13-iteration/* code@.
+
+@h2 Conditions h2@
+
+The test in an @@@code (if …) code@@@ is either existence or a comparison.
+
+@table |rows [[Form, True when], [if path, the path resolves to a value], [if path is X, the value equals X — identity], [if path equals X, the value equals X — comparison]]| |caption Condition forms| table@
+
+@@@pre
+(if @author) By @author.name (end)
+(if @status is shipped) Live (else) Draft (end)
+pre@@@
+
+@strong Fixture: strong@ @code 12-conditionals/* code@.
+
+@h2 JSON to Wit mapping h2@
+
+The only shape that crosses the @code load code@ seam.
+
+@table |rows [[JSON, Wit value], [object, record], [array, collection], [string, stringValue], [number, numberValue], [boolean, booleanValue], [null or undefined, nullValue]]| |caption JSON to Wit| table@
+
+@h2 Text coercion h2@
+
+When a value is placed in text (a table cell or inline), it is coerced:
+number and boolean → their string form; @code nullValue code@ → an empty string.
+
+@h2 typedValue h2@
+
+A capture param carries a shape-probed @code typedValue code@ when it
+@strong looks like strong@ a collection, record, or scalar literal; pure prose
+keeps only its string value. This is what lets @@@code |rows @ref| code@@@ and
+typed captures work — the table renderer reads @code typedValue code@.
+
+@h2 See also h2@
+
+@a |href /docs/reference/syntax/| Syntax a@ ·
+@a |href /docs/reference/tables/| Tables a@ ·
+@a |href /docs/reference/config/| Config a@ ·
+@a |href /docs/reference/limitations/| Limitations a@.

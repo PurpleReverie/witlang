@@ -1,0 +1,111 @@
+@h1 Pipes h1@
+
+Pipes — @@@code @name |slot| code@@@ — are the @strong only strong@ parameter
+form that composes with a body. A pipe slot can sit on the opening line or
+scatter through the body, and duplicate keys resolve last-one-wins. Reach for
+pipes when a node has both parameters and content, or when you want to switch a
+value partway through.
+
+@aside(class note) 💡 Pipes are the noisiest form and the one prone to the greedy-bind trap below. Where you don't need a body, prefer @a |href /docs/guides/record-arg/| record-arg a@ or @a |href /docs/guides/colon-scatter/| colon-scatter a@. aside@
+
+@h2 The slot grammar h2@
+
+Each @@@code |…| code@@@ holds one slot, read with the shared parameter grammar:
+
+@@@pre
+@figure |src lamp.png| |full width!| |caption The second-order lens| figure@
+pre@@@
+
+That call passes a named @code src code@, a @code full width code@ flag (the
+trailing @code ! code@), and a multi-word @code caption code@ value. The forms:
+
+@ul
+@li @strong Positional strong@ — one bare token: @@@code |full| code@@@
+(fixture 06-parameters-pipes/bare-positional). Note @@@code |full| code@@@ is a
+@em value em@, not a flag; a flag needs the @code ! code@. li@
+@li @strong Named strong@ — @@@code |mood calm| code@@@ (basic-named); the value
+may be several words (multi-word-value, multi-word-isolated). li@
+@li @strong Multi-word key strong@ — @@@code |background colour - dark slate|
+code@@@ splits on the spaced hyphen (hyphen-multi-word-key), while an embedded
+hyphen with no surrounding spaces stays in the value: @@@code |well-known|
+code@@@ (literal-hyphen-probe). li@
+@li @strong Flag strong@ — @@@code |full width!| code@@@ makes a flag named
+@code full width code@ with an empty value (flag-with-bang). li@
+ul@
+
+@h2 Open-line, scattered, and last-one-wins h2@
+
+Pipes may appear on the opening line, or anywhere inside the body. When a key
+repeats, @strong the last one wins strong@ — which is exactly what makes pipes
+the form for switching a value mid-body.
+
+@@@pre
+@scene |mood calm|
+The harbour was still.
+|mood tense|
+Then the bell rang.
+scene@
+pre@@@
+
+Here @code mood code@ ends up @code tense code@ (fixture
+06-parameters-pipes/last-one-wins; see also mid-body-scatter). You can also put
+several pipes on one line:
+
+@@@pre
+@x |a one| |b two| |c three| x@
+pre@@@
+
+(multiple-pipes-per-line.)
+
+@h2 Empty pipes and pipe-shaped prose h2@
+
+An empty @@@code || code@@@ inside a body contributes no parameters
+(06-parameters-pipes/empty-pipe). And ordinary prose that merely contains pipe
+characters stays literal — Wit does not mistake it for slots:
+
+@@@pre
+The signal flag read red | white | red.
+pre@@@
+
+That renders as text (pipe-in-body-text).
+
+@h2 The multi-line-value bug h2@
+
+A newline @strong inside strong@ a single @@@code |…| code@@@ value does not span
+lines — the pipe never closes and you get @code E_UNCLOSED_NODE code@ (fixture
+06-parameters-pipes/multi-line-value). Keep each pipe value on one line; for a
+genuinely multi-line value, use a @a |href /docs/guides/form-fill/| form-fill a@
+body or a @a |href /docs/guides/record-arg/| record-arg a@ brace.
+
+@h2 The greedy-bind hazard h2@
+
+A @strong bodyless pipes call strong@ — one with no @@@code name@ code@@@ on its
+line — greedily reads forward to the next matching close:
+
+@@@pre
+@card |title X|
+@card |title Y| card@
+pre@@@
+
+The first call swallows down to the second's @@@code card@ code@@@ and you get
+@code E_UNCLOSED_NODE code@ (verified). Fix it three ways: add an explicit
+@@@code card@ code@@@, leave a @strong blank line strong@ after the call, or make
+a bodyless pipes call the @strong last strong@ thing on the line.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Putting a newline inside @@@code |…| code@@@ (the multi-line-value bug). li@
+@li Forgetting the @@@code name@ code@@@ closer on a bodyless call (greedy-bind). li@
+@li Writing @@@code |full| code@@@ expecting a flag — it is a positional value;
+a flag needs the trailing @code ! code@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/parameters/| Parameters overview a@ ·
+@a |href /docs/guides/parens/| Parens a@ ·
+@a |href /docs/guides/form-fill/| Form-fill a@ ·
+@a |href /docs/guides/record-arg/| Record-arg a@ ·
+@a |href /docs/guides/defining-nodes/| Defining nodes a@ ·
+@a |href /docs/guides/gotchas/| Gotchas & ambiguity a@

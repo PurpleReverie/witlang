@@ -1,0 +1,176 @@
+@h1 Glossary h1@
+
+Every Wit term, defined once. Grounded in the AST kinds and source symbols so
+guide and reference prose can link a word to its precise meaning.
+
+@h2 Nodes and definitions h2@
+
+@dl
+@dt Node dt@
+@dd A reusable content unit invoked with @@@code @name code@@@; either a
+core-vocab built-in or an author definition. dd@
+
+@dt Node use dt@
+@dd An invocation of a node (AST @code nodeUse code@); carries a
+@code paramsSource code@, a @code closeStyle code@, an optional body, and an
+@code inline code@ flag. dd@
+
+@dt Definition dt@
+@dd A named template declared with @@@code #name code@@@ (AST
+@code nodeDef code@); three shapes — single-line, value-block, block. dd@
+
+@dt Data def dt@
+@dd A named value declared with @@@code #name: value code@@@ (AST
+@code dataDef code@); its value is a DataValue. dd@
+
+@dt Core vocabulary dt@
+@dd The 52 reserved node names that need no definition
+(@code CORE_VOCAB_NAMES code@) and ship built-in renderers. dd@
+
+@dt Reserved name dt@
+@dd A core-vocab name @strong or strong@ the opaque @code node code@
+(@code isReservedNodeName code@); the resolver skips binding lookup for these. dd@
+
+@dt Opaque node dt@
+@dd @@@code @node(type X …) code@@@ — a universal pass-through: dispatches to
+core vocab if @code type code@ is one, else a @@@code <div data-*> code@@@. dd@
+
+@dt Partial (additive) dt@
+@dd A @@@code +#name code@@@ definition that @strong contributes to strong@ a
+merged def across the file or project instead of redefining it. dd@
+dl@
+
+@h2 Parameters and calls h2@
+
+@dl
+@dt Param dt@
+@dd A named or positional argument to a node use (AST @code Param code@);
+optionally carries a @code typedValue code@. dd@
+
+@dt paramsSource dt@
+@dd How a use's params were written: @code parens code@, @code pipes code@,
+@code record code@, @code form-fill code@, @code none code@, or
+@code mixed code@. dd@
+
+@dt closeStyle dt@
+@dd How a use terminates: @code named code@ (a matching close),
+@code parens code@ (self-closing), or @code bare code@. dd@
+
+@dt Form-fill dt@
+@dd The bare-opener plus @@@code key: value code@@@ lines call form
+(@code paramsSource: form-fill code@); needs two or more content lines. dd@
+
+@dt Colon-scatter dt@
+@dd A single-line @@@code @name k:v k2:v2 name@ code@@@ body form; classified
+internally as @code paramsSource: pipes code@. dd@
+
+@dt Flag param dt@
+@dd A valueless param: a trailing bang in a pipe or a bare flag in parens. dd@
+dl@
+
+@h2 Data and access h2@
+
+@dl
+@dt Record dt@
+@dd An ordered key/value map, a brace literal (AST @code record code@); hyphen
+delimiter in data-defs, hyphen or colon at call sites. dd@
+
+@dt Collection dt@
+@dd An ordered list, a bracket literal (AST @code collection code@). dd@
+
+@dt DataValue dt@
+@dd The six-kind value union — string, number, boolean, null, record,
+collection — shared by defs, captures, and @code load code@. dd@
+
+@dt Access path dt@
+@dd A dotted lookup @@@code @a.b.c code@@@ (AST @code AccessPath code@) with
+fuzzy key matching; numeric indexing currently renders unresolved. dd@
+
+@dt Condition dt@
+@dd The test in @@@code (if …) code@@@: existence (a path) or a comparison
+(@code is code@ / @code equals code@). dd@
+
+@dt Iteration dt@
+@dd @@@code (each @collection as item) … (end) code@@@ (AST
+@code eachStatement code@); the element is referenced with @@@code @item code@@@. dd@
+dl@
+
+@h2 Templating and holes h2@
+
+@dl
+@dt Capture dt@
+@dd A named hole a def declares (@@@code #name ||a, b|| code@@@), filled by the
+caller's params and referenced with @@@code ::a:: code@@@. dd@
+
+@dt Interpolation dt@
+@dd @@@code ::name:: code@@@ (AST @code interpolation code@), the substitution
+point for a capture. Distinct from the raw hole. dd@
+
+@dt Raw-body interpolation dt@
+@dd @@@code {{path}} code@@@ — an expand-time hole valid only inside
+@@@code @@ code@@@ raw bodies; supports dotted access; frozen
+@@@code @@@ code@@@ disables it. dd@
+
+@dt Body slot dt@
+@dd @@@code ... code@@@ (AST @code bodySlot code@), the placeholder in a block
+def where the invocation's body is inserted. dd@
+dl@
+
+@h2 Raw and reference h2@
+
+@dl
+@dt Raw node dt@
+@dd @@@code @@name … name@@ code@@@ (@code raw code@): body is one verbatim Text
+node, re-interpolated only for @@@code {{…}} code@@@. dd@
+
+@dt Frozen node dt@
+@dd @@@code @@@name … name@@@ code@@@ (@code raw + frozen code@): even
+@@@code {{…}} code@@@ passes through untouched. dd@
+
+@dt Reference directive dt@
+@dd @@@code reference "path" code@@@ — pulls definitions from another file into
+the current one. dd@
+
+@dt Script dt@
+@dd A @@@code <% … %> code@@@ block or call; effects run at expand, output is
+omitted; @code lh code@ is the data bridge. dd@
+
+@dt load dt@
+@dd The external-data directive @@@code @load … load@ code@@@; rewritten into a
+data def by the load pass before resolve. dd@
+
+@dt DataLoader / DataSource dt@
+@dd The host-supplied seam @code load code@ calls — a function or a plain
+@@@code { alias: value } code@@@ dictionary. dd@
+dl@
+
+@h2 Rendering and pipeline h2@
+
+@dl
+@dt Inline-context element dt@
+@dd A core element that strips a single leading paragraph from its body
+(@code flattenIfInline code@). dd@
+
+@dt Void element dt@
+@dd A core element with no body or close — @code br code@, @code hr code@,
+@code img code@. dd@
+
+@dt Unresolved fallback dt@
+@dd The @@@code <span class="wit-unresolved"> code@@@ a renderer emits for a
+name or capture that bound to nothing. dd@
+
+@dt Pipeline stages dt@
+@dd @code lex → parse → resolve → expand → render code@; the @code load code@
+pass sits between parse and resolve. dd@
+
+@dt Output pathways dt@
+@dd The three HTML shapes: @code --fragment code@ (bare article),
+@code --raw code@ (reset-only page), default (styled document). dd@
+dl@
+
+@h2 See also h2@
+
+@a |href /docs/reference/syntax/| Syntax a@ ·
+@a |href /docs/reference/core-vocabulary/| Core vocabulary a@ ·
+@a |href /docs/reference/data-model/| Data model a@ ·
+@a |href /docs/reference/cheatsheet/| Cheatsheet a@.

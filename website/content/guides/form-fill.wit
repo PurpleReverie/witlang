@@ -1,0 +1,113 @@
+@h1 Form-fill body h1@
+
+When a node's body reads like a form — every line a @code key: value code@ pair
+— the body @strong becomes strong@ the parameters. It is the most readable form
+for many-field templates (citations, cards, front-matter), and the only call
+form that can carry @strong multi-line strong@ values.
+
+@@@pre
+@cite
+  author: Smith
+  year: 2024
+cite@
+pre@@@
+
+This binds @code author code@ and @code year code@; @code year code@ is
+type-probed to the number @code 2024 code@ (fixture
+23-form-fill/template-invocation).
+
+@h2 What triggers form-fill h2@
+
+A body is read as form-fill when @strong all three strong@ hold: it contains a
+newline; its first non-blank, non-comment line matches @code <id>: code@; and it
+has @strong at least two content lines strong@. A @strong single strong@
+content line is @em not em@ form-fill — it falls through to
+@a |href /docs/guides/colon-scatter/| colon-scatter a@ instead. That two-line
+threshold is the rule most worth remembering.
+
+@h2 The line grammar h2@
+
+Each line is @code <id>: <value> code@. One optional leading space after the
+colon is trimmed, trailing whitespace is trimmed, and @code ~ code@ comments and
+blank lines are ignored (fixture 23-form-fill/with-comments). A line that does
+not match the shape is @code E_MALFORMED_FORM_FIELD code@.
+
+@h2 Quoting and literal emphasis h2@
+
+A quoted value protects commas and forces a string type:
+
+@@@pre
+@cite
+  author: "Came, H."
+  year: 2024
+cite@
+pre@@@
+
+(fixture 23-form-fill/with-quoted-string.) One surprise worth internalising:
+emphasis markers in a form-fill value stay @strong literal strong@, because the
+inline parser is bypassed for these values. @@@code _title_ code@@@ renders as
+the three characters, underscores and all — not italic (fixtures
+with-emphasis-in-value, value-emphasis-renders).
+
+@h2 Multi-line values h2@
+
+Give a key an @strong empty same-line value strong@ and then indent the content
+deeper: the block is consumed, common indentation is stripped, and lines join
+with newlines.
+
+@@@pre
+@note
+  body:
+    First line.
+    Second line.
+note@
+pre@@@
+
+That binds @code body code@ to @code First line. code@ + newline +
+@code Second line. code@ (fixture 23-form-fill/value-multi-line). Blank lines
+inside the block are kept (value-multi-paragraph); a @strong dedent ends the
+value strong@ (value-block-end-by-dedent); and — a sharp edge — an indented line
+that @em looks like em@ @code key: code@ is treated as @strong content, not a
+new field strong@ (value-indented-key-shape-is-content). An empty value with no
+indented block simply moves on to the next field
+(value-empty-then-next-field).
+
+@h2 The same shape defines data h2@
+
+The identical block grammar appears in @strong definitions strong@. A block
+record def and a value-block def both collapse to a record:
+
+@@@pre
+#point
+  x: 3
+  y: 7
+point#
+
+#point:
+  x: 3
+  y: 7
+!!
+pre@@@
+
+(fixtures 23-form-fill/block-record-def, value-block-record-def.) A realistic
+combination — an additive @@@code +#bibliography code@@@ value-block wrapping a
+@@@code @reference_entry code@@@ form-fill with quoted commas — is
+bibliography-style.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting a @strong one-line strong@ body to be form-fill — it is
+colon-scatter (needs a space-free @code key:value code@). li@
+@li Forgetting that emphasis markers are literal inside values. li@
+@li Indenting a real second field under a @code key: code@ — it becomes part of
+that value, not a new field. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/colon-scatter/| Colon-scatter a@ ·
+@a |href /docs/guides/record-arg/| Record-arg a@ ·
+@a |href /docs/guides/data/| Data: records a@ ·
+@a |href /docs/guides/escapes/| Escapes a@ ·
+@a |href /docs/guides/interpolation-captures/| Interpolation & captures a@

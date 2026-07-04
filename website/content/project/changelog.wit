@@ -1,0 +1,49 @@
+@h1 Changelog h1@
+
+Release history for Wit. The format follows Keep a Changelog and is driven by
+Changesets; pre-1.0, the version stays in the 0.x range and breaking changes are
+allowed with notes.
+
+@h2 0.1.0 — initial public release h2@
+
+The first public release. @code wit --version code@ reports @code 0.1.0 code@.
+
+@h3 Packages h3@
+
+@ul
+@li @strong parser strong@ — lexer and parser producing a typed AST. li@
+@li @strong runtime strong@ — resolver and expander. li@
+@li @strong render-html strong@ — the HTML renderer. li@
+@li @strong render-markdown strong@ — the Markdown renderer. li@
+@li @strong cli strong@ — the @code wit code@ command: parse, check, fmt, build,
+and tour. li@
+ul@
+
+@h3 Language features h3@
+
+@ul
+@li Nodes, definitions, additive partials, records, and collections. li@
+@li Data access, conditionals, iteration, and the script bridge. li@
+@li The reserved core vocabulary — headings, inline marks, lists, links and media,
+tables, blocks, and sectioning; see the
+@a |href /docs/reference/core-vocabulary/| core vocabulary reference a@ for the
+full list. li@
+@li Tables in inline, schema-array, and schema-record forms. li@
+@li The opaque @@@code @node code@@@ pass-through. li@
+@li The form-fill body shape and record-argument invocation. li@
+ul@
+
+@h2 A note on version drift h2@
+
+@aside(class note) 💡 The published changelog and @code wit --version code@ both
+report @code 0.1.0 code@, but a @code v0.2.0 code@ git tag and later feature
+commits (typed parameters, iterable captures) exist in history. The installed CLI
+and the git log therefore disagree; treat @code 0.1.0 code@ as the released
+version until this is reconciled. The older changelog text also cites a stale
+core-vocabulary count — rely on the core vocabulary reference for the current
+list, not a number. aside@
+
+@h2 See also h2@
+
+@a |href /docs/project/roadmap/| Roadmap a@ covers what is planned next;
+@a |href /docs/start/install/| Install a@ includes the version smoke test.

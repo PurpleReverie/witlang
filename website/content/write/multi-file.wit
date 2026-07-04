@@ -1,0 +1,104 @@
+@h1 Multi-file manuscripts h1@
+
+A book does not want to live in one enormous file. Wit lets you split a long
+work into per-chapter files and assemble them in order, with shared definitions —
+your citation format, your schema, your recurring values — living in one place
+that every chapter can draw on.
+
+@h2 Why split h2@
+
+Per-chapter files mean sane editing, small diffs, and the ability to reorder or
+hold back a chapter without touching the rest. And a shared vocabulary file keeps
+one definition of each source and format across the whole manuscript, so nothing
+drifts out of sync between chapters.
+
+@h2 Pulling in another file h2@
+
+A directive at the top of a file imports another file's definitions, data, and
+nodes. You write the keyword and a relative path:
+
+@@@pre
+reference ./shared/sources.wit
+reference ./shared/schema.wit
+pre@@@
+
+After that, everything defined in those files is available in this one — as if
+you had typed it here.
+
+@aside(class note) 💡 The import keyword is only special at the very start of a
+line, followed by a path. That is why you will only ever see it in a code block:
+in ordinary prose the same word is just a word. aside@
+
+@h2 A shared vocabulary h2@
+
+Put the things every chapter needs — sources, a citation format, a schema for a
+recurring table — in a small set of shared files:
+
+@@@pre
+shared/sources.wit     ~ #weil, #berger, … named once
+shared/schema.wit      ~ the column schema for a recurring table
+pre@@@
+
+Each chapter imports them and uses the names. Define once, use in every chapter.
+
+@h2 Wrapping a chapter for assembly h2@
+
+Wrap each chapter's content in a block definition so the master file can place it
+where it wants:
+
+@@@pre
+#chapter_one
+@h2 Chapter One h2@
+
+The road climbed for an hour before the house appeared.
+chapter_one#
+pre@@@
+
+The chapter file defines the node; it does not emit anything on its own.
+
+@h2 The master file h2@
+
+A master file imports the parts and emits them in the order you choose. The order
+of the uses _is_ the order of the book:
+
+@@@pre
+reference ./chapters/one.wit
+reference ./chapters/two.wit
+
+@chapter_one chapter_one@
+@chapter_two chapter_two@
+pre@@@
+
+Reorder the two uses and the chapters reorder. Add a third and it slots in. The
+master file is the table of contents made executable.
+
+@h2 An honest status note h2@
+
+Multi-file assembly is real and works, but two of the example projects shipped in
+this repository currently _fail_ to build — one from a comma inside a record
+field value, one from an unresolved reference in an additive-partial demo. If you
+are learning from the examples folder, build a file before trusting it, and reach
+for the smaller, verified pieces first. The mechanics on this page are sound; some
+of the older sample projects need fixing.
+
+@h2 Common mistakes h2@
+
+@ul
+@li _A comma inside a shared record value._ The same comma rule that breaks a
+single-file record breaks a shared one. Keep field values comma-free. li@
+@li _A relative path that does not resolve._ Import paths are relative to the
+importing file; check the path if a name comes back unresolved. li@
+@li _Expecting a chapter file to render on its own._ A file that only _defines_ a
+chapter emits nothing until a master file _uses_ it. li@
+ul@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/components/| Reusable pieces a@ — the block definitions a
+chapter is wrapped in. li@
+@li @a |href /docs/write/citations/| Citations & references a@ — a shared source
+list is the classic use. li@
+@li @a |href /docs/write/draft-workflow/| The draft workflow a@ — building the
+assembled book. li@
+ul@

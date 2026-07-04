@@ -1,0 +1,117 @@
+@h1 Rendering: HTML, Markdown & PDF h1@
+
+One source, several outputs. The same @code .wit code@ file becomes a web page, a
+Markdown file for a repository, or a paginated PDF for a reader — each with a
+single command. This page covers what each format is good for and every option
+for producing it.
+
+@h2 The default: a finished HTML document h2@
+
+The plain build command prints a complete, self-contained, styled HTML document
+to your terminal:
+
+@@@pre
+wit build essay.wit
+pre@@@
+
+"Self-contained" means the theme's CSS is inlined into the page head — one file
+you can open in any browser or email, with no external stylesheet to ship
+alongside. Redirect it to a file, or use the output flag below.
+
+@h2 Embedding: a bare fragment h2@
+
+When you want to drop the content into a page you already have — a blog template,
+a CMS — ask for a fragment instead:
+
+@@@pre
+wit build essay.wit --fragment
+pre@@@
+
+That emits just the article element, with no page head and no theme, ready to
+nest inside your own HTML.
+
+@h2 Choosing the output format h2@
+
+Two ways to pick a format. The output flag infers the format from the file
+extension:
+
+@@@pre
+wit build essay.wit -o essay.html     ~ HTML
+wit build essay.wit -o essay.md       ~ Markdown
+wit build essay.wit -o essay.pdf      ~ PDF
+pre@@@
+
+An unrecognised extension is an error rather than a guess. To force a format
+regardless of extension, name it explicitly:
+
+@@@pre
+wit build essay.wit --format md
+pre@@@
+
+@h2 Markdown h2@
+
+Markdown output gives you GitHub-flavoured Markdown — headings, bold and italic,
+lists, a pipe table, blockquotes. It is the right choice for a README, an issue,
+or anywhere portable plain text is wanted. Remember that a few HTML-only features
+degrade: a hard line break becomes a space, and embedded audio or video has no
+Markdown equivalent.
+
+@h2 PDF h2@
+
+PDF renders the same document through a headless browser into a paginated,
+print-ready file. It is the format to send a reader or hand to a printer. It
+needs a local Chrome or Chromium (or one you point to with an environment
+variable); without a browser, the build stops and tells you to render HTML and
+convert instead.
+
+@h2 The raw base h2@
+
+By default your document carries the batteries-included theme. Swap it for a
+mechanical reset — a blank canvas you style yourself — with the raw flag:
+
+@@@pre
+wit build essay.wit --raw
+pre@@@
+
+Raw output keeps the document shell but drops the theme, leaving only a minimal
+reset. Reach for it when you want total art direction — see
+@a |href /docs/write/styling/| Styling a@.
+
+@h2 Building with live data h2@
+
+A document can pull in data produced at build time — a table of figures, a team
+roster — through a load node wired to a data source. Building such a document
+needs a sources file and permission to run the program that produces the data:
+
+@@@pre
+wit build report.wit --sources wit.sources.json --allow-exec --env .env
+pre@@@
+
+The loaded data flows into lists, tables, and headings exactly as if you had
+typed it. The full external-data machinery lives in the Guides section; this is
+the writer's-eye view of what the flags do.
+
+@h2 Which format when h2@
+
+@table |rows [[Format, Reach for it when, Watch out for], [HTML, sharing or embedding on the web, nothing — it is the native target], [Markdown, a README or a repository, media and hard breaks degrade to text], [PDF, a reader or the printer, needs a local browser to render]]|
+
+@h2 Common mistakes h2@
+
+@ul
+@li _Expecting the default output to be a fragment._ The plain build is a
+finished document; use the fragment flag to embed. li@
+@li _Expecting media in Markdown or PDF._ Audio and video are HTML-only. li@
+@li _An unknown output extension._ The output flag errors on an extension it does
+not recognise; use a known one or force the format. li@
+ul@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/draft-workflow/| The draft workflow a@ — building drafts
+in practice. li@
+@li @a |href /docs/write/styling/| Styling a@ — the default theme and the raw
+base. li@
+@li @a |href /docs/write/images/| Images & figures a@ — how paths resolve in
+PDF. li@
+ul@

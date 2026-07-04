@@ -1,0 +1,115 @@
+@h1 Reusable pieces h1@
+
+Wit lets you define your own nodes and use them anywhere. Name a piece of
+writing once, then drop it into your prose by name — and if you change the
+definition, every use updates. This is how a manuscript stays consistent: one
+source of truth for a recurring value, a chapter template, a citation format, a
+callout.
+
+@h2 Define once, use everywhere h2@
+
+A definition begins with a hash and a name; a use is the same name with an
+at-sign. Hash defines, at-sign uses. That is the whole relationship.
+
+@h2 A single-line value h2@
+
+The simplest definition names a short value. A colon after the name means "no
+body":
+
+@@@pre
+#year: 1923
+
+The lamp was first lit in @year, and relit every winter since.
+pre@@@
+
+The reference stands in for the value, so you write the year once and mention it
+by name as often as you like. Change the definition and every mention follows.
+
+@h2 A value block h2@
+
+When the value is longer — a few lines, its own paragraph, some emphasis — wrap
+it between a colon and a closing double-bang fence:
+
+@@@pre
+#epigraph:
+The sea does not forgive forgetting.
+— coastal proverb
+!!
+
+@epigraph
+pre@@@
+
+Now the epigraph is defined in one place and rendered wherever you write its
+name. This is the preferred way to name any chunk of content.
+
+@h2 A block definition with a body slot h2@
+
+The most powerful form is a wrapper: a definition whose body has a slot where the
+_caller's_ content will render. You write the surrounding structure once, mark
+the slot with three dots, and every use fills it:
+
+@@@pre
+#chapter
+@hr hr@
+
+...
+chapter#
+
+@chapter
+The road climbed for an hour before the house appeared.
+chapter@
+pre@@@
+
+The three dots are where the invocation's body drops in. Notice the two fences:
+a block definition opens with just the hash-name (no colon) and closes with the
+name and a hash.
+
+@h2 Captures — parameters for your own nodes h2@
+
+A definition can name parameters and interpolate them into its body. You declare
+the parameter names between double bars, and drop each one in with a
+double-colon wrapper:
+
+@@@pre
+#chapter ||number, title||
+@h2 Chapter ::number:: — ::title:: h2@
+
+...
+chapter#
+
+@chapter |number I| |title The Arrival|
+The road climbed for an hour before the house appeared.
+chapter@
+pre@@@
+
+The call supplies "I" and "The Arrival"; the definition places them in the
+heading and renders the body where the dots are. One template, consistent
+chapters.
+
+@aside(class note) 💡 A double-colon capture such as @@@code ::title:: code@@@
+only lives _inside_ a definition body. It is not a way to interpolate a value
+into ordinary prose — for that, define a value and reference it by name. aside@
+
+@h2 Common mistakes h2@
+
+@ul
+@li _A comma inside a record field value._ Commas separate fields, so a comma in
+a value breaks the record. Keep values comma-free, or use a table's cell wrapper
+for tabular data. See @a |href /docs/write/tables/| Tables a@. li@
+@li _Expecting a capture to work in prose._ A double-colon capture only resolves
+inside a definition body, never in running text. li@
+@li _A hash glued to a letter at the top of a file._ A line that opens with a
+hash pressed against a word is read as a definition and can silently swallow the
+line. Keep a hash off a following letter in prose — see
+@a |href /docs/write/prose/| Paragraphs & prose a@. li@
+ul@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/using-nodes/| Using nodes a@ — how a use is written. li@
+@li @a |href /docs/write/citations/| Citations & references a@ — the signature use
+of definitions. li@
+@li @a |href /docs/write/multi-file/| Multi-file manuscripts a@ — sharing
+definitions across chapter files. li@
+ul@

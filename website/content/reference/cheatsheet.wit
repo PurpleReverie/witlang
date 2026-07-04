@@ -1,0 +1,139 @@
+@h1 Cheatsheet h1@
+
+Every everyday form at a glance. Each snippet is a verified one-liner — copy,
+paste, adapt. For depth, follow the links at the foot.
+
+@h2 Call forms h2@
+
+@@@pre
+@name                          bare reference
+@name … name@                  named body (block or inline)
+@name(k v, k2 v2)              parens
+@name(k: "a b")                colon key, quoted multi-word value
+@name |k v| … name@            pipes
+@name { k - v }                record-arg
+@name                          form-fill (then key: value ×2, then name@)
+key: value
+key2: value2
+name@
+@name k:v k2:v2 name@          colon-scatter
+@node(type X …)                opaque pass-through
+@@raw … raw@@                  raw literal ({{path}} still expands)
+@@@frozen … frozen@@@          frozen literal (nothing expands)
+pre@@@
+
+@h2 Definitions h2@
+
+@@@pre
+#name: value                   single-line def
+#name:                         value-block def
+…
+!!
+#name … name#                  block def (… is the body slot)
+#name ||a, b||                 capture list
++#name:                        additive partial
+#rec: { k - v }                record data-def (hyphen delimiter)
+#list: [ a, b ]                collection data-def
+pre@@@
+
+@h2 Inside a def h2@
+
+@@@pre
+::capture::                    capture interpolation
+...                            body slot
+{{path}}                       raw-body hole (only inside @@ … @@)
+pre@@@
+
+@h2 Data and access h2@
+
+@@@pre
+@rec.field                     field access (fuzzy: camel/snake/spaces)
+42   true   null               scalar values
+~ index access @list.0 currently renders unresolved — use (each)
+pre@@@
+
+@h2 Control flow h2@
+
+@@@pre
+(if @path) … (else) … (end)    existence
+(if @x is Y) … (end)           comparison — identity
+(if @x equals Y) … (end)       comparison
+(each @list as item) … (end)   iterate — reference the element as @item
+pre@@@
+
+@h2 Inline h2@
+
+@@@pre
+*bold*        → <strong>       marks wrap a token
+_italic_      → <em>
+@code x code@                  inline code (escapes its body)
+@a |href …| … a@               link
+\*                             escape a literal special char
+pre@@@
+
+@h2 Media and layout h2@
+
+@@@pre
+@img |src …| |alt …| |size medium| |align center|
+@figure … figure@
+@row @col |size 220| … col@ @col … col@ row@
+pre@@@
+
+@h2 Tables h2@
+
+@@@pre
+@table |rows [[H, …], [r, …]]| table@      inline CSV (row 0 = header)
+@table |schema [k1, k2]| |rows @ref|       schema-as-array
+@table |schema { k - Label }| |rows @ref|  schema-as-record
+@table |rows @ref|                         rows-by-ref (auto columns)
+|caption …|                                add a caption
+|header false|   |header N|   |header [a, b]|
+pre@@@
+
+@h2 External data h2@
+
+@@@pre
+@load env load@                → @env.HOME
+@load alias |as name| |key v| load@
+pre@@@
+
+@h2 Comments h2@
+
+@@@pre
+~ line comment                 (blank line after one inside a container)
+pre@@@
+
+@h2 CLI h2@
+
+@@@pre
+wit parse <file>
+wit check <file>
+wit fmt <file> -w
+wit build <file> -o out.html|out.md|out.pdf [--format …]
+wit build <file> --fragment | --raw
+wit build <file> --sources wit.sources.json --allow-exec --env .env
+wit tour <file>
+pre@@@
+
+@h2 Core vocabulary — 52 names h2@
+
+@@@pre
+headings    h1 h2 h3 h4 h5 h6
+marks       em strong code u s sub sup mark small br
+lists       ul ol li dl dt dd
+links/media a img figure figcaption audio video
+tables      table thead tbody tfoot tr th td caption
+blocks      p blockquote pre hr
+sectioning  section article aside header footer nav main
+generic     div span
+layout      row col
+cite        cite
+pre@@@
+
+@h2 See also h2@
+
+@a |href /docs/reference/syntax/| Syntax a@ ·
+@a |href /docs/reference/core-vocabulary/| Core vocabulary a@ ·
+@a |href /docs/reference/tables/| Tables a@ ·
+@a |href /docs/reference/cli/| CLI a@ ·
+@a |href /docs/reference/glossary/| Glossary a@.

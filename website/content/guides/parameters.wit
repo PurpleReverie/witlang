@@ -1,0 +1,141 @@
+@h1 Parameters: choosing a form h1@
+
+A parameter is @strong metadata strong@ that rides alongside a node's content —
+a link's address, a card's status, a figure's caption. Wit gives you several
+syntaxes for passing parameters, and they all bind to the same names. This page
+teaches the shared idea, the two cross-form traps, and how to pick a form; each
+form then has its own detail page.
+
+@h2 One template, many call syntaxes h2@
+
+The guiding principle is @strong the form you open with is the form that closes
+strong@. A single definition — here a card that names a title and a status —
+can be filled six different ways, and every buildable form renders identically.
+
+@@@pre
+#card ||title, status||
+Title ::title:: / Status ::status::
+card#
+pre@@@
+
+@@@pre
+@card |title Alpha| |status draft| card@      ~ pipes (carries a body)
+@card(title Alpha, status draft)              ~ parens (self-closing)
+@card(title: Alpha, status: draft)            ~ parens, colon separator
+@card { title - Alpha, status - draft }       ~ record-arg (self-closing)
+@card { title: Alpha, status: draft }         ~ record-arg, colon separator
+@card                                          ~ form-fill: the body IS the params
+  title: Alpha
+  status: draft
+card@
+pre@@@
+
+All of these render @code Title Alpha / Status draft code@. The seventh form,
+@strong colon-scatter strong@ — @@@code @card title:Alpha status:draft card@
+code@@@ — lifts inline tokens out of a one-line body. (The fixture folder
+26-all-param-forms collects these; note its combined showcase file intentionally
+fails to build, so lean on the individual forms.)
+
+@h2 The shared slot grammar h2@
+
+Pipes, parens, and record-arg all read each slot with the same grammar:
+
+@ul
+@li @strong Positional strong@ — a single token with no space:
+@@@code |full| code@@@ binds a value with no name. li@
+@li @strong Named strong@ — @code key value code@: the first word is the key,
+the rest is the value. @@@code |mood calm| code@@@ sets @code mood code@ to
+@code calm code@. li@
+@li @strong Named, multi-word key strong@ — join words with a spaced hyphen
+@code  -  code@: @@@code |background colour - dark slate| code@@@ has key
+@code background colour code@. li@
+@li @strong Flag strong@ — a trailing @code ! code@ marks a boolean-style flag
+with an empty value: @@@code |full width!| code@@@. A @code ! code@ in the
+middle of a value is just punctuation. li@
+ul@
+
+A value that is exactly @code "quoted" code@ is unquoted, with @code \" code@
+and @code \\ code@ recognised. Every non-flag value is then @strong type-probed
+strong@ — run through the scalar classifier — so a number, record, or
+collection passed through @em any em@ form becomes a real typed value you can
+iterate, compare, or reach into. See
+@a |href /docs/guides/typed-scalars/| Type-classified scalars a@.
+
+@h2 The mixing rule h2@
+
+Two forms on one node behave differently depending on which two.
+
+@ul
+@li @strong Parens and pipes MERGE. strong@ @@@code @card(title Alpha) |status
+draft| card@ code@@@ binds @em both em@ — verified. This is not an error. li@
+@li @strong Record-arg is exclusive. strong@ Combining @@@code {…} code@@@ with
+parens or pipes collected @em before em@ it is a hard error,
+@code E_MIXED_PARAM_SOURCE code@ — verified for both @@@code @card |status Y| {
+title X } code@@@ and @@@code @card(status Y) { title X } code@@@. li@
+@li @strong Record-arg then pipes drops the pipes. strong@ @@@code @card { title:
+X } |status Y| card@ code@@@ does not merge either: the record self-closes at
+@@@code } code@@@, the trailing pipes are discarded, and the now-unfilled capture
+surfaces as @code E_MISSING_RECORD_FIELD code@ — verified. li@
+ul@
+
+@aside(class note) 💡 The instinct "record-arg can't combine" is right, but the error only fires when the extra source is parsed @em before em@ the brace. A record-arg followed by more params silently drops them instead. aside@
+
+@h2 The greedy-bind hazard h2@
+
+A @strong bodyless pipes call strong@ — pipes with no @@@code name@ code@@@ closer
+on its line — greedily swallows forward to the next matching close when nothing
+separates them:
+
+@@@pre
+@card |title X|
+@card |title Y| card@
+pre@@@
+
+This is @code E_UNCLOSED_NODE code@ (verified): the first call keeps reading
+until it finds @@@code card@ code@@@, which belongs to the second. The fix is any
+one of: give the call an explicit @@@code card@ code@@@ closer, put a @strong blank
+line strong@ after it, or place a bodyless pipes call @strong last strong@.
+
+@@@pre
+@card |title X|
+
+@card |title Y| card@
+pre@@@
+
+With the blank line, each renders on its own (verified). This is why pipes is
+the noisiest form and why the other forms self-close.
+
+@h2 Choosing a form h2@
+
+@ul
+@li @strong Need a body? strong@ Only @a |href /docs/guides/pipes/| pipes a@
+compose with body content. li@
+@li @strong Structured, no body? strong@ Prefer
+@a |href /docs/guides/record-arg/| record-arg a@ with a colon —
+@@@code @card { title: X } code@@@. li@
+@li @strong Many fields, no body? strong@ Use a
+@a |href /docs/guides/form-fill/| form-fill a@ body. li@
+@li @strong One or two short params inline? strong@ Reach for
+@a |href /docs/guides/parens/| parens a@ — @@@code @badge(tone good) code@@@. li@
+@li @strong Tag a node mid-sentence? strong@
+@a |href /docs/guides/colon-scatter/| Colon-scatter a@ — @@@code @figure
+src:lamp caption:"the lens" figure@ code@@@. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Assuming record-arg merges with pipes (it errors, or drops them). li@
+@li Assuming parens and pipes conflict (they merge). li@
+@li Leaving a bodyless pipes call before another same-named node (greedy-bind). li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/pipes/| Pipes a@ ·
+@a |href /docs/guides/parens/| Parens a@ ·
+@a |href /docs/guides/record-arg/| Record-arg a@ ·
+@a |href /docs/guides/form-fill/| Form-fill a@ ·
+@a |href /docs/guides/colon-scatter/| Colon-scatter a@ ·
+@a |href /docs/guides/defining-nodes/| Defining nodes a@ ·
+@a |href /docs/guides/gotchas/| Gotchas & ambiguity a@

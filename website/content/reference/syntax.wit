@@ -1,0 +1,230 @@
+@h1 Syntax reference h1@
+
+Every surface form Wit accepts, with its canonical shape, the AST node it
+produces, and the rule that closes it. This is the "how do I write X" index.
+For depth on any form, follow its guide link; for the exact node HTML, see the
+@a |href /docs/reference/core-vocabulary/| core vocabulary a@.
+
+@aside(class note)
+Terms used below: @strong paramsSource strong@ is how a call's parameters were
+written; @strong closeStyle strong@ is how it terminates. Both are recorded on
+the AST and are observable with @@@code wit tour code@@@. See the
+@a |href /docs/reference/glossary/| glossary a@.
+
+aside@
+
+@h2 Node call forms h2@
+
+A call invokes a node. The parameter style you open with is the style that
+closes the call — mixing them raises @@@code E_MIXED_PARAM_SOURCE code@@@.
+
+@table |rows [[Form, paramsSource, closeStyle, Fixture], [Bare reference, none, bare, 04 bare-reference], [Named body block, none, named, 04 block-name-body], [Named body inline, none, named, 04 inline-name-body], [Dotted data access, none, bare, 04 dotted-access], [Parens, parens, parens, 05 single-named-param], [Pipes, pipes, named, 06 basic-named], [Record-arg, record, parens, 22 inline-single-field], [Form-fill body, form-fill, named, 23 template-invocation], [Colon-scatter, pipes, named, 24 body-scatter-single], [Flag param, pipes / parens, —, 06 flag-with-bang], [Opaque pass-through, parens, parens, 20 bare-node-passthrough], [Raw literal, none, named, literal-nodes], [Frozen literal, none, named, ast.ts frozen]]| |caption Call forms and the AST they produce| table@
+
+@h3 Bare reference h3@
+
+Resolves to a same-named definition. Binds nothing → an unresolved span.
+
+@@@pre
+@name
+pre@@@
+
+@h3 Named body — block and inline h3@
+
+Opener and matching close on their own lines is a @strong block strong@ use
+(body is @@@code Block[] code@@@). Mid-paragraph it is an @strong inline strong@
+use (@@@code inline: true code@@@, body is @@@code Inline[] code@@@).
+
+@@@pre
+@blockquote
+A quotation, set apart.
+blockquote@
+
+An @em inline em@ mark sits mid-sentence.
+pre@@@
+
+@h3 Dotted data access h3@
+
+Binds a @strong data def strong@, not a node def. Numeric segments index a
+collection. Unresolved → @@@code <span class="wit-unresolved">@a.b</span> code@@@.
+
+@@@pre
+@author.name
+@sales.0.region
+pre@@@
+
+@h3 Parens h3@
+
+Self-closing. Space-separated or colon keys. A multi-word colon value must be
+quoted.
+
+@@@pre
+@img(src photo.jpg, alt A photo)
+@h2(id intro, class lead) Title h2@
+@x(k: "a b")
+pre@@@
+
+@h3 Pipes h3@
+
+Each pipe is one parameter; duplicate keys are last-one-wins. Closed by
+@@@code name@ code@@@.
+
+@@@pre
+@a |href /docs| |target _blank| Read the docs a@
+pre@@@
+
+@aside(class note)
+Greedy-bind hazard: a pipes call with no @@@code name@ code@@@ on the same line
+binds to the next matching close below it. Put pipes calls last, or close on
+the same line. See @a |href /docs/reference/gotchas/| gotchas a@.
+
+aside@
+
+@h3 Record-arg h3@
+
+An inline or multi-line record as the argument; self-closing. Hyphen
+@strong or strong@ colon delimiter is accepted at a call site.
+
+@@@pre
+@card { title - Q3, status - shipped }
+pre@@@
+
+@h3 Form-fill body h3@
+
+A bare opener followed by @@@code key: value code@@@ lines. Needs
+@strong two or more strong@ content lines, or it is read as prose.
+
+@@@pre
+@contact
+name: Ada Lovelace
+role: Author
+contact@
+pre@@@
+
+@h3 Colon-scatter h3@
+
+A single-line body of @@@code k:v code@@@ tokens (no space after the colon).
+Surfaces internally as @@@code paramsSource: pipes code@@@. A space after the
+colon is prose.
+
+@@@pre
+@badge status:new priority:high badge@
+pre@@@
+
+@h3 Flag param h3@
+
+A valueless parameter: a trailing bang in a pipe, or a bare flag in parens.
+
+@@@pre
+@task |title Ship| |urgent!| task@
+pre@@@
+
+@h3 Opaque pass-through h3@
+
+The universal container. If @code type code@ names a core-vocab node it renders
+as that element; otherwise it emits a @@@code <div> code@@@ carrying every named
+param as @@@code data-* code@@@.
+
+@@@pre
+@node(type h2) A heading node@
+@node(type box, role note) Body node@
+pre@@@
+
+@h3 Raw and frozen literals h3@
+
+@@@code @@name … name@@ code@@@ makes the body one verbatim Text node
+(@code raw code@); @@@code {{path}} code@@@ holes still expand.
+@@@code @@@name … name@@@ code@@@ adds @code frozen code@ — even
+@@@code {{…}} code@@@ passes through untouched.
+
+@@@pre
+@@style .lead { font-size: 1.2rem } style@@
+pre@@@
+
+@h2 Definition forms h2@
+
+A definition declares a reusable node or a named value. Opens with a hash.
+
+@table |rows [[Form, AST shape, Note, Fixture], [Single-line def, single-line, one-line template, 07 single-line-def], [Value-block def, value-block, closed by a double bang, 07 multi-line-value], [Block def, block, uses the body slot, 07 block-definition], [Capture list, block, declares captures, 07 multi-capture-list], [Additive partial, block / single, merges across the file, 08 simple-additive-prefix], [Data def record, dataDef, hyphen delimiter required, 09 records], [Data def collection, dataDef, ordered list, 10 collections], [Data def scalar, dataDef, number / bool / null / prose, 09 scalar-types]]| |caption Definition forms and the AST they produce| table@
+
+@@@pre
+#lead: A one-line reusable value.
+
+#abstract:
+A multi-line value,
+closed by two bangs.
+!!
+
+#callout ||label, body||
+@aside(class ::label::)
+...
+aside@
+callout#
+
++#authors: Ada
++#authors: Grace
+
+#site: { name - Docs, year - 2026 }
+#tags: [ ref, spec, wit ]
+#count: 42
+pre@@@
+
+@aside(class note)
+A single-line def @strong with strong@ a capture list renders the literal
+capture list — use the block form for any def with captures. Data-def records
+need the hyphen delimiter; the colon form is call-site only.
+
+aside@
+
+@h2 Other constructs h2@
+
+@table |rows [[Construct, Renders as, Fixture], [Emphasis, strong / em, 02 emphasis], [Interpolation, the captured param, 07 captures-and-interpolation], [Raw-body hole, expand-time value in raw bodies, literal-nodes], [Body slot, the invocation body, 07 body-slot], [Comment, omitted from output, 03 comments], [Reference directive, pulled-in defs, 15 references], [Conditional, kept or dropped body, 12 conditionals], [Iteration, repeated body, 13 iteration], [Script, effects only — no output, 15 scripting], [Escape, the literal char, 00 lexical], [External data, a bound data def, data-loader]]| |caption Other constructs| table@
+
+@@@pre
+Wrap *bold* and _italic_ inline.
+
+::name::
+
+{{theme.accent}}
+
+~ this line is a comment
+
+reference "shared/defs.wit"
+
+(if @author) By @author.name (end)
+(if @status is shipped) Live (else) Draft (end)
+
+(each @tags as tag) @li ::tag:: li@ (end)
+
+<% total = lh.data.a + lh.data.b %>
+
+\* a literal asterisk, not a mark
+
+@load env load@
+@load sales |as rows| |region West| load@
+pre@@@
+
+@aside(class note)
+Emphasis marks wrap a @strong token strong@, so @@@code 3*4*5 code@@@ and
+@@@code file_name_here code@@@ stay plain. Interpolation @@@code ::name:: code@@@
+substitutes a @strong capture strong@ inside a def body; @@@code {{path}} code@@@
+is a different hole that works @strong only strong@ inside @@@code @@ code@@@ raw
+bodies.
+
+aside@
+
+@h2 The equivalence proof h2@
+
+@a |href /docs/write/parameters/| One template, every call form a@: fixture
+@code 26-all-param-forms/showcase.wit code@ invokes the same node thirteen ways
+and asserts identical output. Form 13 (self-closing pipes) is placed
+@strong last strong@ on purpose — pipes with no same-line close greedily bind to
+the next close, so ordering is a real constraint, not a parser quirk.
+
+@h2 See also h2@
+
+@a |href /docs/reference/core-vocabulary/| Core vocabulary a@ ·
+@a |href /docs/reference/data-model/| Data model a@ ·
+@a |href /docs/reference/tables/| Tables a@ ·
+@a |href /docs/reference/gotchas/| Gotchas a@ ·
+@a |href /docs/reference/glossary/| Glossary a@ ·
+@a |href /docs/reference/cheatsheet/| Cheatsheet a@.

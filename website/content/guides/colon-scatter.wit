@@ -1,0 +1,102 @@
+@h1 Colon-scatter h1@
+
+In a @strong single-line strong@ body, tokens shaped @code id:value code@ with
+@strong zero whitespace strong@ are lifted out as parameters; the rest of the
+line stays prose. It is the lightest way to tag a node mid-sentence:
+
+@@@pre
+@figure src:lamp caption:"Second-order Fresnel" figure@
+pre@@@
+
+@code src code@ and @code caption code@ become params; anything else on the line
+is the figure's body.
+
+@h2 The strict contract h2@
+
+Scatter fires only under an exact contract, and that strictness is deliberate —
+it is what keeps ordinary prose from being mis-read:
+
+@ul
+@li The id is @code [A-Za-z][A-Za-z0-9_-]* code@. li@
+@li The value is a bare word @code [A-Za-z0-9_-]+ code@, a @code "quoted" code@
+string (spaces allowed), an @code _italic_ code@ or @code *bold* code@ run, or
+any @@@code @node code@@@ (bare, parens, or with a closer). li@
+@li There is @strong no whitespace anywhere strong@ — including between the
+@code : code@ and the value. li@
+@li The byte just before the id must be the start of the line or a non-word,
+non-backslash character. li@
+ul@
+
+@@@pre
+@thing name:Tauraj thing@
+pre@@@
+
+That lifts @code name code@ to @code Tauraj code@ (fixture
+24-colon-scatter/body-scatter-single). A quoted value carries spaces:
+
+@@@pre
+@thing mode:"complex value" thing@
+pre@@@
+
+(body-scatter-quoted.) Multiple tokens lift while residual prose remains
+(body-scatter-multi), and a repeated key is last-one-wins
+(body-scatter-override).
+
+@h2 Rich values h2@
+
+Because the value may itself be a node or an emphasis run, scatter lifts them as
+sibling content: italic (body-scatter-italic-value), bold
+(body-scatter-bold-value), a closer-form node (body-scatter-node-value), a
+self-closing parens node (body-scatter-self-closing-node-value), a node carrying
+its own params (body-scatter-multiple-node-params), a node then a bare token
+(body-scatter-node-then-bare), and overriding a value with a node
+(body-scatter-override-with-node).
+
+@h2 A space after the colon breaks the contract h2@
+
+Add a space and the token is no longer scatter — it is prose again:
+
+@@@pre
+@thing key: value thing@
+pre@@@
+
+Nothing is lifted (fixture
+24-colon-scatter/body-scatter-space-after-colon-is-prose, verified parameter
+source "none"). A real inline node on that line stays a node; only the
+scatter-lift is suppressed.
+
+@h2 The escape opt-out h2@
+
+To keep a literal @code id:value code@ in prose, escape the colon —
+@code name\:Tauraj code@ suppresses the lift and the backslash is stripped from
+the output (fixture 24-colon-scatter/body-scatter-escape).
+
+@h2 The false positive h2@
+
+The strict contract has one honest downside: a space-free @code id:value code@
+buried in real prose still lifts.
+
+@@@pre
+@thing the variable name:Tauraj is bad thing@
+pre@@@
+
+That lifts @code name code@ to @code Tauraj code@ even though you meant it as
+prose (fixture 24-colon-scatter/false-positive-prose, verified). Two fixes:
+escape the colon (@code name\: code@) or add a space (@code name: … code@). The
+same pattern bites URLs, ratios, and times written mid-sentence.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Writing @code key: value code@ (with a space) and expecting a lift — it
+stays prose. li@
+@li An accidental @code foo:bar code@ mid-prose lifting a stray param (the false
+positive) — escape or space it. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/form-fill/| Form-fill (the multi-line sibling) a@ ·
+@a |href /docs/guides/escapes/| Escapes a@ ·
+@a |href /docs/guides/gotchas/| Gotchas (false positives) a@ ·
+@a |href /docs/guides/parameters/| Parameters overview a@

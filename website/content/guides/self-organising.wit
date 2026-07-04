@@ -1,0 +1,79 @@
+@h1 Self-organising documents h1@
+
+The flagship idea behind Wit: model your structure as @strong data, once
+strong@, then render many synchronized views from it. A table of contents, a
+figure list, and a summary can all read the same collection — so reordering one
+record re-renders every view, and nothing drifts out of sync.
+
+@h2 The pattern h2@
+
+Declare the structure as a collection of records, then iterate it into whatever
+shape a given view needs. Here one @@@code #chapters code@@@ collection drives a
+table of contents:
+
+@@@pre
+#chapters: [
+  { number - I, title - The Lamp },
+  { number - II, title - The Watch }
+]
+
+#tocrow ||number, title||
+@li ::number::. ::title:: li@
+tocrow#
+
+@ul
+(each @chapters as ch) @tocrow |number @ch.number| |title @ch.title| tocrow@ (end)
+ul@
+pre@@@
+
+That renders a real list — @code I. The Lamp code@, @code II. The Watch code@
+(verified). Add a chapter or reorder the collection and the list follows.
+
+@h2 The techniques it stands on h2@
+
+Everything here is a construct you already know, combined:
+
+@ul
+@li @strong Data as the source of truth strong@ — a
+@@@code #chapters: [ … ] code@@@ collection (see
+@a |href /docs/guides/data/| Data a@). li@
+@li @strong Iteration strong@ — @@@code (each … as …) code@@@ over it (see
+@a |href /docs/guides/iteration/| Iteration a@). li@
+@li @strong Definitions with captures strong@ — a row template filled per item
+(see @a |href /docs/guides/defining-nodes/| Defining nodes a@). li@
+@li @strong Additive partials strong@ — for structure that grows across files
+(see @a |href /docs/guides/additive-partials/| Additive partials a@). li@
+ul@
+
+Note the two ways data reaches a template: inside a loop, read a field with
+data access — @@@code @ch.title code@@@ — and to feed a definition's capture,
+pass it by pipes — @@@code @tocrow |title @ch.title| code@@@ — then read it as
+@@@code ::title:: code@@@ inside the template.
+
+@h2 What needs a renderer or a script h2@
+
+Automatic @strong numbering strong@ and @strong back-references strong@ — "Figure
+3", "as shown above" — are not core language features. Supply the numbers in the
+data, or compute them in a @@@code <% %> code@@@ script (see
+@a |href /docs/guides/derived-content/| Derived content a@). A custom node type
+like a numbered figure box is a @strong renderer extension strong@, not core
+behaviour.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Writing @@@code ::loopvar.field:: code@@@ in prose — use data access
+@@@code @loopvar.field code@@@; the @@@code ::…:: code@@@ hole lives only in a
+definition body. li@
+@li Assuming a custom @@@code @node(type figure) code@@@ has built-in behaviour —
+that is a renderer concern, not the core language. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/guides/data/| Data a@ ·
+@a |href /docs/guides/additive-partials/| Additive partials a@ ·
+@a |href /docs/guides/multi-file/| Multi-file references a@ ·
+@a |href /docs/guides/glossary-xref/| Glossary & cross-references a@ ·
+@a |href /docs/guides/derived-content/| Derived content a@

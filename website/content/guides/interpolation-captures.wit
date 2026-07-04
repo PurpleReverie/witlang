@@ -1,0 +1,101 @@
+@h1 Interpolation & captures h1@
+
+Wit has two substitution mechanisms, and keeping them straight is the single
+most common point of confusion. @strong Captures strong@ —
+@@@code ::name:: code@@@ and the body slot @@@code ... code@@@ — carry @strong
+rich markup strong@, whole blocks of content. @strong Interpolation strong@ —
+@@@code {{path}} code@@@ — drops a @strong scalar string strong@ into one narrow
+context. This page shows what each becomes and, crucially, where each is live.
+
+@h2 Captures carry rich content h2@
+
+A captured value is not just a string — it is @strong re-parsed as a full
+document strong@ at substitution time. So a captured value that is a bulleted
+list becomes a real list:
+
+@@@pre
+#wrap ||body||
+::body::
+wrap#
+
+@wrap
+  body:
+    @ul
+    @li One li@
+    @li Two li@
+    ul@
+wrap@
+pre@@@
+
+That renders a genuine @code <ul> code@ with two items (fixture
+25-content-in-captures/value-contains-list). The same holds for a heading
+(value-contains-heading becomes a real heading) and multiple paragraphs
+(multi-paragraph-value). At an @strong inline strong@ position a
+single-paragraph value splices its inline content, while a multi-block value
+lifts into blocks (value-at-inline-position); an inline-only value takes a fast
+path (value-with-emphasis-only).
+
+@h2 Interpolation is a scalar hole h2@
+
+@@@code {{path}} code@@@ is a doubled-brace @strong scalar strong@ hole. The path
+is @code [A-Za-z0-9_.-]+ code@ (inner spaces allowed), and it resolves against
+iteration variables, data definitions, or a bare scalar def. A number, boolean,
+or null coerces to a string; a record or collection is
+@code E_UNRESOLVED_REFERENCE code@ — you can only interpolate a scalar.
+
+@h2 Where interpolation is live: only inside raw nodes h2@
+
+This is the rule to memorise: @@@code {{…}} code@@@ interpolates @strong only
+inside @@ raw-node bodies strong@. It is perfect for CSS holes:
+
+@@@pre
+#theme: { accent - green }
+
+@@style
+.badge { color: {{theme.accent}}; }
+style@@
+pre@@@
+
+That renders @@@code .badge { color: green; } code@@@ (verified). In ordinary prose,
+@@@code { code@@@ is record-arg syntax, so a brace pair renders @strong literally
+strong@:
+
+@@@pre
+#book: { title - The Keeper }
+
+The book {{book.title}} versus @book.title here.
+pre@@@
+
+That outputs the literal text @@@code {{book.title}} code@@@ next to the
+resolved @code The Keeper code@ (verified). A frozen @@@code @@@ code@@@ body
+makes @@@code {{…}} code@@@ inert too — see
+@a |href /docs/guides/literal-raw-css/| Literal & raw nodes a@.
+
+@h2 Two outputs, one lookup h2@
+
+The same lookup feeds both mechanisms, but they emit different things:
+
+@ul
+@li @@@code {{name}} code@@@ → a scalar string, for class names, colours, CSS
+holes — live only in @@ bodies. li@
+@li @@@code ::name:: code@@@ and @@@code ... code@@@ → rich content, live only in
+a definition body. li@
+@li @strong Data into prose strong@ is @@@code @name.field code@@@ — never
+@@@code {{…}} code@@@. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting @@@code {{book.title}} code@@@ to interpolate in a paragraph — it
+renders literally; use @@@code @book.title code@@@. li@
+@li Writing @@@code ::loopvar.field:: code@@@ in prose — that is drift from older
+notes; use data access @@@code @loopvar.field code@@@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/defining-nodes/| Defining nodes a@ ·
+@a |href /docs/guides/data-access/| Data access a@ ·
+@a |href /docs/guides/literal-raw-css/| Literal & raw nodes a@ ·
+@a |href /docs/guides/form-fill/| Form-fill (rich values) a@

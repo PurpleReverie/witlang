@@ -1,0 +1,58 @@
+@h1 Glossary & cross-references h1@
+
+Define your terms, figures, and sections @strong once strong@ as data, reference
+them by id, and render a glossary or figure list from the same source. As with
+every self-organising view, editing the data updates every place that reads it.
+
+@h2 A glossary from data h2@
+
+Model the glossary as a collection of records — each with a term and its gloss —
+and iterate it into a definition list:
+
+@@@pre
+#glossary: [
+  { term - Attention, gloss - A moral faculty of focus. },
+  { term - Fresnel, gloss - A stepped lens for lighthouses. }
+]
+
+@dl
+(each @glossary as g) @dt @g.term dt@ @dd @g.gloss dd@ (end)
+dl@
+pre@@@
+
+That renders a real @code <dl> code@ with a term and description per entry
+(verified). Read each field with data access — @@@code @g.term code@@@ — not a
+capture hole.
+
+@h2 Cross-references and a shared bibliography h2@
+
+Give each referenced thing a unique @code id code@ field and read it wherever you
+cite it. For a bibliography that assembles across chapter files, combine data
+with @a |href /docs/guides/additive-partials/| additive partials a@: each
+chapter contributes with @@@code +#bibliography code@@@, and the master renders
+the merged node. Keep the reference call shape uniform so every citation reads
+the same way.
+
+@h2 What is not built in h2@
+
+@strong Automatic numbering strong@ ("Figure 3") and @strong back-links strong@
+("see above") are @em not em@ core features. Either carry the numbers in your
+data, or compute them in a @@@code <% %> code@@@ script (see
+@a |href /docs/guides/derived-content/| Derived content a@). The core language
+gives you the single source of truth and the views; the numbering layer is a
+renderer or script concern.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Mixing @@@code ::term:: code@@@ and @@@code @g.term code@@@ for the same read
+— use data access @@@code @g.term code@@@ outside a definition body. li@
+@li Assuming numbering and back-links are automatic — they are not. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/self-organising/| Self-organising documents a@ ·
+@a |href /docs/guides/additive-partials/| Additive partials a@ ·
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/guides/derived-content/| Derived content a@

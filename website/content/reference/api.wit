@@ -1,0 +1,118 @@
+@h1 API reference h1@
+
+The exact public surface for embedders. Only the @code index.ts code@ re-exports
+listed here are public; everything else is package-private. Pipeline for an
+embed: @code parse → loadExternalData → resolve → expand → renderHtml code@.
+
+@aside(class note)
+@@@code @witlang/cli code@@@ ships @strong no library API strong@ — it has no
+@code src/index.ts code@, only @code dist/bin.js code@. Point embedders at the
+parser, runtime, and render packages below.
+
+aside@
+
+@h2 witlang/parser h2@
+
+Package @@@code @witlang/parser code@@@.
+
+@@@pre
+parse(source: string, file?: string): Document
+parseInlineFromText(...): Inline[]        // inline sub-parser
+tryParseRecordFromText(...): Record | null
+tryParseCollectionFromText(...): Collection | null
+format(source: string, opts?: FormatOptions): string
+FormatOptions { indent: string }          // default '  '
+class WitError { code; loc; message }
+pre@@@
+
+@code parseInlineFromText code@ re-parses captured raw values at substitution
+time; the two @code tryParse… code@ scanners parse late-bound record and
+collection text.
+
+@strong Types re-exported: strong@ @code Document · Block · Inline · AstNode ·
+Paragraph · Comment · NodeUse · NodeDef · DataDef · Record · Collection ·
+IfStatement · EachStatement · ScriptBlock · ScriptCall · ReferenceDirective ·
+Text · Italic · Bold · Interpolation · BodySlot · DataValue · StringValue ·
+NumberValue · BooleanValue · NullValue · Condition · ExistenceCondition ·
+ComparisonCondition · Param · AccessPath · Loc · HasLoc code@.
+
+@h2 witlang/runtime h2@
+
+Package @@@code @witlang/runtime code@@@.
+
+@@@pre
+resolve(doc: Document, options?: ResolveOptions): ResolvedDocument
+ResolveOptions { rootPath?; fileReader?; onMissingReference? }
+expand(resolved: ResolvedDocument): ExpandedDocument
+loadExternalData(doc: Document, source: DataSource): Document
+DataSource = DataLoader | Record<string, unknown>
+toDataValue(value: unknown, loc: Loc): DataValue
+class RuntimeError / ResolverError / ExpanderError
+RuntimeErrorCode                          // the code constants
+CORE_VOCAB_NAMES / RESERVED_OPAQUE
+isCoreVocabName(name) / isReservedNodeName(name)
+pre@@@
+
+@code loadExternalData code@ is the @code load code@ pass; a plain
+@@@code { alias: value } code@@@ dictionary is the simplest embedded
+@code DataSource code@. @code resolve code@ throws @code ResolverError code@;
+@code expand code@ throws @code ExpanderError code@.
+
+@strong Types re-exported: strong@ @code DataLoader · DataLoadRequest ·
+DataSource · ResolvedDocument · ExpandedDocument · ResolveOptions · FileReader ·
+RuntimeErrorCodeName code@.
+
+@aside(class note)
+@strong Doc drift: strong@ the header comment in @code runtime/index.ts code@
+(line 37) says "the 47 reserved node names" — the actual
+@code CORE_VOCAB_NAMES code@ list is @strong 52 strong@. Metadata drift, not a
+runtime bug — see @a |href /docs/reference/limitations/| limitations a@.
+
+aside@
+
+@h2 witlang/render-html h2@
+
+Package @@@code @witlang/render-html code@@@.
+
+@@@pre
+renderHtml(doc: ExpandedDocument, options?: RenderHtmlOptions): string
+RenderHtmlOptions {
+  mode?: 'fragment' | 'document'   // default 'fragment'
+  title?: string                   // default 'Wit document'
+  lang?: string                    // default 'en'
+  css?: string                     // default defaultThemeCss; '' = unstyled
+}
+escapeHtml(s: string): string
+defaultThemeCss / rawThemeCss      // string constants
+pre@@@
+
+@code renderHtml code@ defaults to @strong fragment strong@ mode — the CLI's
+@code --raw code@ / @code --fragment code@ pathways select mode and CSS on top of
+this.
+
+@h2 witlang/render-markdown h2@
+
+Package @@@code @witlang/render-markdown code@@@. One export:
+
+@@@pre
+renderMarkdown(doc: ExpandedDocument): string
+pre@@@
+
+@h2 End-to-end embed h2@
+
+@@@pre
+import { parse } from '@witlang/parser';
+import { loadExternalData, resolve, expand } from '@witlang/runtime';
+import { renderHtml } from '@witlang/render-html';
+
+const doc = parse(source, 'doc.wit');
+const loaded = loadExternalData(doc, { sales: [{ region: 'West', total: 100 }] });
+const html = renderHtml(expand(resolve(loaded)), { mode: 'document' });
+pre@@@
+
+@h2 See also h2@
+
+@a |href /docs/reference/cli/| CLI a@ ·
+@a |href /docs/reference/data-model/| Data model a@ ·
+@a |href /docs/reference/errors/| Errors a@ ·
+@a |href /docs/build/embedding/| Embedding guide a@.

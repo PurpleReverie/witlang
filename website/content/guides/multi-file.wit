@@ -1,0 +1,77 @@
+@h1 Multi-file documents & references h1@
+
+@@@code reference ./path.wit code@@@ pulls another file into the document's
+reference graph. Within that graph, @strong definitions and data are global and
+hoisted strong@ — one flat namespace, visible regardless of order. This is how
+you split a thesis, report, or manual into chapter files that share one schema.
+
+@h2 The reference directive h2@
+
+Put @@@code reference ./chapter.wit code@@@ on its own line. The referenced
+file's defs and data become available to the whole document:
+
+@@@pre
+~ master.wit
+reference ./one.wit
+
+The keeper is @keeper.name.
+
+~ one.wit
+#keeper: { name - Ada }
+pre@@@
+
+That renders @code The keeper is Ada. code@ (verified). Path forms are
+same-directory @@@code ./one.wit code@@@ (fixture 14-composition/single-reference),
+a child directory @@@code ./sub/x.wit code@@@ (nested-subdir), and a parent
+@@@code ../shared.wit code@@@ (parent-relative).
+
+@h2 One flat namespace, hoisted h2@
+
+Multiple references form @strong one namespace strong@ (fixture
+multiple-references), and visibility is @strong transitive strong@ — a master
+that references A which references B can see B's definitions
+(transitive-references). Because everything is hoisted, the @strong position of
+the reference line is immaterial strong@: a use that appears @em before em@ the
+@@@code reference code@@@ still resolves (forward-then-back).
+
+@@@pre
+~ master.wit
+The keeper is @keeper.name.
+
+reference ./one.wit
+pre@@@
+
+Still renders @code The keeper is Ada. code@ (verified).
+
+@h2 Shared schemas and diamonds h2@
+
+Two chapters may both reference a shared schema file; the re-convergence (a
+diamond) resolves once (fixture shared-schema). This is the idiom for a common
+set of card, citation, and figure templates used across every chapter.
+
+@h2 Self, circular, and missing h2@
+
+A self-reference is a no-op via the already-visited set (fixture self-reference);
+a circular pair is handled by cycle detection (circular-references); a missing
+path is a resolver error (missing-file).
+
+@aside(class note) 💡 The @code 14-composition code@ fixtures snapshot the @em parse em@ stage — they record the @@@code reference code@@@ node without flattening. Circular and missing-file handling are @strong resolver-stage strong@ behaviours, seen at build time, not parse errors. aside@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting a @strong conditional strong@ reference — wrapping
+@@@code reference code@@@ in an @@@code (if) code@@@ is not supported. To include
+different subsets, choose a different build root (see Faceted content). li@
+@li Expecting a mid-file @@@code reference code@@@ to scope-limit — it is global
+and hoisted. li@
+@li Relative-path confusion — mind @@@code ./ code@@@, @@@code ../ code@@@, and
+@@@code ./sub/ code@@@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/additive-partials/| Additive partials a@ ·
+@a |href /docs/guides/defining-nodes/| Defining nodes (hoisting) a@ ·
+@a |href /docs/guides/self-organising/| Self-organising documents a@ ·
+@a |href /docs/guides/faceted/| Faceted content (build roots) a@

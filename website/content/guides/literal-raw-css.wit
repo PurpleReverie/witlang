@@ -1,0 +1,95 @@
+@h1 Literal & raw nodes; custom CSS h1@
+
+A raw node embeds content @strong verbatim strong@ — code, foreign markup, a
+themed stylesheet. Doubling the marker to @@@code @@name code@@@ freezes Wit
+syntax inside the body; tripling it to @@@code @@@name code@@@ freezes even the
+@@@code {{…}} code@@@ interpolation holes. The freeze level is how you choose how
+much processing the body receives.
+
+@h2 A literal body h2@
+
+Inside @@@code @@name … name@@ code@@@, every Wit construct is inert — an
+@@@code @ code@@@, @@@code # code@@@, @code _ code@, @code * code@, or
+@@@code ::hole:: code@@@ is just text:
+
+@@@pre
+@@code
+let x = @not_a_node;
+code@@
+pre@@@
+
+That renders the line literally, @@@code @not_a_node code@@@ and all (verified).
+
+@h2 Block or inline h2@
+
+A raw node is a @strong block strong@ when a newline directly follows the opening
+@@@code @@name code@@@, and @strong inline strong@ otherwise. The first literal
+@@@code name@@ code@@@ closes it; if none appears, that is
+@code E_UNCLOSED_RAW_NODE code@. One whitespace character at each boundary is
+trimmed.
+
+@h2 Names map to elements h2@
+
+A raw node named after a known HTML tag emits that element — @@@code @@@code
+code@@@ becomes @code <code> code@, @@@code @@pre code@@@ becomes
+@code <pre> code@. A custom name becomes a @code <div> code@ carrying
+@code class="wit-node" code@ and a @code data-wit-name code@ attribute. Bodies
+are HTML-escaped, @strong except strong@ for @@@code @@style code@@@ and
+@@@code @@script code@@@, which are emitted as raw text (with a break-out guard
+against a stray closing tag).
+
+@h2 The three freeze levels h2@
+
+@ul
+@li @strong One marker strong@ — @@@code @name code@@@ — is an ordinary node:
+live Wit, and no interpolation (prose is not an interpolation context). li@
+@li @strong Two markers strong@ — @@@code @@name code@@@ — freezes Wit but keeps
+@@@code {{…}} code@@@ @strong live strong@. li@
+@li @strong Three markers strong@ — @@@code @@@name code@@@ — freezes both. li@
+ul@
+
+This is why @@@code {{path}} code@@@ is @strong live only inside a raw node
+body strong@ — it is the one place interpolation resolves.
+
+@h2 Themed CSS with interpolation h2@
+
+The flagship use: drive a stylesheet from a data definition.
+
+@@@pre
+#theme: { accent - green }
+
+@@style
+.badge { color: {{theme.accent}}; }
+style@@
+pre@@@
+
+That renders @@@code .badge { color: green; } code@@@ (verified) — the
+@@@code {{theme.accent}} code@@@ resolves because @@@code @@style code@@@ is a
+two-marker raw node. Triple it and the hole stays literal:
+
+@@@pre
+@@@code {{x}} code@@@   ~ renders the literal text {{x}}
+pre@@@
+
+@aside(class note) 💡 Freezing has a cost: a frozen @@@code @@table code@@@ will @strong not strong@ resolve @@@code @ref code@@@ rows from data. When a table reads from your data, use a plain @@@code @table code@@@ instead. aside@
+
+@h2 Not shipped: component defs h2@
+
+You may see @@@code ##name … name## code@@@ raw-component definitions in older
+notes. They are @strong roadmap, not shipped strong@ — there is no
+@@@code ## code@@@ token today. Do not rely on them.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting @@@code {{…}} code@@@ to be live in prose — it is live only inside
+a raw node body. li@
+@li Freezing a table you want resolved from data. li@
+@li Documenting @@@code ## code@@@ component defs as if they shipped. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/interpolation-captures/| Interpolation & captures a@ ·
+@a |href /docs/guides/derived-content/| Derived content a@ ·
+@a |href /docs/guides/escapes/| Escapes a@

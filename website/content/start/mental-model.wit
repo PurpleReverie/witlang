@@ -1,35 +1,170 @@
 @h1 The mental model h1@
 
-Wit is a stack of layers. Each one is optional — you only climb as high as your
-document needs, and most documents stay near the bottom.
+Here is the single idea that makes Wit make sense: it is a stack of layers built
+on top of plain prose. Each layer is optional. You climb only as high as a given
+document needs — and most documents never leave the bottom two. Nothing above
+prose costs you anything until you reach for it.
+
+Once you see the five layers, you can predict how any feature behaves, because
+every feature lives on one of them.
 
 @h2 Layer 0 — Prose h2@
 
-Plain paragraphs separated by blank lines, with @strong bold strong@ and
-@em italics em@ inline. Most of any document lives here, and this layer alone is
-a complete, valid document.
+The ground floor, and where most of every document lives. You write ordinary
+paragraphs; a blank line starts a new one. Two inline marks, @code *bold* code@
+and @code _italic_ code@, are always available, and a line beginning with
+@code ~ code@ is a comment that never appears in the output.
+
+@@@pre
+The keeper had not spoken aloud in *eleven days*.
+
+He had not noticed, until his own _voice_ surprised him.
+pre@@@
+
+This layer alone is a complete, valid Wit document. If you write nothing but
+prose forever, Wit is happy.
 
 @h2 Layer 1 — Nodes h2@
 
-Wrap content in a named structure with a node. The built-in vocabulary —
-headings, lists, tables, figures, sectioning — needs no setup; you just use it.
+When prose isn't enough, wrap a span of content in a named structure — a
+@strong node strong@, written @@@code @name … name@ code@@@. The built-in
+vocabulary (headings, lists, tables, figures, sectioning) needs no setup; you
+just use it, and the renderer decides whether it's a block or an inline span.
+
+@@@pre
+@h2 A Quiet Morning h2@
+
+@aside The lamp burned steady through the storm. aside@
+pre@@@
+
+Nodes are covered in full in
+@a |href /docs/start/nodes/| Nodes and core vocabulary a@. This is the layer you
+reach for most after prose.
 
 @h2 Layer 2 — Definitions h2@
 
-Name a reusable piece once — a callout, a figure, a chapter — and use it
-anywhere. These are your own components; change one in a single place.
+Name a chunk of content once, use it anywhere. A @strong definition strong@
+starts with @code # code@ instead of @code @ code@. Recall it later with a bare
+@@@code @name code@@@. The simplest form is a single line:
+
+@@@pre
+#epigraph: The sea does not forgive forgetting.
+
+@epigraph
+pre@@@
+
+For longer content, open a value block and close it with @@@code !! code@@@:
+
+@@@pre
+#epigraph:
+The sea does not forgive forgetting.
+— a coastal proverb
+!!
+pre@@@
+
+And to wrap a long manuscript section, use a block-form definition,
+@@@code #name … name# code@@@, with @code ... code@ marking where the body goes.
+Definitions can also capture parameters between @@@code ||…|| code@@@ and drop them
+in with @@@code ::name:: code@@@:
+
+@@@pre
+#chapter ||number, title||
+@h2 ::number:: — ::title:: h2@
+...
+chapter#
+
+@chapter |number I| |title The Keeper|
+For eleven days the lamp had burned untended.
+chapter@
+pre@@@
+
+That builds a heading reading @strong I — The Keeper strong@ followed by the
+prose you passed in. Definitions are how you make your own components; change one
+in a single place and every use updates.
 
 @h2 Layer 3 — Data h2@
 
-Records and collections hold structured values you can pull into prose or hand
-to a table, instead of typing the same fact in five spots.
+Structured values, held apart from prose. A @strong record strong@ is
+@@@code { key - value } code@@@; a @strong collection strong@ is
+@@@code [ … ] code@@@, often of records. Pull a value into prose with dotted
+access, @@@code @name.field code@@@:
+
+@@@pre
+#keeper: { name - Aldous Vane, years - 11 }
+
+@keeper.name has tended the light for @keeper.years years.
+pre@@@
+
+That renders @strong Aldous Vane has tended the light for 11 years. strong@ You
+write the fact once, as data, and reference it wherever it belongs.
 
 @h2 Layer 4 — Logic h2@
 
-Conditionals and iteration build content @em from em@ that data — a draft
-versus a final, a table generated from a list.
+The narrowest layer, and a genuine last resort. @strong Conditionals strong@,
+@@@code (if …) … (end) code@@@, show content only when the data warrants it;
+@strong iteration strong@, @@@code (each … as …) … (end) code@@@, builds content
+@em from em@ a collection. For anything those can't express, a
+@@@code <% … %> code@@@ script block is the single, explicit escape hatch.
+
+@@@pre
+#keeper: { years - 11 }
+
+(if @keeper.years is 11)
+@aside(class note) A milestone year. aside@
+(end)
+pre@@@
+
+Wit is @strong not Turing-complete strong@, and that is on purpose. The logic
+layer shapes a document from its data; it is not a programming language wearing a
+document costume.
+
+@h2 One document, climbing all five h2@
+
+Put the layers together and each line lives on exactly one of them:
+
+@@@pre
+@h1 The Lamp Keeper h1@
+
+#epigraph:
+The sea does not forgive forgetting.
+!!
+
+#keeper: { name - Aldous Vane, years - 11 }
+
+@epigraph
+
+@keeper.name has tended the light for @keeper.years years.
+
+(if @keeper.years is 11)
+@aside(class note) A milestone year. aside@
+(end)
+pre@@@
+
+Reading top to bottom: the heading and epigraph text are @strong prose (L0) strong@
+inside @strong nodes (L1) strong@; the @@@code #epigraph code@@@ and
+@@@code #keeper code@@@ lines are @strong definitions and data (L2, L3) strong@; the
+@@@code @keeper.name code@@@ access pulls @strong data into prose (L3) strong@; and
+the @@@code (if …) code@@@ is @strong logic (L4) strong@. The reader of the output
+sees a clean document; you see a source that climbed only as far as it needed.
 
 @h2 The governing rule h2@
 
-Content goes in a node's @strong body strong@; parameters are @strong metadata strong@.
+Across every layer, one rule holds: @strong content goes in a node's body;
+parameters are metadata strong@. Never carry the content of a node in a parameter.
 Structure appears only where the author reaches for it — never by accident.
+
+@h2 Common mistakes h2@
+
+@ul
+@li @strong Expecting @@@code {{path}} code@@@ or @@@code ::name:: code@@@ to interpolate in prose. strong@ They don't. In ordinary prose, both are just text. @@@code ::name:: code@@@ is a capture hole that only works @em inside a definition body em@; @@@code {{path}} code@@@ is live @em only inside a @@@code @@ code@@@ raw-node body em@. To put data into prose, use @@@code @name.field code@@@. li@
+@li @strong Reaching for operators that don't exist. strong@ Conditionals understand @code is code@ and @code equals code@ (they're synonyms) and a bare truthy check — and nothing else. There is no @code contains code@, no @code < code@ or @code > code@, no @code and code@ or @code or code@. Write @@@code (if @tags contains urgent) code@@@ and it silently misfires. Restructure to an @code is code@ check or a truthy flag. li@
+@li @strong Climbing higher than the document needs. strong@ If a fact appears once, just type it. Data and logic earn their keep when something repeats or must assemble itself — not before. li@
+ul@
+
+@h2 See also h2@
+
+The layer you'll use most is nodes —
+@a |href /docs/start/nodes/| Nodes and core vocabulary a@ covers them in full. To
+see all five layers cooperate in a real build, follow
+@a |href /docs/start/tutorial/| the tutorial a@. When you're ready to pick a
+direction, @a |href /docs/start/choose-your-path/| choose your path a@.

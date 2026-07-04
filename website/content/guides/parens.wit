@@ -1,0 +1,101 @@
+@h1 Parens h1@
+
+Parens — @@@code @name(p, q) code@@@ — are the compact, @strong self-closing
+strong@ parameter form: the closing @code ) code@ ends the node, so there is no
+@@@code name@ code@@@ closer to write. Params are comma-separated, and colon or
+space separates each key from its value. Use parens when a node needs one or two
+short parameters and no body — @@@code @badge(tone good) code@@@,
+@@@code @figure(src lamp.png, caption The lens) code@@@.
+
+@h2 Self-closing by construction h2@
+
+A parens call stands complete on its own. On its own line it renders as a block,
+and the following line is a separate paragraph:
+
+@@@pre
+@badge(tone good)
+The keeper logged the lamp at dawn.
+pre@@@
+
+The badge self-closes at @code ) code@; the sentence below is its own paragraph
+(fixture 05-nodes-parens/self-closing).
+
+@h2 Colon or space, your choice h2@
+
+Inside the parens the key/value separator can be a space or a colon — they are
+interchangeable:
+
+@@@pre
+@scene(mood calm, location harbour)
+@scene(mood: calm, location: harbour)
+pre@@@
+
+Both bind @code mood code@ and @code location code@ identically (fixtures
+05-nodes-parens/multiple-params, colon-separator).
+
+@h2 The slot grammar h2@
+
+Each comma-separated slot uses the shared parameter grammar — positional, named,
+flag, and multi-word key:
+
+@@@pre
+@figure(src lamp.png, full width!, caption The lens)
+pre@@@
+
+That is a named @code src code@, a @code full width code@ flag, and a named
+@code caption code@ (fixtures 05-nodes-parens/mixed-params, named-and-flag). A
+multi-word @strong key strong@ joins with a spaced hyphen:
+
+@@@pre
+@panel(background colour - dark slate)
+pre@@@
+
+(hyphen-multi-word-key.)
+
+@h2 Whitespace, trailing commas, and empty parens h2@
+
+@ul
+@li @strong Inner whitespace is trimmed strong@ — @@@code @x( a , b ) code@@@
+binds @code a code@ and @code b code@ (fixture 05-nodes-parens/inner-whitespace). li@
+@li @strong A trailing comma is tolerated strong@ — @@@code @x(a,) code@@@
+(trailing-comma). li@
+@li @strong Empty parens are legal strong@ and @em distinct em@ from a bare
+reference — @@@code @x() code@@@ carries a parens parameter source with no
+slots, while @@@code @x code@@@ carries none (empty-parens). li@
+ul@
+
+@h2 Parens carries no body of its own h2@
+
+Parens is designed as the bodyless form. If you follow a parens call with body
+content and a closer, a @strong core node strong@ will still attach the params
+and render the body — @@@code @aside(tone wry) the keeper said nothing aside@
+code@@@ renders the aside with its note. But a @strong template definition
+strong@ with no body slot has nowhere to put a following body, so it is silently
+dropped (fixture 05-nodes-parens/parens-then-body). The clear rule: @strong for
+a body, use pipes strong@ — @@@code @aside |tone wry| the keeper said nothing
+aside@ code@@@.
+
+@h2 The multi-line-call bug h2@
+
+A parens call must stay on @strong one line strong@. Wrapping the call across a
+newline breaks it — the remainder of the call, including the @code ) code@,
+leaks into the surrounding text (fixture 05-nodes-parens/multi-line-call). If a
+value is long enough to want wrapping, that is a sign to use a
+@a |href /docs/guides/form-fill/| form-fill a@ or
+@a |href /docs/guides/record-arg/| record-arg a@ instead.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Adding a body when a template has no body slot (it is dropped — use pipes). li@
+@li Wrapping a parens call across lines (the multi-line-call bug). li@
+@li Expecting @@@code @x() code@@@ to be identical to @@@code @x code@@@ — they
+are distinct parameter sources. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/parameters/| Parameters overview a@ ·
+@a |href /docs/guides/pipes/| Pipes (for bodies) a@ ·
+@a |href /docs/guides/record-arg/| Record-arg a@ ·
+@a |href /docs/guides/gotchas/| Gotchas (em-dash vs spaced hyphen) a@

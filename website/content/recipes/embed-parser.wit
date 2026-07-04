@@ -1,0 +1,87 @@
+@h1 Embed the Wit parser h1@
+
+Run the Wit pipeline inside your own program — parse a document, feed it your own
+data, get HTML back — with no CLI, no subprocess, and no config file. This is for
+developers.
+
+@h2 Step 1 — Install h2@
+
+Add the three packages you need:
+
+@@@pre
+npm install @witlang/parser @witlang/runtime @witlang/render-html
+pre@@@
+
+@h2 Step 2 — Run the whole pipeline h2@
+
+The pipeline is @code parse code@, then @code loadExternalData code@ (only if the
+document loads external data), then @code resolve code@, @code expand code@, and
+finally a renderer. Verified end to end:
+
+@@@pre
+import { parse } from '@witlang/parser';
+import { loadExternalData, resolve, expand } from '@witlang/runtime';
+import { renderHtml } from '@witlang/render-html';
+
+const src = `@load meta load@
+@load sales load@
+
+@h1 Release @meta.version h1@
+Cut @meta.date.
+
+@table |rows @sales|
+`;
+
+// Feed data through the same seam the CLI uses. A plain dictionary pairs each
+// alias with an already-resolved value; keys must match the @load aliases.
+const doc = loadExternalData(parse(src, 'report.wit'), {
+  meta:  { version: '0.4.0', date: '2026-07-05' },
+  sales: [{ site: 'Dunmore', lit: 'yes' }, { site: 'Harbour', lit: 'no' }],
+});
+
+const html = renderHtml(expand(resolve(doc)), { mode: 'document', title: 'Release' });
+pre@@@
+
+@strong Result. strong@ @code html code@ is a full page whose body contains
+@@@code <h1>Release 0.4.0</h1><p>Cut 2026-07-05.</p> code@@@ and a table with the
+two sales rows — verified. Pass @code mode: 'fragment' code@ for embedding, or
+supply @code css code@ to override the inlined theme.
+
+@h2 The data seam h2@
+
+A data source is either a plain dictionary or a loader function. The dictionary
+form is simplest; a function of the shape
+@@@code (req) => value code@@@ — where @code req code@ carries the alias, its
+arguments, and a source location — fetches lazily per alias.
+
+@aside(class note) 💡 @code loadExternalData code@ @strong only rewrites
+@@@code @load code@@@ uses. strong@ The document must contain the
+@@@code @load code@@@ lines, and the dictionary keys must match those aliases.
+Omit the @@@code @load meta load@ code@@@ line and
+@@@code @meta.version code@@@ throws an unresolved-reference error. aside@
+
+@h2 Multi-file documents h2@
+
+If the source uses @code reference code@, pass resolve options with a
+@code rootPath code@ and a @strong synchronous strong@ @code fileReader code@ that
+takes an absolute path and returns the file's text. A single-file document needs
+no options.
+
+@aside(class note) 💡 Older reference prose shows an async @code readFile code@
+option — the current signature is a @strong sync strong@ @code fileReader code@.
+Use the current one. aside@
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong No @code load code@ line, no data. strong@ Without the matching @@@code @load code@@@ line the dictionary key is never consulted, and the reference stays unresolved. li@
+@li @strong References need a root. strong@ Calling @code resolve code@ on a document that uses @code reference code@ without a @code rootPath code@ throws — the resolver refuses to silently drop references. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/recipes/custom-renderer/| Write a custom renderer a@ shares this
+front half of the pipeline;
+@a |href /docs/recipes/report-live-data/| A report with live data a@ crosses the
+same seam through the CLI;
+@a |href /docs/project/architecture/| Architecture a@ diagrams every stage.

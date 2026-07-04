@@ -1,6 +1,13 @@
 @h1 Lists h1@
 
-@h2 Bulleted h2@
+Wit has three kinds of list: a bulleted list, a numbered list, and a definition
+list that pairs terms with their descriptions. Reach for one whenever content is
+genuinely enumerated — steps, a works-cited list, a glossary — rather than
+typing bullet characters into a paragraph, which stay literal.
+
+@h2 Bulleted lists h2@
+
+A bulleted list is a list node holding one item node per bullet:
 
 @@@pre
 @ul
@@ -10,30 +17,95 @@
 ul@
 pre@@@
 
-@h2 Numbered h2@
+Each item becomes an @code <li> code@ inside a @code <ul> code@, and the theme
+draws the bullets — you never type the dash yourself.
 
-Swap @code ul code@ for @code ol code@:
+@h2 Numbered lists h2@
+
+Swap the list node for the ordered one and the numbers come automatically. You
+do not type "1.", "2.", "3." — you write items, and the renderer numbers them:
 
 @@@pre
 @ol
-@li Light the lamp li@
-@li Trim the wick li@
-@li Log the weather li@
+@li Light the lamp at dusk. li@
+@li Trim the wick every second hour. li@
+@li Log the weather at dawn. li@
 ol@
 pre@@@
 
+Because the numbers are generated, reordering items renumbers them for free — a
+real advantage over hand-typed numbers in a draft you keep revising.
+
 @h2 Definition lists h2@
 
-Pair terms with their descriptions:
+A definition list pairs a term with its description — ideal for a glossary or a
+cast of terms:
 
 @@@pre
 @dl
-@dt Keeper dt@
-@dd Tends the light and keeps the log. dd@
-@dt Relief dt@
-@dd Stands in when the keeper is ashore. dd@
+@dt Fresnel lens dt@
+@dd A stepped lens that concentrates a lamp into a single beam. dd@
+@dt Relief keeper dt@
+@dd The keeper who stands in when the principal is ashore. dd@
 dl@
 pre@@@
 
-An @code li code@ can hold rich content — more prose, emphasis, even a nested
-list — not just a single line.
+The term node becomes a @code <dt> code@ and the description a @code <dd> code@,
+grouped inside a @code <dl> code@.
+
+@h2 Items hold rich content h2@
+
+An item is inline-context: a one-line item flattens to just its text, with no
+inner paragraph. But that does not limit what it can hold. An item can carry
+marks, a link, or even a nested list:
+
+@@@pre
+@ul
+@li The _principal_ keeper, on duty at dawn. li@
+@li Supplies, delivered by tender:
+@ul
+@li lamp oil li@
+@li spare wicks li@
+ul@
+li@
+ul@
+pre@@@
+
+To nest a list, place a whole list node inside an item's body, as above.
+
+@h2 A realistic works-cited list h2@
+
+Because items take marks, a numbered list makes a clean works-cited section —
+each entry italicising the work title:
+
+@@@pre
+@ol
+@li Weil, Simone. _Gravity and Grace_. Routledge, 1952. li@
+@li Berger, John. _Ways of Seeing_. Penguin, 1972. li@
+ol@
+pre@@@
+
+For citations woven into your prose (not just a list at the end), see
+@a |href /docs/write/citations/| Citations & references a@.
+
+@h2 Common mistakes h2@
+
+@ul
+@li _Typing the bullet character yourself._ A line that begins with a dash or a
+number is literal prose, not a list — Wit has no Markdown list block. Use the
+list nodes and let the renderer draw the markers. li@
+@li _A lone item with no list around it._ An item node on its own has no list
+context. Always wrap items in a bulleted or numbered list node. li@
+@li _Mismatched open and close._ Each item opens and closes with the same name;
+a stray unclosed item raises an error. li@
+ul@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/emphasis/| Emphasis a@ — marks inside list items. li@
+@li @a |href /docs/write/citations/| Citations & references a@ — works-cited
+lists. li@
+@li @a |href /docs/write/using-nodes/| Using nodes a@ — the node shape lists
+share. li@
+ul@

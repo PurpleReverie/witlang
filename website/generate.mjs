@@ -87,6 +87,16 @@ function highlightPre(fragment) {
     (_m, body) => `<pre class="hl">${highlightWit(body)}</pre>`);
 }
 
+// Content authored with root-relative doc links (`/docs/write/tables/`, `/`)
+// is rewritten to the correct relative path per page — so authors never hand-
+// compute `../../`, and the output still works over file://.
+function rewriteDocLinks(fragment, slug) {
+  return fragment
+    .replace(/href="\/docs\/([^"]*?)\/?"/g,
+      (_m, t) => `href="${relPage(slug, t.replace(/\/+$/, ''))}"`)
+    .replace(/href="\/"/g, `href="${relRoot(slug, 'index.html')}"`);
+}
+
 // ---------------------------------------------------------------------------
 // Link helpers — relative so the built site works over file:// or any host
 // ---------------------------------------------------------------------------
@@ -95,10 +105,11 @@ const allItems = nav.flatMap((s) => s.items);
 
 function pageDir(slug) { return path.posix.join('docs', slug); }
 
-// relative href from one page's dir to another page's dir (trailing slash)
+// relative href from one page's dir to another page's index.html — pointing at
+// the file (not the dir) so links work over file:// as well as a web server.
 function relPage(fromSlug, toSlug) {
   const rel = path.posix.relative(pageDir(fromSlug), pageDir(toSlug));
-  return (rel === '' ? '.' : rel) + '/';
+  return (rel === '' ? '' : rel + '/') + 'index.html';
 }
 // relative href from a page's dir to a build-root-relative target
 function relRoot(fromSlug, target) {
@@ -165,7 +176,7 @@ function layout({ slug, title, fragment }) {
 // A generated docs landing (two doors + section index)
 function docsHomePage() {
   const cards = nav.map((s) => {
-    const links = s.items.map((it) => `<li><a href="${it.slug}/">${it.title}</a></li>`).join('');
+    const links = s.items.map((it) => `<li><a href="${it.slug}/index.html">${it.title}</a></li>`).join('');
     return `<section class="home-sec"><h2>${s.section}</h2><ul>${links}</ul></section>`;
   }).join('');
   const fragment = `<article class="wit-doc"><h1>Documentation</h1>
@@ -194,7 +205,7 @@ function main() {
     const abs = path.join(CONTENT, it.file);
     if (!existsSync(abs)) { console.warn('  skip (missing):', it.file); continue; }
     let fragment;
-    try { fragment = highlightPre(renderWit(abs)); }
+    try { fragment = rewriteDocLinks(highlightPre(renderWit(abs)), it.slug); }
     catch (e) { console.error(`  ERROR ${it.file}: ${e.message}`); failed++; continue; }
     const title = it.title || titleFromFragment(fragment, it.slug);
     writePage(it.slug, layout({ slug: it.slug, title, fragment }));

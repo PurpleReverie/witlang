@@ -1,0 +1,106 @@
+@h1 Conditionals h1@
+
+A conditional shows content only when the data agrees. @@@code (if @path is
+value) … (end) code@@@ compares; @@@code (if @path) … (end) code@@@ tests
+truthiness. Use them for status banners, draft asides, and gated variants.
+
+@aside(class note) 💡 Statements are whitespace-delimited: @@@code (if …) code@@@, @@@code (each …) code@@@, and @@@code (end) code@@@ are recognised only when the @code ( code@ follows whitespace or the start of a line. Keep a space or newline between adjacent statements — see the last section. aside@
+
+@h2 Comparison h2@
+
+@@@pre
+#book: { status - draft }
+
+(if @book.status is draft) DRAFT WATERMARK (end)
+pre@@@
+
+That renders the watermark (verified). The comparison keyword is @strong is
+strong@ or @strong equals strong@ — they are @strong exact synonyms strong@
+(fixtures 12-conditionals/is-comparison, equals-comparison). There is @strong no
+strong@ other operator: no @code == code@, @code != code@, @code < code@,
+@code > code@, and no @code not code@, @code and code@, @code or code@, or
+@code contains code@.
+
+@h2 Equality coerces to strings h2@
+
+The right-hand side is a bareword or number, and equality stringifies both
+sides. So a number compares equal to its digits:
+
+@@@pre
+#meter: { value - 99 }
+
+(if @meter.value is 99) ON TARGET (end)
+pre@@@
+
+That is @strong true strong@ — the number @code 99 code@ stringifies to
+@code 99 code@ (verified; fixture compare-against-number). A record or collection
+stringifies to the empty string, so a container never equals a literal
+(compare-against-string).
+
+@h2 Existence and truthiness h2@
+
+Drop the operator to test whether a value is present and truthy:
+
+@@@pre
+#book: { flag - true }
+
+(if @book.flag) TRUTHY (end)
+pre@@@
+
+(fixture truthy-bare-reference.) The @strong falsy set strong@ is: missing or
+unresolved, the empty string, the string @code false code@, the number
+@code 0 code@, boolean @code false code@, null, an empty record @@@code {} code@@@,
+and an empty collection @code [] code@. Everything else is truthy.
+
+@h2 Else, empties, and nesting h2@
+
+An @@@code (else) code@@@ branch is optional:
+
+@@@pre
+#book: { status - draft }
+
+(if @book.status equals final) FINAL (else) NOT FINAL (end)
+pre@@@
+
+That renders @code NOT FINAL code@ (verified; fixture if-else-end). Empty then
+or else branches are legal no-ops (empty-then-body, empty-else-body), and ifs
+nest with their own @@@code (end) code@@@:
+
+@@@pre
+(if @lamp.lit)
+  (if @lamp.oil is full) BRIGHT (end)
+(end)
+pre@@@
+
+(nested-ifs; if-end-basic for the plain then-only form.)
+
+@h2 The glued-statement gotcha h2@
+
+Because statements need whitespace before the @code ( code@, a statement glued
+to a preceding @code ) code@ is @strong not recognised strong@ and renders
+literally:
+
+@@@pre
+(each @xs as x)(if @x is a)Y(end)(end)   ~ inner (if …) prints as text
+(each @xs as x) (if @x is a) Y (end) (end)   ~ works
+pre@@@
+
+(verified.) Always separate adjacent statements with a space or newline.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Reaching for @code contains code@, @code < code@, @code > code@,
+@code and code@, or @code or code@ — none exist. li@
+@li Comparing a whole record to a literal — a container stringifies to empty and
+never matches. li@
+@li Gluing @@@code (if code@@@ to a preceding @code ) code@ — keep a space. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/guides/data-access/| Data access a@ ·
+@a |href /docs/guides/typed-scalars/| Type-classified scalars a@ ·
+@a |href /docs/guides/faceted/| Faceted content a@ ·
+@a |href /docs/guides/gotchas/| Gotchas a@

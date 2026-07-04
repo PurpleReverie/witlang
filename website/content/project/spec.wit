@@ -1,0 +1,49 @@
+@h1 The spec h1@
+
+A note on where the authoritative description of Wit lives, and where it is
+going.
+
+@aside(class note) 💡 The standalone spec document in the repository is
+@strong stale strong@ and is not authoritative. Do not treat it as the source of
+truth for current behaviour. aside@
+
+@h2 What is authoritative instead h2@
+
+When two descriptions of Wit disagree, believe them in this order:
+
+@ul
+@li @strong The code strong@ — the parser, runtime, and renderers as they build
+today. li@
+@li @strong The fixtures strong@ — verified input-and-snapshot pairs that pin every
+behaviour. li@
+@li @strong The examples strong@ — whole documents that build green. li@
+@li @strong The project docs strong@ — the README, plan, and changelog. li@
+ul@
+
+The old spec sits below all of these. Anything it claims must be confirmed
+against a fixture or a real build before you rely on it.
+
+@h2 Reference is the new spec h2@
+
+The site's Reference section is built directly from code and fixtures and kept
+honest by live examples. As it fills out, it supersedes the standalone spec
+document: the plan is to deprecate and redirect the old spec once Reference is
+complete.
+
+@h2 Interim guidance h2@
+
+If you must consult the old spec in the meantime, cross-check every claim. A
+one-line @code wit build code@ or @code wit check code@ settles most questions
+faster than reading prose that may have drifted.
+
+@h2 The spec PDF h2@
+
+A spec PDF also lives in the repository under its own version tag. Like the
+Markdown spec, it is pending regeneration and carries the same caveat — verify
+against the fixtures.
+
+@h2 See also h2@
+
+@a |href /docs/project/architecture/| Architecture a@ describes the pipeline the
+fixtures test;
+@a |href /docs/project/changelog/| Changelog a@ tracks released behaviour.

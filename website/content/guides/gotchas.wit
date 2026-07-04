@@ -1,0 +1,150 @@
+@h1 Gotchas & ambiguity h1@
+
+This is the page to read when you feel like you are fighting the parser. Most of
+the time Wit gets out of your way — natural prose that happens to resemble syntax
+stays prose. But a handful of constructs @strong do strong@ mis-fire, and a few
+are outright bugs to route around. Both are here, honestly.
+
+@h2 Prose that safely looks like syntax h2@
+
+These all @strong stay prose strong@ — the parser is careful not to fire by
+accident (fixtures in 16-ambiguity, each verified):
+
+@ul
+@li @strong Em-dash is not the parameter separator. strong@ The separator is the
+exact three bytes space-hyphen-space; an em-dash and numeric ranges stay prose:
+@code The key — value pair, 1995 — 2010. code@ (em-dash-vs-hyphen). li@
+@li @strong A leading greater-than is not a blockquote. strong@ A line beginning
+@code >  code@ is ordinary text (blockquote-leader). li@
+@li @strong A mid-sentence "digit-period-space" is not an ordered list. strong@
+@code It happened in 1970. It was quiet. code@ stays one paragraph
+(year-period-space). li@
+@li @strong Digit-flanked asterisks are arithmetic, not emphasis. strong@
+@code 5*6*7 code@ and @code 2*3*4*5 code@ stay literal (mid-line-arithmetic). li@
+@li @strong A home path is not a comment. strong@ @code ~/Documents/notes.txt
+code@ in prose is text; a line comment needs a tilde @em then a space em@
+(tilde-home-path). li@
+@li @strong An apostrophe after italic is safe. strong@ @code _word_'s code@
+closes the italic and keeps the @code 's code@ (apostrophe-after-italic). li@
+@li @strong Nesting has no depth cap strong@ (deep-nesting), and @strong multiple
+blank lines collapse strong@ to a single paragraph break (multi-blank-line). li@
+ul@
+
+@h2 The one that surprises everyone: an email in prose h2@
+
+An @@@code @ code@@@ that follows a word character is @strong not strong@ read as
+opening a node — but @@@code word@ code@@@ (a word pressed against a following
+@@@code @ code@@@) @strong is read as a node close strong@. So an email address
+written plainly in prose splits the paragraph and drops the local part:
+
+@@@pre
+Contact keeper@example.org for archive access.
+pre@@@
+
+That renders as two paragraphs — @code Contact code@ and @code example.org for
+archive access. code@ — because @@@code keeper@ code@@@ was consumed as a close
+token. To show an address literally, wrap it in frozen inline code. (This
+corrects an older note that claimed such addresses stay prose; the build shows
+they do not.)
+
+@h2 The colon-scatter false positive h2@
+
+A space-free @code id:value code@ token buried in real prose still lifts as a
+parameter:
+
+@@@pre
+@thing the variable name:Tauraj is bad thing@
+pre@@@
+
+@code name code@ is lifted even though you meant it as prose (fixture
+24-colon-scatter/false-positive-prose). Fix by escaping the colon
+(@code name\: code@) or adding a space (@code name: … code@). The same bites
+URLs, ratios, and clock times written inside a scatter body.
+
+@h2 The record comma trap h2@
+
+An unquoted comma inside a record value splits the field —
+@code E_MALFORMED_RECORD code@:
+
+@@@pre
+#cite: { author - Boud, D., year - 2024 }    ~ splits into a keyless field
+#cite: { author: "Boud, D.", year: 2024 }    ~ quote to keep the comma
+pre@@@
+
+(fixture 09-records/comma-in-value.)
+
+@h2 Glued statements are not recognised h2@
+
+A @@@code (if …) code@@@, @@@code (each …) code@@@, or @@@code (end) code@@@ is
+recognised only when its @code ( code@ follows whitespace or a line start. Glue
+one to a preceding @code ) code@ and it renders literally:
+
+@@@pre
+(each @xs as x)(if @x is a)Y(end)(end)      ~ inner (if …) prints as text
+(each @xs as x) (if @x is a) Y (end) (end)  ~ works
+pre@@@
+
+(verified.) Keep a space or newline between adjacent statements.
+
+@h2 The greedy-bind and mixing traps h2@
+
+A bodyless pipes call greedily swallows forward to the next matching close —
+@code E_UNCLOSED_NODE code@. Give it an explicit @@@code name@ code@@@, a blank
+line after it, or place it last. And record-arg is exclusive: combining
+@@@code { … } code@@@ with parens or pipes collected before it is
+@code E_MIXED_PARAM_SOURCE code@. Both are covered in
+@a |href /docs/guides/parameters/| Parameters a@.
+
+@h2 A comment as a container's first line h2@
+
+If a @code ~ code@ comment is the very first line inside a node body, with no
+blank line after it, the block that follows can be folded into a stray paragraph
+— a heading gets mis-nested inside a @code <p> code@. Always leave a @strong
+blank line after a leading comment strong@ in a container body (see
+@a |href /docs/write/comments/| Comments a@; note block comments close with the
+exact @code ~~/ code@ fence).
+
+@h2 Multi-word key access via spaces fails h2@
+
+A data-access segment ends at a space, so a multi-word key written with spaces
+does not resolve — @@@code @keeper.years at post code@@@ reads only
+@@@code @keeper.years code@@@. Reach multi-word keys through the space-free camel
+or snake spelling (see @a |href /docs/guides/data-access/| Data access a@).
+
+@h2 The multi-line-call bugs and two cosmetic quirks h2@
+
+@ul
+@li A parens call across a newline breaks — the remainder leaks into the text
+(fixture 05-nodes-parens/multi-line-call). Keep parens calls on one line. li@
+@li A newline inside a single @@@code |…| code@@@ pipe value does not span lines
+— @code E_UNCLOSED_NODE code@ (06-parameters-pipes/multi-line-value). Use a body
+form for multi-line values. li@
+@li Following a template that has no body slot with body content silently drops
+that body (05-nodes-parens/parens-then-body). Pass bodies with pipes. li@
+@li @strong Cosmetic: strong@ @@@code @figure code@@@ can wrap a block
+@@@code @figcaption code@@@ in a @code <p> code@, and a frozen
+@@@code @@table code@@@ will not resolve @@@code @ref code@@@ rows — use a plain
+@@@code @table code@@@ when rows read from data. li@
+ul@
+
+@h2 The fixes, at a glance h2@
+
+@ul
+@li Email or @@@code word@ code@@@ in prose → wrap it in frozen inline code. li@
+@li Colon false positive → @code \: code@ or a space. li@
+@li Record comma → quote the value. li@
+@li Leading comment in a container → blank line after it. li@
+@li Bodyless pipes → explicit @@@code name@ code@@@, blank line, or last. li@
+@li Glued statements → keep a space. li@
+@li Spaced multi-word access → camel or snake spelling. li@
+@li Data in prose → @@@code @field code@@@, not @@@code {{…}} code@@@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/parameters/| Parameters a@ ·
+@a |href /docs/guides/colon-scatter/| Colon-scatter a@ ·
+@a |href /docs/guides/escapes/| Escapes a@ ·
+@a |href /docs/guides/data-access/| Data access a@ ·
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/iteration/| Iteration a@

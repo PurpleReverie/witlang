@@ -1,0 +1,100 @@
+@h1 Iteration h1@
+
+@@@code (each @collection as item) … (end) code@@@ renders its body once per
+element, in source order. It is how you turn a collection into a table of
+contents, a list, a set of cards — any repeated view of your data.
+
+@h2 Over scalars and over records h2@
+
+@@@pre
+#themes: [ solitude, vigilance, return ]
+
+(each @themes as item) The watch returned to @item. (end)
+pre@@@
+
+Inside the body, @@@code @item code@@@ is the whole element (fixture
+13-iteration/each-over-values). When the elements are records, walk into them
+with a dotted access:
+
+@@@pre
+#watchers: [ { name - Ada, post - lamp }, { name - Bo, post - log } ]
+
+(each @watchers as item) @item.name kept the @item.post. (end)
+pre@@@
+
+(each-over-records.) Loop variables are usable inside parameter values too —
+@@@code @watch |keeper @item.name| code@@@ (body-with-params).
+
+@h2 Collections only h2@
+
+The target must be a collection. A record or scalar is @strong not iterable
+strong@ — @code E_NOT_ITERABLE code@. There is no "iterate a record's fields"
+form; to loop a nested list, point at it with a dotted target like
+@@@code @deck.hands code@@@.
+
+@h2 Scope and shadowing h2@
+
+The loop variable is @strong body-local strong@ and @strong shadows strong@ a
+same-named global:
+
+@@@pre
+#item: solitary
+#hands: [ { name - Ada }, { name - Bo } ]
+
+Outside the loop, @item is solitary.
+
+(each @hands as item) @item.name (end)
+pre@@@
+
+Outside, @@@code @item code@@@ is the global @code solitary code@; inside, it is
+each element in turn (verified; fixture item-name-shadowing). Resolution
+precedence is: iteration frames (innermost first), then data definitions, then
+node definitions.
+
+@h2 What iteration does not give you h2@
+
+There is @strong no index, position, first, last, or counter strong@ variable —
+call it out when you plan a layout that needs numbering, and supply the numbers
+in the data or via a script. An @strong empty collection emits nothing strong@
+(not an error; fixture empty-collection), an empty body is legal (empty-body),
+and order is always preserved (iteration-order-preservation).
+
+@h2 Nesting and combining with conditions h2@
+
+Loops nest — the inner loop gets its own frame, and the outer element stays
+visible:
+
+@@@pre
+(each @decks as deck)
+  (each @deck.hands as hand) @hand, (end)
+(end)
+pre@@@
+
+(nested-each; @@@code (end) code@@@ tokens pair last-in-first-out, end-token-pairing.)
+A loop and a condition compose, with the condition resolved through the
+iteration frame:
+
+@@@pre
+(each @hands as item)
+  (if @item.awake is true) @item.name is on watch. (end)
+(end)
+pre@@@
+
+(verified; fixture each-with-if.)
+
+@h2 Common mistakes h2@
+
+@ul
+@li Iterating a record — use a collection, or a dotted list inside it. li@
+@li Expecting an index variable — there is none. li@
+@li Gluing @@@code (each …)(if …) code@@@ with no space — the inner statement is not
+recognised. Keep a space or newline (see Gotchas). li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/data/| Data a@ ·
+@a |href /docs/guides/data-access/| Data access a@ ·
+@a |href /docs/guides/self-organising/| Self-organising documents a@ ·
+@a |href /docs/guides/multi-file/| Multi-file references a@

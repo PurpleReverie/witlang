@@ -1,29 +1,120 @@
 @h1 What is Wit? h1@
 
-Wit is a prose-first markup language for people who write — and for the
-systems that consume what they write. You type plain text, and it stays plain
-text. Structure, data, and logic layer in only where you reach for them.
+Wit is a prose-first markup language — for the people who write, and for the
+systems that read what they write. You type ordinary sentences and they stay
+ordinary sentences. Structure, data, and logic appear only where you reach for
+them, and nowhere else.
 
-@h2 Prose is the default h2@
+That is the whole idea. Everything below is a consequence of it.
 
-Most of any document is just prose. A blank line starts a new paragraph, and
-nothing needs marking up. You never fight the tool to write a sentence — the
-markup gets out of the way until you want it.
+@h2 The problem Wit solves h2@
 
-@h2 Structure when you need it h2@
+Markdown is wonderful right up to the moment you need structure. Then it stops.
+A captioned figure, a table built from your data, a citation that knows its own
+page number, a section that appears only in the internal draft — Markdown has no
+words for any of these. The usual advice is to "just drop into HTML," but the
+first raw tag shreds the very thing that made Markdown pleasant: the sense that
+you were writing, not coding.
 
-When you do need a heading, a table, a citation, or a reusable component, you
-reach for a @em node em@ — and only there. Everything around it stays ordinary
-prose, readable in a plain text editor and friendly to @strong git strong@.
+The heavier tools swing the other way. HTML gives you total control and takes
+away the feeling of writing entirely. LaTeX produces beautiful pages, but asks
+for a preamble, a package list, and a compile toolchain before you have written
+a word. Each tool is asking you to choose between prose and power.
+
+@h2 The Wit answer h2@
+
+You should not have to choose. In Wit, plain sentences stay plain. Structure is
+a first-class citizen — but an opt-in one. A document that is nothing but
+paragraphs is already a complete, valid Wit document. When you finally do want a
+heading or a table, you add exactly that much structure and no more.
+
+@@@pre
+The keeper had not spoken aloud in eleven days.
+
+He had not noticed, until his own voice *surprised* him.
+pre@@@
+
+That is real Wit. A blank line starts a new paragraph; @code *surprised* code@
+becomes bold. There was no markup to learn before you could begin, and there is
+none to clean up after.
+
+@h2 Structure, only where you reach for it h2@
+
+When you do want more, you reach for a @strong node strong@ — a named structure
+written @@@code @name … name@ code@@@. Everything around it stays prose.
+
+@@@pre
+@h1 Why I like lighthouses h1@
+
+The lamp burned *steady* through the _storm_ — the kind of
+weather that, in another life, would have called for company.
+pre@@@
+
+Build that and you get clean, semantic HTML: an @@@code <h1> code@@@, a
+paragraph, a @@@code <strong> code@@@, and an @@@code <em> code@@@. Build the
+very same file to Markdown instead and you get @code # Why I like lighthouses code@
+with @code **steady** code@ — one source, whichever output the moment calls for.
 
 @h2 Where Wit fits h2@
 
-@table |rows [[Tool, Loved for, Breaks when you need], [Markdown, quick prose, captions, data, conditionals], [HTML, total control, it stops being writing], [LaTeX, beautiful output, the syntax and the toolchain], [Wit, prose that scales into structure, it is still young]]|
+@table |rows [[Tool, Reads as prose, Structured nodes, Data + logic, Outputs], [Markdown, Yes, Only via raw HTML, No, HTML], [HTML, No, Yes, No, HTML], [LaTeX, No, Yes, Macros only, PDF], [Wit, Yes, Yes, Yes, HTML · Markdown · PDF]]|
 
-@h2 One source, many outputs h2@
+Wit is the row that says yes to all of it — prose that reads like prose, real
+structure when you want it, data and logic when the document has to organise
+itself, and a single source that compiles to whatever your reader needs.
 
-The same document renders to semantic HTML, to Markdown, or to a paginated,
-print-ready PDF — with a single command. Keep the source in git as text;
-compile a reader-ready draft in seconds.
+@h2 The payoff Markdown can't reach h2@
 
-@blockquote Write the paper. Not the preamble. blockquote@
+Here is the kind of thing that sends a Markdown author into raw HTML — a figure
+with a real caption:
+
+@@@pre
+@figure
+  @img |src ./lamp.png| |alt The keeper's lamp|
+  @figcaption The lamp that never went dark. figcaption@
+figure@
+pre@@@
+
+That renders to a proper @@@code <figure> code@@@ with a @@@code <figcaption> code@@@ —
+semantic, accessible, and still perfectly readable in the source. Tables built
+from your data, reusable components, self-assembling bibliographies, and
+draft-versus-final sections all work the same way: written in Wit, not smuggled
+in as HTML.
+
+@h2 What ships h2@
+
+Wit is a small, honest toolkit — five zero-dependency TypeScript packages (the
+parser, the runtime, an HTML renderer, a Markdown renderer, and the command-line
+tool) plus a VS Code extension. A clean install pulls in nothing else. You can
+use the @code wit code@ command as a writer and never see the packages, or embed
+the packages in your own program and never touch the command line.
+
+@h2 What Wit is not h2@
+
+Being honest about the edges is part of the pitch. Wit is a @strong file format strong@,
+not a content-management system, not an editor, and not a general templating
+engine. It is deliberately @strong not Turing-complete strong@: there are
+conditionals and loops for shaping a document from its data, but the single
+escape hatch for real computation is a scripting block, used sparingly and on
+purpose. And it is young — the syntax is stable enough to write books in, but
+the ecosystem is still small. If you need a typesetting engine with fine control
+over kerning and page floats, Wit is not that; if you want to write and have
+structure when you need it, it is exactly that.
+
+@h2 Who it's for h2@
+
+Two kinds of people. If you @strong write things — reports, essays, theses,
+documentation strong@ — and want them in plain text under version control, Wit
+keeps your prose clean and your structure real. If you @strong build things strong@
+and want a readable source format your program can parse, resolve, and render,
+Wit gives you a typed pipeline to hang your tools on. Most people are the first
+kind. Both are welcome.
+
+@h2 See also h2@
+
+Ready to try it? Write @a |href /docs/start/first-document/| your first document a@.
+Coming from Markdown or LaTeX, start with
+@a |href /docs/start/migration-markdown/| Migration from Markdown a@ or
+@a |href /docs/start/migration-latex/| Migration from LaTeX a@. To understand the
+shape of the whole language, read @a |href /docs/start/mental-model/| the mental
+model a@, then @a |href /docs/start/choose-your-path/| choose your path a@.

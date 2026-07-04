@@ -1,0 +1,90 @@
+@h1 Additive partials h1@
+
+An additive partial lets @strong many places contribute to one growing node
+strong@. Prefix a definition with @@@code + code@@@ — @@@code +#name code@@@ —
+and every declaration of that name @strong merges strong@ in document order.
+This is how a table of contents, a bibliography, or a figure list assembles
+itself as chapters are written and reordered.
+
+@h2 The problem it solves h2@
+
+Without additive partials, a bibliography is a second list you maintain by hand,
+always drifting from the citations. With them, each chapter registers its own
+entry where the citation lives, and the bibliography is simply the merge of all
+of them.
+
+@h2 The two shapes h2@
+
+Both definition shapes take the @@@code + code@@@ prefix. Block:
+
+@@@pre
++#toc
+I. The Lamp
+toc#
+
++#toc
+II. The Watch
+toc#
+
+@toc
+pre@@@
+
+That merges to @code I. The Lamp II. The Watch code@ (verified). And
+single-line:
+
+@@@pre
++#bibliography: @weil Simone Weil, Gravity and Grace, 1952 !!
+pre@@@
+
+(fixtures 08-additive-partials/block-additive, single-line-additive.) A lone
+@@@code +#name code@@@ with no sibling is a complete one-entry definition
+(simple-additive-prefix). Additive defs may carry captures with
+@@@code ::name:: code@@@ just like ordinary defs (additive-with-captures).
+
+@h2 Order and mixing h2@
+
+Contributions merge in @strong document order strong@, and across files in
+reference (depth-first) order (fixtures multiple-additive-same-file,
+order-preservation, cross-file-merge). A non-additive @strong base strong@ can
+seed the node and additives extend it (mix-normal-and-additive).
+
+@aside(class note) 💡 All contributions to one name must agree on @strong body shape strong@ — you cannot mix a block contribution with a single-line one. A mismatch is @code E_PARTIAL_SHAPE_MISMATCH code@ (fixture mixed-body-shape). aside@
+
+@h2 Across files h2@
+
+The pattern that makes a self-organising bibliography work: a master file
+references each chapter and holds a bare @@@code @bibliography code@@@; each
+chapter self-registers with @@@code +#bibliography code@@@.
+
+@@@pre
+~ master.wit
+reference ./one.wit
+reference ./two.wit
+
+@bibliography
+
+~ one.wit
++#bibliography: @weil Simone Weil, Gravity and Grace, 1952 !!
+pre@@@
+
+Every referenced file's contributions merge into the one node, in reference
+order (fixture 08-additive-partials/cross-file-merge). The reference graph is
+the scope.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Mixing body shapes across contributions (block vs single-line) —
+@code E_PARTIAL_SHAPE_MISMATCH code@. li@
+@li Declaring a plain @@@code #bibliography code@@@ in the master when chapters
+already use @@@code +#bibliography code@@@ — unless you mean it as the base. li@
+@li Putting whitespace between the @@@code + code@@@ and the @@@code # code@@@ —
+write @@@code +#name code@@@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/defining-nodes/| Defining nodes a@ ·
+@a |href /docs/guides/multi-file/| Multi-file references a@ ·
+@a |href /docs/guides/self-organising/| Self-organising documents a@ ·
+@a |href /docs/guides/glossary-xref/| Glossary & cross-references a@

@@ -1,0 +1,40 @@
+@h1 Known limitations h1@
+
+What Wit does not do yet, or does with a documented rough edge. Every row is
+re-verified against the current build. Where a fixture pins the behaviour, it is
+cited.
+
+@h2 Parsing and authoring h2@
+
+@table |rows [[Limitation, Impact, Workaround], [greedy pipes-bind ordering, a pipes call with no same-line close binds to the next close, close on the same line or place pipes calls last], [comment as first child of a container, following blocks collapse into one paragraph, blank line after the comment], [single-line def with captures, renders the literal capture list, use the block def form], [colon delimiter in data-def records, LSP rejects it though the CLI tolerates call sites, use the hyphen delimiter], [at-strings in record values, emails and paths break record parsing, keep at-strings out of record values], [inline table cells cannot be quoted, commas split a cell and quotes stay literal, avoid commas in cells or use a schema form]]| |caption Parsing| table@
+
+@h2 Data and access h2@
+
+@table |rows [[Limitation, Impact, Workaround], [numeric index access, @list.0 and @rec.0.field render unresolved, use each or feed the collection to a table], [bare data-def reference, @record emits an empty wit-node placeholder, access a field or iterate], [CSV/TSV sources have no quoted fields, a comma or tab inside a field breaks rows, emit JSON or pre-clean the data]]| |caption Data| table@
+
+@h2 Rendering h2@
+
+@table |rows [[Limitation, Impact, Workaround], [figure wraps a block figcaption in a paragraph, cosmetic extra paragraph element, harmless — or use an inline figcaption], [raw table cannot resolve a ref, a raw double-at table leaves rows @ref literal, use the ordinary table node], [HTML renderer is configuration-free, one fixed HTML shape per AST kind; table and bibliography are hard-coded special cases, post-process the HTML or restyle with CSS], [table centering is theme-only, the reset-only raw pathway does not centre tables, add your own CSS under raw]]| |caption Rendering| table@
+
+@h2 Tooling and platform h2@
+
+@table |rows [[Limitation, Impact, Workaround], [PDF needs a system Chrome, no bundled engine, install Chrome or Chromium or set WIT_CHROME], [config is JSON-only, no TOML yet, use wit.sources.json], [LSP is stricter than the CLI, a file can check clean yet show squiggles, prefer the portable forms]]| |caption Tooling| table@
+
+@h2 Metadata drift (not runtime bugs) h2@
+
+@table |rows [[Drift, Reality], [code VERSION is 0.1.0, a v0.2.0 git tag exists], [runtime header says 47 core-vocab names, the list has 52]]| |caption Drift| table@
+
+@aside(class note)
+These two are @strong metadata drift strong@, tracked on the project and
+changelog pages — the runtime behaviour is correct (52 names; the pipeline works
+regardless of the printed version). See @a |href /docs/reference/api/| API a@ and
+@a |href /docs/reference/core-vocabulary/| core vocabulary a@.
+
+aside@
+
+@h2 See also h2@
+
+@a |href /docs/reference/gotchas/| Gotchas a@ ·
+@a |href /docs/reference/errors/| Errors a@ ·
+@a |href /docs/reference/data-model/| Data model a@ ·
+@a |href /docs/reference/tables/| Tables a@.

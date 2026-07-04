@@ -1,0 +1,87 @@
+@h1 The draft workflow h1@
+
+Here is the story that sells Wit to a working writer: your manuscript is plain
+text in a git repository, you compile a reader-ready PDF in seconds, and every
+draft is versioned and diff-able like code. No binary document format, no lost
+track changes, no "final_final_v3.docx". Just text you own and outputs you
+generate on demand.
+
+@h2 Your manuscript is text h2@
+
+A manuscript is one or more @code .wit code@ files in a folder under git. You
+edit in whatever editor you like, and git tracks every change — line by line, in
+plain language you can actually read in a diff.
+
+@h2 Compile a reader copy h2@
+
+When you want something to send, build a PDF:
+
+@@@pre
+wit build manuscript.wit -o draft.pdf
+pre@@@
+
+That renders your source through a headless browser into a paginated,
+print-ready PDF. Send it, and keep writing — the source never leaves your repo.
+
+@h2 Every draft is diff-able h2@
+
+Because the source is text, a change between drafts is a readable diff — you see
+exactly which sentences moved, not an opaque blob of bytes. Commit your drafts as
+you go, and the history of your thinking is right there:
+
+@@@pre
+git add manuscript.wit
+git commit -m "Tighten the opening; cut the second epigraph"
+pre@@@
+
+@h2 Versioned drafts h2@
+
+Tag or branch a draft the way you would any code. Compare last week's version to
+today's with an ordinary diff; keep a branch for an experimental restructure you
+are not sure about. The full apparatus of version control is available to your
+prose, for free.
+
+@h2 Normalise before committing h2@
+
+Wit ships a formatter that re-indents a file to match its real structure, so your
+source stays tidy and your diffs stay clean. It writes in place with a flag:
+
+@@@pre
+wit fmt manuscript.wit -w
+pre@@@
+
+It reports whether it reformatted or left the file unchanged, and it requires the
+file to parse first — so a formatter run doubles as a quick sanity check that the
+document is well formed.
+
+@aside(class note) 💡 One honest limit: there is no built-in watch mode — no
+command that recompiles automatically as you type. The "instant recompile" story
+is simply that the build is fast, so you re-run it. If you want automatic rebuilds,
+wrap the build in a shell loop or a file-watcher tool such as one that reruns a
+command when a file changes. aside@
+
+@h2 One more honest limit: PDF needs a browser h2@
+
+PDF output is rendered through a local copy of Chrome or Chromium (or one you
+point to with an environment variable). If no browser is found, the build stops
+and tells you so, with guidance to render to HTML and convert that instead. HTML
+and Markdown output have no such dependency.
+
+@h2 The shape of a working setup h2@
+
+@ul
+@li A folder under git holding your @code .wit code@ source. li@
+@li A build command you run to produce a PDF (or HTML, or Markdown) to share. li@
+@li A formatter run before you commit, to keep diffs clean. li@
+@li Tags or branches for drafts you want to compare. li@
+ul@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/rendering/| Rendering a@ — every output format and when
+to reach for it. li@
+@li @a |href /docs/write/multi-file/| Multi-file manuscripts a@ — splitting a book
+across chapter files. li@
+@li @a |href /docs/write/styling/| Styling a@ — the look of the reader copy. li@
+ul@

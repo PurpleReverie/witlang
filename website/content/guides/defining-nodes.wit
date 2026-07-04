@@ -1,0 +1,112 @@
+@h1 Defining nodes h1@
+
+A definition creates a reusable template: @@@code #name … name# code@@@ defines
+it, and @@@code @name code@@@ uses it. Definitions are the core of reuse —
+cards, citations, chapter wrappers, callouts. This page covers the three body
+shapes, capture lists, the @@@code ::name:: code@@@ hole, and the @@@code ...
+code@@@ body slot. Read it before Interpolation & captures and before Additive
+partials.
+
+@h2 Three body shapes h2@
+
+@ul
+@li @strong Block strong@ — @@@code #name … name# code@@@ wraps multiple lines
+(fixture 07-definitions/block-definition). li@
+@li @strong Single-line strong@ — @@@code #name: value !! code@@@ names a short
+value; the @@@code !! code@@@ closes it (single-line-def,
+single-line-def-with-captures). li@
+@li @strong Value-block strong@ — @@@code #name: code@@@ then indented content
+then @@@code !! code@@@ names a longer value that may span lines (multi-line-value). li@
+ul@
+
+@@@pre
+#epigraph:
+The sea does not forgive forgetting.
+— coastal proverb
+!!
+
+Attention begins here. @epigraph
+pre@@@
+
+@h2 Capture lists: explicit or inferred h2@
+
+A capture list names the parameters a template accepts, written
+@@@code ||a, b, c|| code@@@ right after the handle. Inside the body, each
+@@@code ::name:: code@@@ is filled by the matching parameter.
+
+@@@pre
+#cite ||author, title, year||
+::author:: (::year::). _::title::_.
+cite#
+pre@@@
+
+(fixture 07-definitions/captures-and-interpolation, multi-capture-list.) The
+list is @strong optional strong@: leave it out and Wit infers the captures by
+scanning the body for @@@code ::ident:: code@@@ in source order.
+
+@@@pre
+#tpl hello ::name:: tpl#
+
+@tpl |name world|
+pre@@@
+
+That renders @code hello world code@ (fixture
+21-optional-captures/without-captures-inferred; also block-def-inferred, and
+with-explicit-captures when you keep the list). Inference walks into nested
+paragraphs, emphasis, node uses, and @@@code (if) code@@@ / @@@code (each) code@@@
+bodies, so a hole anywhere in the template is found.
+
+@h2 The capture hole and the body slot h2@
+
+@@@code ::name:: code@@@ is recognised @strong only inside a definition body
+strong@ (fixtures interpolation-only, captures-body-slot-interpolation). In
+ordinary prose it renders literally — to put data into a sentence, use data
+access @@@code @name.field code@@@ instead.
+
+The @strong body slot strong@ @@@code ... code@@@ splices the use-site body into
+the template once:
+
+@@@pre
+#panel
+START ... END
+panel#
+
+@panel
+middle
+panel@
+pre@@@
+
+That yields @code START code@, then @code middle code@, then @code END code@
+(fixtures body-slot, body-slot-only, captures-body-slot-interpolation).
+
+@h2 Forward references and defs that use defs h2@
+
+Definitions are @strong hoisted strong@, so a use may precede its definition —
+@@@code @x code@@@ before @@@code #x code@@@ resolves fine (fixture
+forward-reference). A definition body may reference another definition:
+
+@@@pre
+#keeper Ada Lovelace keeper#
+
+#bio Written by @keeper. bio#
+pre@@@
+
+(fixtures definition-references-definition, 17-combinations/def-of-def.)
+
+@h2 Common mistakes h2@
+
+@ul
+@li Using @@@code ::name:: code@@@ in prose — it only lives in a definition
+body. li@
+@li Redefining the same @@@code #name code@@@ twice — an error, unless you mark
+it additive with @@@code +#name code@@@ (see Additive partials). li@
+@li Expecting a use-site parameter to reach an inner @@@code (if) code@@@ unless the
+template surfaces it through a capture. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/interpolation-captures/| Interpolation & captures a@ ·
+@a |href /docs/guides/parameters/| Parameters (how uses feed defs) a@ ·
+@a |href /docs/guides/additive-partials/| Additive partials a@ ·
+@a |href /docs/guides/escapes/| Escapes a@

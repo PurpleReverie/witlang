@@ -1,0 +1,68 @@
+@h1 Type-classified scalars h1@
+
+Every bareword value in Wit is @strong eagerly classified strong@ at parse time
+into one of four types — boolean, null, number, or string — and quoting forces a
+string. The resulting type is not cosmetic: it drives conditionals, truthiness,
+iteration, and how @@@code {{…}} code@@@ coerces a value.
+
+@h2 The classification rules, in order h2@
+
+@ul
+@li @code true code@ or @code false code@ → boolean. li@
+@li @code null code@ → null. li@
+@li Matches @@@code -?(?:[0-9]+|[0-9]+.[0-9]+) code@@@ → number. li@
+@li Anything else → string. li@
+ul@
+
+The number pattern is @strong strict strong@: an optional leading minus, then
+digits, optionally a single dot and more digits. There is @strong no strong@
+leading or trailing bare dot, @strong no strong@ exponent, and @strong no strong@
+unary plus. So these all stay @em strings em@: @code .5 code@, @code 5. code@,
+@code 1e3 code@, @code +1 code@, and @code "2024" code@ (quoted).
+
+@@@pre
+#report: { title - Q3 Review, quarter - 2024, final - true }
+pre@@@
+
+@code title code@ is a string, @code quarter code@ a number, @code final code@ a
+boolean (fixture 09-records/scalar-types). The same happens per item in a
+collection:
+
+@@@pre
+#mixed: [ 1, two, true ]
+pre@@@
+
+Number, string, boolean respectively (fixture 10-collections/mixed-types).
+
+@h2 The type reaches every call form h2@
+
+Classification is not limited to data definitions. Every non-flag parameter
+value — through pipes, parens, record-arg, form-fill, or colon-scatter — is run
+through the same probe, so a value passed by @em any em@ form can arrive as a
+typed number, record, or collection and be a valid @@@code (each) code@@@ target,
+@@@code @x.field code@@@ target, or @@@code (if) code@@@ operand.
+
+@h2 Equality is by string coercion h2@
+
+Conditionals compare by stringifying both sides, so a quoted @code "2024" code@
+and a bare @code 2024 code@ @strong do strong@ compare equal — both stringify to
+@code 2024 code@. But @code "2024" code@ is not a @em number em@: the
+distinction matters wherever a real numeric type is expected, not for equality.
+See @a |href /docs/guides/conditionals/| Conditionals a@ for the full comparison
+model.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Assuming @code "2024" code@ is a number — it is a string that happens to
+compare equal to @code 2024 code@. li@
+@li Assuming @code 1e3 code@, @code .5 code@, or @code +1 code@ are numbers —
+the strict pattern leaves them strings. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/data/| Data a@ ·
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/guides/interpolation-captures/| Interpolation (coercion) a@

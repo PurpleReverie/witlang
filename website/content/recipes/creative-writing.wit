@@ -1,0 +1,77 @@
+@h1 Creative writing without indentation h1@
+
+Write fiction where the source reads like the finished page — flat paragraphs, no
+indentation, scenes and emphasis in the lightest possible markup. The file below
+is complete and builds green.
+
+@h2 The whole story h2@
+
+@@@pre
+@h2 One · The Harbour h2@
+
+The rain had not stopped for three days.
+
+Mara pressed her palm to the cold glass and counted the boats that were
+no longer there. _One. Two._ The third had been her father's.
+
+#scenebreak: ✦ ✦ ✦ !!
+
+@scenebreak
+
+"You can't stay," the harbourmaster said.
+
+She said nothing. There was *nothing*, she had learned, that saying could fix.
+
+@hr hr@
+
+And then the tide turned.
+pre@@@
+
+@h2 What each piece does h2@
+
+@ul
+@li @strong Paragraphs. strong@ Just type them, a blank line between. No leading
+spaces, no wrapping node — each block becomes its own paragraph. li@
+@li @strong Emphasis. strong@ @code _One. Two._ code@ becomes italics;
+@code *nothing* code@ becomes bold. The marks wrap a run of text and nothing
+else. li@
+@li @strong A scene heading. strong@ @strong h2 strong@ opens the chapter. li@
+@li @strong A scene break. strong@ Define an ornament once —
+@@@code #scenebreak: ✦ ✦ ✦ !! code@@@ — and drop it in as a bare
+@@@code @scenebreak code@@@. For a plain rule, @@@code @hr hr@ code@@@ is core
+vocabulary. li@
+ul@
+
+@h2 Build h2@
+
+@@@pre
+wit build story.wit --fragment
+pre@@@
+
+Or @code -o story.pdf code@ for print. Verified: each block is its own
+paragraph; @code _One. Two._ code@ renders as italics and @code *nothing* code@
+as bold; @@@code @scenebreak code@@@ prints the ornament; @@@code @hr hr@ code@@@
+renders a horizontal rule. The apostrophe in @code father's code@ passes through
+correctly.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong There is no @code break code@ node. strong@ Use @@@code @hr hr@ code@@@
+or a definition of your own for a divider — @code break code@ is not core
+vocabulary. li@
+@li @strong Nest emphasis outer-italic. strong@ @@@code _*x*_ code@@@ leaves the
+inner @code * code@ literal; write @@@code *_x_* code@@@ to get bold italics. li@
+ul@
+
+@h2 Variations h2@
+
+Name an epigraph as a reusable value definition and recall it with a bare
+reference; give a scene heading a subtitle with an interpuncted @strong h2 strong@
+title, as above.
+
+@h2 See also h2@
+
+@a |href /docs/write/emphasis/| Emphasis a@ covers the token-wrap rule in full;
+@a |href /docs/recipes/rpg-script/| An interactive script a@ adds data and logic
+to a scene.

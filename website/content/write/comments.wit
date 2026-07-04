@@ -1,27 +1,112 @@
 @h1 Comments h1@
 
-A comment is a note to yourself that no reader ever sees — a TODO, a source to
-check, an editorial aside.
+A comment is a note to yourself that never reaches the reader. Wit has two
+forms: a line comment that runs to the end of a line, and a block comment that
+can sit inline or span many lines. Both are stripped before any output —
+whether you render to HTML, Markdown, or PDF, a comment is simply gone.
+
+@h2 Why keep notes in the source h2@
+
+Drafting is thinking. You want to leave a "verify this date", a "cut this if the
+section runs long", a reminder of where an argument is heading — right next to
+the prose it concerns, without it ever showing up in the finished document.
+Because comments live in the text file, they travel with your manuscript in git
+and diff like everything else.
+
+@h2 The line comment h2@
+
+A tilde followed by a space starts a line comment. Everything from the tilde to
+the end of that line disappears:
 
 @@@pre
-~ verify this date before publishing
-The lighthouse was automated in 1998.
+~ remember to verify the commissioning year against the county records
+
+The lighthouse was commissioned in 1847.
 pre@@@
 
-A line that starts with @@@code ~ code@@@ followed by a space is a comment. It
-vanishes from every output — HTML, Markdown, and PDF alike.
+Only the paragraph survives; the note is gone. The space after the tilde is
+required — a tilde glued straight to a word is _not_ a comment (more on that
+below).
 
-@h2 One caution h2@
+@h2 The block comment h2@
 
-Don't put a comment as the very @em first em@ line inside a node's body without
-a blank line after it — under the covers it can pull the following block into
-the wrong place. A blank line right after the comment always avoids it:
+Two tildes open a block comment; a closing fence ends it. It can vanish in the
+middle of a sentence:
 
 @@@pre
-@section
-
-  ~ this comment is safe — note the blank line above and below
-
-  @h2 A heading that stays a heading h2@
-section@
+The bell ~~ TODO: confirm the exact year ~~/ rang on the hour.
 pre@@@
+
+renders as "The bell  rang on the hour." — the aside between the fences is
+removed. The same fences can wrap many lines at once:
+
+@@@pre
+~~
+Draft note: this whole passage may move to chapter two.
+Ask the editor before cutting it.
+~~/
+The keeper climbed the stair as he always had.
+pre@@@
+
+Everything between the open and close fences is dropped; the paragraph after it
+is untouched.
+
+@h2 Every rule, in one place h2@
+
+@ul
+@li _A line comment needs the space._ A tilde-then-space at the start of a line
+opens a line comment to end-of-line. Without the space it is ordinary prose. li@
+@li _A block comment opens anywhere._ The doubled-tilde fence opens a comment
+even at the start of a line, and only the exact closing fence ends it. li@
+@li _A bare doubled tilde inside an open block is content._ Because only the
+closing fence ends the comment, you can use a doubled tilde as a divider inside a
+long block comment without closing it early. li@
+@li _Shell paths inside a comment are safe._ A home path such as
+@code ~/Documents/notes code@ or @code ~/.bashrc code@ sitting inside a block
+comment does not close it — only the exact closing fence does. li@
+@li _An empty comment is legal._ An open fence immediately followed by a close
+fence renders nothing at all. li@
+ul@
+
+@h2 The tilde in ordinary prose h2@
+
+Outside the two comment forms, a tilde is just a character. Glued to a token it
+never starts a comment, so approximations and paths read normally:
+
+@@@pre
+It took ~6 hours. The file is in ~/Documents. We wrote x ~ y for "about equal".
+pre@@@
+
+All three are plain prose. Only a leading tilde-plus-space (a line comment) or a
+doubled tilde (a block comment) is special.
+
+@h2 Common mistakes h2@
+
+@ul
+@li _A standalone note glues its neighbours together._ A line comment sitting
+between two prose lines with no blank lines around it consumes its own line _and_
+the newlines on either side, so the two paragraphs run together with no space
+between them. The fix is simple: leave a blank line on each side of a standalone
+note. li@
+@li _A comment as the first line inside a container collapses the next block._
+If a comment is the very first thing inside a node body — the opening line of a
+@@@code @section code@@@ or a grid — the block right after it can be wrongly folded
+into a paragraph. Always put a blank line after a comment that leads a container
+body. li@
+@li _Forgetting the space after the tilde._ A tilde pressed against a word is not
+a line comment; it is prose punctuation. Write the tilde, then a space, then your
+note. li@
+ul@
+
+@aside(class note) 💡 The blank-line habit is worth building: a blank line before
+and after any standalone comment keeps both of the mistakes above from ever
+happening. aside@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/prose/| Paragraphs & prose a@ — the tilde as ordinary
+punctuation. li@
+@li @a |href /docs/write/using-nodes/| Using nodes a@ — why a comment inside a
+container body needs its blank line. li@
+ul@

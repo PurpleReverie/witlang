@@ -1,0 +1,110 @@
+@h1 A website built entirely in Wit h1@
+
+Build a full, self-styled, multi-section landing page as one Wit project — you
+own every byte of CSS and JS, with no framework. The whole site is
+@code .wit code@ files and one build command.
+
+@h2 Step 1 — The root file h2@
+
+@code site.wit code@ references the theme, the script, and each section, then
+emits them in order — the script last so the DOM exists when it runs.
+
+@@@pre
+reference ./theme.wit
+reference ./script.wit
+reference ./parts/nav.wit
+reference ./parts/hero.wit
+
+@stylesheet stylesheet@
+@page_nav page_nav@
+@page_hero page_hero@
+@scripts scripts@
+pre@@@
+
+@h2 Step 2 — The design system h2@
+
+@code theme.wit code@ holds one definition whose body is a literal
+@code style code@ node — the whole stylesheet, custom properties, dark-mode
+overrides, and media queries.
+
+@@@pre
+#stylesheet
+@@style
+:root { --bg: #f6f1e7; --accent: #8a2b39; }
+:root.dark { --bg: #14110c; }
+@media (max-width: 700px) { .hero { padding: 2rem; } }
+style@@
+stylesheet#
+pre@@@
+
+A double-fence literal node (@@@code @@ code@@@) is emitted verbatim inside a
+@code style code@ element: resolve and expand never re-parse or interpolate its
+body, so raw CSS passes straight through.
+
+@h2 Step 3 — Behaviour h2@
+
+@code script.wit code@ puts the JavaScript in a @strong frozen strong@ literal so
+the braces and template syntax pass through untouched.
+
+@@@pre
+#scripts
+@@@script
+var toggle = document.querySelector('.toggle');
+if (toggle) {
+  toggle.addEventListener('click', function () {
+    document.documentElement.classList.toggle('dark');
+  });
+}
+script@@@
+scripts#
+pre@@@
+
+A triple fence (@@@code @@@ code@@@) freezes @em everything em@ — needed so the
+JavaScript braces and any template syntax are not mistaken for Wit. A double
+fence still applies interpolation; a triple fence does not.
+
+@h2 Step 4 — The sections h2@
+
+Each file in @code parts/ code@ exposes one definition — @code page_hero code@,
+@code page_features code@ — built from core containers (@strong div strong@,
+@strong section strong@, @strong nav strong@, @strong header strong@) with class
+parameters. Verbatim code samples go in a frozen @code pre code@ node so
+Wit-looking source renders as text, not markup.
+
+@h2 Step 5 — Build with your own CSS in charge h2@
+
+@@@pre
+wit build site.wit -o site.html --raw
+pre@@@
+
+@strong Result. strong@ A self-contained page (verified at 31,327 bytes from the
+worked site): your styles from @code theme.wit code@, the assembled sections, and
+your script from @code script.wit code@. The theme toggle switches dark and
+light. Open the file straight from disk — there is no server and no build step
+beyond this command.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong Use @code --raw code@. strong@ Without it the default theme CSS is
+inlined and competes with yours. @code --raw code@ ships only a mechanical reset,
+so your rules win. li@
+@li @strong Blank line after a leading comment. strong@ A comment as the first
+line of a container body, with no blank line after it, collapses the following
+blocks into one paragraph. li@
+@li @strong Freeze code that contains braces. strong@ Use the triple fence for any JavaScript or code with curly braces or template syntax you don't want touched; the double fence still interpolates. li@
+ul@
+
+@h2 Variations h2@
+
+Split the CSS across several literal @code style code@ definitions; add a section
+by writing one file, one @code reference code@ line, and one emit line — the same
+additive shape as
+@a |href /docs/recipes/manuscript-chapters/| a multi-file manuscript a@.
+
+@h2 See also h2@
+
+@a |href /docs/project/architecture/| Architecture a@ explains the pipeline the
+literal nodes ride through;
+@a |href /docs/recipes/custom-renderer/| Write a custom renderer a@ goes further
+down the stack.
