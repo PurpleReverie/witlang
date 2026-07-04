@@ -154,8 +154,8 @@ body {
 
 .wit-doc hr { border: 0; border-top: 1px solid var(--wit-rule); margin: 1.6em 0; }
 
-/* Tables — full cell borders, the way Word / Docs default table styles look. */
-.wit-doc table { border-collapse: collapse; margin: 1em 0; }
+/* Tables — full cell borders, centered on the page. */
+.wit-doc table { border-collapse: collapse; margin: 1em auto; }
 .wit-doc th, .wit-doc td {
   border: 1px solid var(--wit-rule);
   padding: 0.4em 0.6em;
@@ -163,7 +163,7 @@ body {
   vertical-align: top;
 }
 .wit-doc thead th { background: var(--wit-faint); font-weight: 700; }
-.wit-doc caption { color: var(--wit-muted); font-size: 0.9em; padding: 0.4em 0; }
+.wit-doc caption { color: var(--wit-muted); font-size: 0.9em; padding: 0.4em 0; text-align: center; }
 
 .wit-doc .wit-record th { color: var(--wit-muted); font-weight: 700; }
 .wit-doc .wit-bibliography p {
