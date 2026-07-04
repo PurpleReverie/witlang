@@ -1,0 +1,39 @@
+@h1 Lists h1@
+
+@h2 Bulleted h2@
+
+@@@pre
+@ul
+@li Dunmore Head li@
+@li Carrick Point li@
+@li Fastnet Rock li@
+ul@
+pre@@@
+
+@h2 Numbered h2@
+
+Swap @code ul code@ for @code ol code@:
+
+@@@pre
+@ol
+@li Light the lamp li@
+@li Trim the wick li@
+@li Log the weather li@
+ol@
+pre@@@
+
+@h2 Definition lists h2@
+
+Pair terms with their descriptions:
+
+@@@pre
+@dl
+@dt Keeper dt@
+@dd Tends the light and keeps the log. dd@
+@dt Relief dt@
+@dd Stands in when the keeper is ashore. dd@
+dl@
+pre@@@
+
+An @code li code@ can hold rich content — more prose, emphasis, even a nested
+list — not just a single line.

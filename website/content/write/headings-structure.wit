@@ -1,0 +1,31 @@
+@h1 Headings & structure h1@
+
+Six heading levels give a document its outline:
+
+@@@pre
+@h1 The Lamp Keeper h1@
+@h2 Chapter One h2@
+@h3 The Arrival h3@
+pre@@@
+
+@h2 Sectioning h2@
+
+For a longer document, semantic wrappers mirror the shape of the page:
+
+@ul
+@li @code section code@, @code article code@ — major divisions li@
+@li @code header code@, @code footer code@ — a section's top and tail li@
+@li @code aside code@, @code nav code@, @code main code@ — supporting regions li@
+ul@
+
+@@@pre
+@article
+  @header @h1 A Report h1@ header@
+  @section
+    Body prose…
+  section@
+article@
+pre@@@
+
+These are optional. Reach for them when the structure helps a reader (or a
+screen reader); skip them when plain headings are enough.

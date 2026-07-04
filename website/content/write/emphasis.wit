@@ -1,0 +1,28 @@
+@h1 Emphasis h1@
+
+Wit has exactly two inline marks: @strong bold strong@ and @em italic em@. Two,
+on purpose — restraint keeps prose readable.
+
+@@@pre
+This word is *bold* and this one is _italic_.
+pre@@@
+
+@h2 They wrap a word, not your punctuation h2@
+
+A mark wraps a token, so everyday arithmetic and identifiers stay plain — the
+marks don't fire by accident:
+
+@@@pre
+The product 3*4*5 and the file_name_here both stay plain text.
+pre@@@
+
+@h2 Bold and italic together h2@
+
+Put bold on the outside:
+
+@@@pre
+*_both bold and italic_*
+pre@@@
+
+The reverse order leaves the inner mark literal, so reach for @code *_…_* code@
+when you want both.

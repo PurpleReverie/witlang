@@ -22,6 +22,16 @@ export const nav = [
     ],
   },
   {
+    section: 'Write',
+    items: [
+      { title: 'Paragraphs & prose',  slug: 'write/prose',              file: 'write/prose.wit' },
+      { title: 'Emphasis',            slug: 'write/emphasis',           file: 'write/emphasis.wit' },
+      { title: 'Comments',            slug: 'write/comments',           file: 'write/comments.wit' },
+      { title: 'Headings & structure', slug: 'write/headings-structure', file: 'write/headings-structure.wit' },
+      { title: 'Lists',               slug: 'write/lists',              file: 'write/lists.wit' },
+    ],
+  },
+  {
     section: 'Reference',
     items: [
       { title: 'Core vocabulary', slug: 'reference/core-vocabulary', file: 'reference/core-vocabulary.wit' },

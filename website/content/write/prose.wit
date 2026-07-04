@@ -1,0 +1,27 @@
+@h1 Paragraphs & prose h1@
+
+Prose is the ground floor of Wit. You write plain text, and a blank line starts
+a new paragraph. That is the whole rule to get going.
+
+@@@pre
+The rain had not stopped for three days.
+
+Mara pressed her palm to the cold glass and counted
+the boats that were no longer there.
+pre@@@
+
+Two blocks separated by a blank line become two paragraphs. A single line break
+inside a block is just a soft wrap — the sentence continues.
+
+@h2 Nothing is hijacked h2@
+
+Wit never guesses structure from how a line begins. A line that starts with a
+number, a dash, or a greater-than sign stays exactly what you typed:
+
+@@@pre
+1. Not a numbered list — just a sentence that starts with one.
+> Not a block quote — just a line that opens with a bracket.
+pre@@@
+
+Your punctuation is yours. You reach for structure explicitly — with a
+@a |href ../../start/nodes/| node a@ — only where you want it.

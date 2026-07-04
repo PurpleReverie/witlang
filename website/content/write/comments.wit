@@ -1,0 +1,27 @@
+@h1 Comments h1@
+
+A comment is a note to yourself that no reader ever sees — a TODO, a source to
+check, an editorial aside.
+
+@@@pre
+~ verify this date before publishing
+The lighthouse was automated in 1998.
+pre@@@
+
+A line that starts with @@@code ~ code@@@ followed by a space is a comment. It
+vanishes from every output — HTML, Markdown, and PDF alike.
+
+@h2 One caution h2@
+
+Don't put a comment as the very @em first em@ line inside a node's body without
+a blank line after it — under the covers it can pull the following block into
+the wrong place. A blank line right after the comment always avoids it:
+
+@@@pre
+@section
+
+  ~ this comment is safe — note the blank line above and below
+
+  @h2 A heading that stays a heading h2@
+section@
+pre@@@
