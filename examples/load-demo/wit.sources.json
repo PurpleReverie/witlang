@@ -1,0 +1,16 @@
+{
+  "sources": {
+    "meta": {
+      "run": ["node", "scripts/meta.js"],
+      "format": "json"
+    },
+    "team": {
+      "run": ["node", "scripts/team.js"],
+      "format": "json"
+    },
+    "downloads": {
+      "run": ["cat", "data/downloads.csv"],
+      "format": "csv"
+    }
+  }
+}

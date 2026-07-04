@@ -59,6 +59,9 @@ function renderCoreElement(
 ): string {
   if (tag === 'a') return renderAnchor(use, renderBody);
   if (tag === 'img') return renderImg(use);
+  if (tag === 'figure') return renderFigure(use, renderBody);
+  if (tag === 'row') return renderRow(use, renderBody);
+  if (tag === 'col') return renderColumn(use, renderBody);
   if (tag === 'audio' || tag === 'video') return renderMedia(tag, use, renderBody);
   if (tag === 'br' || tag === 'hr') return `<${tag}>`;
   if (tag === 'table') {
@@ -107,7 +110,99 @@ function renderImg(use: NodeUse): string {
   if (w !== undefined) extra += ` width="${escapeHtml(w)}"`;
   const h = paramValue(use.params, 'height');
   if (h !== undefined) extra += ` height="${escapeHtml(h)}"`;
+  const style = layoutStyle(use.params, 'img');
+  if (style !== '') extra += ` style="${escapeHtml(style)}"`;
   return `<img src="${src}" alt="${alt}"${extra}>`;
+}
+
+function renderFigure(use: NodeUse, renderBody: BodyRenderer): string {
+  const style = layoutStyle(use.params, 'figure');
+  const styleAttr = style !== '' ? ` style="${escapeHtml(style)}"` : '';
+  return `<figure${styleAttr}>${renderBody(use)}</figure>`;
+}
+
+// Invisible layout: `@row` is a flex band, each `@col` a side-by-side block.
+// No floats — content after the row simply continues below. A `@col |size …|`
+// is fixed-width; a bare `@col` fills the remaining space. Columns wrap
+// (stack) when the row is too narrow.
+const ROW_STYLE =
+  'display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;margin:1.2em 0';
+
+function renderRow(use: NodeUse, renderBody: BodyRenderer): string {
+  return `<div style="${ROW_STYLE}">${renderBody(use)}</div>`;
+}
+
+function renderColumn(use: NodeUse, renderBody: BodyRenderer): string {
+  const size = paramValue(use.params, 'size');
+  const basis = size !== undefined ? resolveColumnBasis(size.trim().toLowerCase()) : null;
+  const style =
+    basis !== null ? `flex:0 0 ${basis};min-width:0` : 'flex:1 1 0;min-width:0';
+  return `<div style="${style}">${renderBody(use)}</div>`;
+}
+
+// A column's `size` is its width: a preset (small/medium/large), a number
+// (px), or a percent. No size → the column flexes to fill.
+function resolveColumnBasis(size: string): string | null {
+  if (size in SIZE_PRESETS) return SIZE_PRESETS[size]!;
+  if (/^\d+$/.test(size)) return `${size}px`;
+  if (/^\d+px$/.test(size)) return size;
+  if (/^\d+(\.\d+)?%$/.test(size)) return size;
+  return null;
+}
+
+// Writer-friendly size + placement, no CSS knowledge required. `|size …|`
+// takes a preset (small/medium/large/full) or a raw number (px) / percent;
+// `|align …|` is left / center / right. Both compile to a self-contained
+// inline style so they work in every pathway (default, --raw, and PDF).
+//
+// `align` means different things per element: on an image it block-aligns
+// the image itself; on a figure it aligns the figure's *contents* (the
+// image and caption together), which is what a writer expects.
+const SIZE_PRESETS: Record<string, string> = {
+  small: '220px',
+  medium: '380px',
+  large: '600px',
+};
+
+function layoutStyle(params: readonly Param[], tag: 'img' | 'figure'): string {
+  const decls: string[] = [];
+  const size = paramValue(params, 'size');
+  if (size !== undefined) {
+    const sizing = resolveSize(size.trim().toLowerCase());
+    if (sizing !== null) {
+      decls.push(sizing, 'height:auto');
+      // a capped figure shrinks below full width, so centre the box itself
+      if (tag === 'figure' && sizing.startsWith('max-width')) {
+        decls.push('margin-left:auto', 'margin-right:auto');
+      }
+    }
+  }
+  const align = paramValue(params, 'align');
+  if (align !== undefined) {
+    const a = align.trim().toLowerCase();
+    if (tag === 'figure') {
+      if (a === 'center' || a === 'right' || a === 'left') decls.push(`text-align:${a}`);
+    } else if (a === 'center') {
+      decls.push('display:block', 'margin-left:auto', 'margin-right:auto');
+    } else if (a === 'right') {
+      decls.push('display:block', 'margin-left:auto');
+    } else if (a === 'left') {
+      decls.push('display:block', 'margin-right:auto');
+    }
+  }
+  return decls.join(';');
+}
+
+// Returns a single CSS declaration. Named presets and explicit pixel values
+// *cap* the image (max-width — never upscale). `full` and any percent *fill*
+// that fraction of the column (width — so `full` genuinely spans it).
+function resolveSize(size: string): string | null {
+  if (size === 'full') return 'width:100%';
+  if (size in SIZE_PRESETS) return `max-width:${SIZE_PRESETS[size]}`;
+  if (/^\d+$/.test(size)) return `max-width:${size}px`;
+  if (/^\d+px$/.test(size)) return `max-width:${size}`;
+  if (/^\d+(\.\d+)?%$/.test(size)) return `width:${size}`;
+  return null;
 }
 
 function renderMedia(

@@ -20,6 +20,7 @@ export const RuntimeErrorCode = {
   E_SCRIPT_ERROR: 'E_SCRIPT_ERROR',
   E_MISSING_RECORD_FIELD: 'E_MISSING_RECORD_FIELD',
   E_EXTRA_RECORD_FIELD: 'E_EXTRA_RECORD_FIELD',
+  E_LOAD_FAILED: 'E_LOAD_FAILED',
 } as const;
 
 export type RuntimeErrorCodeName =

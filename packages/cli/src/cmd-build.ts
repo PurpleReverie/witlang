@@ -13,9 +13,10 @@ import * as path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { parse, WitError } from '@witlang/parser';
-import { resolve, expand, RuntimeError } from '@witlang/runtime';
+import { resolve, expand, loadExternalData, RuntimeError } from '@witlang/runtime';
 import { renderHtml, rawThemeCss, type RenderHtmlOptions } from '@witlang/render-html';
 import { renderMarkdown } from '@witlang/render-markdown';
+import { makeDataLoader } from './data-sources.js';
 import type { CliIo } from './bin.js';
 
 export type OutputFormat = 'html' | 'md' | 'pdf';
@@ -26,6 +27,9 @@ export interface BuildArgs {
   format: OutputFormat;
   fragment: boolean;
   raw: boolean;
+  sourcesPath: string | undefined;
+  envPath: string | undefined;
+  allowExec: boolean;
 }
 
 export function runBuild(args: readonly string[], io: CliIo): number {
@@ -43,6 +47,9 @@ export function runBuild(args: readonly string[], io: CliIo): number {
     format,
     fragment: raw.fragment,
     raw: raw.raw,
+    sourcesPath: raw.sourcesPath,
+    envPath: raw.envPath,
+    allowExec: raw.allowExec,
   };
   const source = readSource(parsed.file, io);
   if (source === null) return 1;
@@ -55,6 +62,9 @@ interface RawArgs {
   format: OutputFormat | undefined;
   fragment: boolean;
   raw: boolean;
+  sourcesPath: string | undefined;
+  envPath: string | undefined;
+  allowExec: boolean;
 }
 
 function collectRawArgs(args: readonly string[], io: CliIo): RawArgs | null {
@@ -64,6 +74,9 @@ function collectRawArgs(args: readonly string[], io: CliIo): RawArgs | null {
     format: undefined,
     fragment: false,
     raw: false,
+    sourcesPath: undefined,
+    envPath: undefined,
+    allowExec: false,
   };
   for (let i = 0; i < args.length; i++) {
     const next = applyArg(args, i, raw, io);
@@ -88,6 +101,17 @@ function applyArg(args: readonly string[], i: number, raw: RawArgs, io: CliIo): 
   }
   if (a === '--fragment') { raw.fragment = true; return i; }
   if (a === '--raw') { raw.raw = true; return i; }
+  if (a === '--sources') {
+    raw.sourcesPath = args[i + 1];
+    if (raw.sourcesPath === undefined) { io.stderr('wit build: --sources requires a path\n'); return null; }
+    return i + 1;
+  }
+  if (a === '--env') {
+    raw.envPath = args[i + 1];
+    if (raw.envPath === undefined) { io.stderr('wit build: --env requires a path\n'); return null; }
+    return i + 1;
+  }
+  if (a === '--allow-exec') { raw.allowExec = true; return i; }
   if (raw.file === undefined) { raw.file = a; return i; }
   io.stderr(`wit build: unexpected arg "${a}"\n`);
   return null;
@@ -134,7 +158,16 @@ function readSource(file: string, io: CliIo): string | null {
 function performBuild(args: BuildArgs, source: string, io: CliIo): number {
   let expanded: ReturnType<typeof expand>;
   try {
-    const doc = parse(source, args.file);
+    const parsed = parse(source, args.file);
+    // External-data seam: rewrite `@load <alias>` uses into DataDefs before
+    // resolution, so loaded data behaves like any other data def downstream.
+    const loader = makeDataLoader({
+      sourcesPath: args.sourcesPath,
+      envPath: args.envPath,
+      allowExec: args.allowExec,
+      cwd: path.dirname(path.resolve(args.file)),
+    });
+    const doc = loadExternalData(parsed, loader);
     const resolved = resolve(doc, { rootPath: path.resolve(args.file) });
     expanded = expand(resolved);
   } catch (err) {
@@ -187,7 +220,12 @@ function emitPdf(
     title: titleFromPath(args.file),
     ...(args.raw ? { css: rawThemeCss } : {}),
   });
-  return runChromePdf(chrome, html, path.resolve(args.outPath), args.outPath, io);
+  // Chrome renders a temp file in the system temp dir, so relative asset
+  // paths (images, etc.) in the document would resolve there and 404.
+  // Anchor them to the document's own directory with a <base href>.
+  const baseHref = pathToFileURL(path.dirname(path.resolve(args.file))).href + '/';
+  const withBase = html.replace('<head>', `<head>\n<base href="${baseHref}">`);
+  return runChromePdf(chrome, withBase, path.resolve(args.outPath), args.outPath, io);
 }
 
 function runChromePdf(

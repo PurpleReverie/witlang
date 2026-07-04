@@ -1,0 +1,67 @@
+~ report.wit — a release note assembled from live external data.
+~
+~ Each `@load <alias> load@` names data that lives outside the document; a
+~ program (wired in wit.sources.json) produces it at build time. `env` is a
+~ built-in source — no config, no program — that exposes the environment.
+~
+~ Build (from the repo root):
+~   node packages/cli/dist/bin.js build examples/load-demo/report.wit \
+~     --sources examples/load-demo/wit.sources.json --allow-exec \
+~     --env examples/load-demo/.env --fragment
+
+@load meta load@
+@load team load@
+@load downloads load@
+@load env load@
+
+@h1 Release @meta.version h1@
+
+Cut @meta.date on branch @env.WIT_BRANCH.
+
+@h2 Contributors h2@
+@ul
+(each @team as person) @li @person.name — @person.commits commits li@ (end)
+ul@
+
+@h2 Downloads by platform h2@
+~ a real CSV file (data/downloads.csv), read at build time and handed
+~ straight to a table node — columns come from the header row, no schema.
+@table |rows @downloads|
+
+~ the same chart at every size preset — figures centre by default,
+~ and |size| is small / medium / large / full (or a number / percent).
+@figure
+  @img |src assets/downloads.svg| |alt Chart, small| |size small|
+  @figcaption size small — 220px figcaption@
+figure@
+
+@figure
+  @img |src assets/downloads.svg| |alt Chart, medium| |size medium|
+  @figcaption size medium — 380px figcaption@
+figure@
+
+@figure
+  @img |src assets/downloads.svg| |alt Chart, large| |size large|
+  @figcaption size large — 600px figcaption@
+figure@
+
+@figure
+  @img |src assets/downloads.svg| |alt Chart, full width| |size full|
+  @figcaption size full — 100% figcaption@
+figure@
+
+@h2 Image beside text h2@
+~ @row is an invisible flex band; each @col is a block placed side by side.
+~ Lock the chart to a fixed column, let the prose fill the rest — no floats,
+~ nothing to clear. The image fills its column automatically.
+@row
+  @col |size 260|
+    @img |src assets/downloads.svg| |alt Downloads chart|
+  col@
+  @col
+    macOS leads this cycle, with Linux close behind and Windows growing
+    fastest. The chart is locked to a 260px column on the left while this
+    commentary fills the remaining width — placed side by side without a
+    single float or clear.
+  col@
+row@

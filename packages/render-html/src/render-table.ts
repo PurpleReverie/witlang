@@ -32,7 +32,7 @@ export function tryRenderTable(
   if (use.name !== 'table') return null;
   const rows = readRowsParam(use.params);
   if (rows === null) return '<table></table>';
-  const schema = readSchemaParam(use.params);
+  const schema = readSchemaParam(use.params) ?? deriveSchemaFromRecords(rows);
   const header = pickHeader(use.params, rows, schema);
   const body = pickBody(rows, schema, header.usedFromRows);
   const caption = paramOf(use.params, 'caption');
@@ -44,15 +44,30 @@ export function tryRenderTable(
 // ---------------------------------------------------------------------------
 
 function readRowsParam(params: readonly Param[]): CollectionNode | null {
-  const raw = paramOf(params, 'rows');
-  if (raw === undefined) return null;
-  const trimmed = raw.trim();
+  const p = findParam(params, 'rows');
+  if (p === undefined) return null;
+  // A `@ref` rows value (e.g. `|rows @sales|`) is resolved to its collection
+  // by the expander and left on typedValue — prefer it over literal text.
+  if (p.typedValue !== undefined && p.typedValue.kind === 'collection') {
+    return p.typedValue;
+  }
+  const trimmed = p.value.trim();
   if (!trimmed.startsWith('[')) return null;
   const r = tryParseCollectionFromText(
     trimmed,
     { file: '', line: 1, col: 1, offset: 0, length: trimmed.length },
   );
   return r === null ? null : r.collection;
+}
+
+// When rows are records and no schema was given, use the first record's
+// keys as the columns — so a loaded collection of records renders directly.
+function deriveSchemaFromRecords(rows: CollectionNode): SchemaInfo | null {
+  const first = rows.items[0];
+  if (first === undefined || first.kind !== 'record') return null;
+  const keys = first.fields.map((f) => f.key);
+  if (keys.length === 0) return null;
+  return { keys, labels: keys, isLabelled: false };
 }
 
 interface SchemaInfo {
@@ -62,9 +77,13 @@ interface SchemaInfo {
 }
 
 function readSchemaParam(params: readonly Param[]): SchemaInfo | null {
-  const raw = paramOf(params, 'schema');
-  if (raw === undefined) return null;
-  const trimmed = raw.trim();
+  const p = findParam(params, 'schema');
+  if (p === undefined) return null;
+  if (p.typedValue !== undefined && p.typedValue.kind === 'collection') {
+    const keys = p.typedValue.items.map(asStringValue);
+    return { keys, labels: keys, isLabelled: false };
+  }
+  const trimmed = p.value.trim();
   if (trimmed.startsWith('{')) return parseLabelledSchema(trimmed);
   if (trimmed.startsWith('[')) return parsePositionalSchema(trimmed);
   return null;
@@ -220,6 +239,11 @@ function extractByKeys(rec: RecordNode, keys: readonly string[]): string[] {
 
 function paramOf(params: readonly Param[], name: string): string | undefined {
   for (const p of params) if (p.name === name) return p.value;
+  return undefined;
+}
+
+function findParam(params: readonly Param[], name: string): Param | undefined {
+  for (const p of params) if (p.name === name) return p;
   return undefined;
 }
 

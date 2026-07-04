@@ -18,7 +18,7 @@ export function renderTableMarkdown(
 ): string {
   const rows = readRowsParam(use.params);
   if (rows === null) return '';
-  const schema = readSchemaParam(use.params);
+  const schema = readSchemaParam(use.params) ?? deriveSchemaFromRecords(rows);
   const header = pickHeader(use.params, rows, schema);
   const body = pickBody(rows, schema, header.usedFromRows);
   const caption = paramOf(use.params, 'caption');
@@ -89,17 +89,41 @@ interface SchemaInfo {
   isLabelled: boolean;
 }
 
+function findParam(params: readonly Param[], name: string): Param | undefined {
+  for (const p of params) if (p.name === name) return p;
+  return undefined;
+}
+
 function readRowsParam(params: readonly Param[]): CollectionNode | null {
-  const raw = paramOf(params, 'rows');
-  if (raw === undefined || !raw.trim().startsWith('[')) return null;
+  const p = findParam(params, 'rows');
+  if (p === undefined) return null;
+  // A `@ref` rows value is resolved to its collection by the expander.
+  if (p.typedValue !== undefined && p.typedValue.kind === 'collection') {
+    return p.typedValue;
+  }
+  const raw = p.value;
+  if (!raw.trim().startsWith('[')) return null;
   const r = tryParseCollectionFromText(raw.trim(), baseLoc(raw));
   return r === null ? null : r.collection;
 }
 
+// Columns from the first record's keys when rows are records and no schema.
+function deriveSchemaFromRecords(rows: CollectionNode): SchemaInfo | null {
+  const first = rows.items[0];
+  if (first === undefined || first.kind !== 'record') return null;
+  const keys = first.fields.map((f) => f.key);
+  if (keys.length === 0) return null;
+  return { keys, labels: keys, isLabelled: false };
+}
+
 function readSchemaParam(params: readonly Param[]): SchemaInfo | null {
-  const raw = paramOf(params, 'schema');
-  if (raw === undefined) return null;
-  const trimmed = raw.trim();
+  const p = findParam(params, 'schema');
+  if (p === undefined) return null;
+  if (p.typedValue !== undefined && p.typedValue.kind === 'collection') {
+    const keys = p.typedValue.items.map(asStringValueCell);
+    return { keys, labels: keys, isLabelled: false };
+  }
+  const trimmed = p.value.trim();
   if (trimmed.startsWith('{')) return parseLabelledSchema(trimmed);
   if (trimmed.startsWith('[')) return parsePositionalSchema(trimmed);
   return null;

@@ -36,6 +36,7 @@ export const HELP_TEXT = [
   '  wit check <file>',
   '  wit fmt <file> [-w|--write]',
   '  wit build <file> [-o out.html|out.md|out.pdf] [--format html|md|pdf] [--raw | --fragment]',
+  '                    [--sources wit.sources.json --allow-exec] [--env .env]',
   '  wit tour <file>',
   '  wit --version | --help',
 ].join('\n');

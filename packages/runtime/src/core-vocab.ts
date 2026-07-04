@@ -24,6 +24,10 @@ export const CORE_VOCAB_NAMES: readonly string[] = [
   // Generic containers — the building blocks for author-defined layout
   // (`@div class:"card" ... div@`, inline `@span`).
   'div', 'span',
+  // Layout — invisible flex row + columns. Put an image/table in one
+  // column and prose in another to place them side by side, without
+  // floats. `@col |size 220|` fixes a column's width; a bare `@col` fills.
+  'row', 'col',
   // Other.
   'cite',
 ];

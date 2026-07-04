@@ -358,9 +358,31 @@ function nodeDefScalar(def: NodeDef | undefined): string | null {
 
 function expandReservedUse(use: NodeUse, ctx: ExpandCtx): NodeUse {
   const clone = structuredClone(use) as NodeUse;
+  resolveRefParams(clone, ctx);
   if (use.body === null) return clone;
   clone.body = expandSplice(use.body, ctx) as (typeof clone.body);
   return clone;
+}
+
+// A core-vocab param whose value is a bare data reference (`@sales`,
+// `@report.rows`) is resolved against data defs / iteration and its
+// DataValue stashed on `param.typedValue`. This is what lets
+// `@table |rows @sales|` consume a loaded (or hand-written) collection —
+// the renderer reads the typed value instead of re-parsing literal text.
+const PARAM_REF = /^@([A-Za-z0-9_-]+)((?:\.[A-Za-z0-9_-]+)*)$/;
+
+function resolveRefParams(use: NodeUse, ctx: ExpandCtx): void {
+  for (const param of use.params) {
+    if (param.typedValue !== undefined) continue;
+    const m = PARAM_REF.exec(param.value.trim());
+    if (m === null) continue;
+    const head = m[1]!;
+    const root = lookupIterEnv(ctx.iterEnv, head) ?? ctx.dataDefs.get(head)?.value;
+    if (root === undefined) continue;
+    const segments = m[2] ? m[2].split('.').filter((s) => s.length > 0) : [];
+    const value = segments.length === 0 ? root : walkAccess(root, segments);
+    if (value !== null) param.typedValue = value;
+  }
 }
 
 function expandIterRef(use: NodeUse, value: DataValue): Splice {

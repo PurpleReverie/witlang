@@ -26,6 +26,22 @@ describe('renderHtml — core vocab', () => {
     expect(out).toContain('ex');
   });
 
+  it('maps |size| and |align| to a self-contained inline style', () => {
+    const small = render('@img |src a.png| |size small| |align center|');
+    expect(small).toContain('max-width:220px');
+    expect(small).toContain('margin-left:auto;margin-right:auto');
+    expect(render('@img |src a.png| |size 300|')).toContain('max-width:300px');
+    expect(render('@img |src a.png| |size full|')).toContain('width:100%'); // fills, not caps
+    expect(render('@img |src a.png| |size 50%|')).toContain('width:50%');
+    expect(render('@img |src a.png| |align right|')).toContain('margin-left:auto');
+  });
+
+  it('applies |align| / |size| to a @figure element', () => {
+    const out = render('@figure |align center| |size large|\n@img |src a.png|\nfigure@');
+    expect(out).toMatch(/<figure style="[^"]*max-width:600px/);
+    expect(out).toContain('text-align:center'); // figure aligns its contents
+  });
+
   it('emits self-closing img with src + alt', () => {
     const out = render('@img |src ./x.png| |alt A picture|');
     expect(out).toContain('<img src="./x.png" alt="A picture">');
@@ -83,6 +99,26 @@ describe('renderHtml — @table', () => {
     expect(render('@table table@')).toContain('<table></table>');
   });
 
+  it('renders `|rows @ref|` from a referenced collection of records', () => {
+    const src =
+      '#sales: [ { site - Dunmore, lit - yes }, { site - Carrick, lit - no } ] !!\n\n' +
+      '@table |rows @sales|';
+    const out = render(src);
+    // columns derived from the first record's keys
+    expect(out).toContain('<th>site</th><th>lit</th>');
+    expect(out).toContain('<td>Dunmore</td><td>yes</td>');
+    expect(out).toContain('<td>Carrick</td><td>no</td>');
+  });
+
+  it('renders `|schema …| |rows @ref|` honouring the schema order', () => {
+    const src =
+      '#sales: [ { lit - yes, site - Dunmore } ] !!\n\n' +
+      '@table |schema [site, lit]| |rows @sales|';
+    const out = render(src);
+    expect(out).toContain('<th>site</th><th>lit</th>');
+    expect(out).toContain('<td>Dunmore</td><td>yes</td>');
+  });
+
   it('emits a `<div class>` container from `@div(class ...)`', () => {
     const out = render('@div(class card)\nInside the card.\ndiv@');
     expect(out).toContain('<div class="card"><p>Inside the card.</p></div>');
@@ -90,5 +126,20 @@ describe('renderHtml — @table', () => {
 
   it('emits an inline `<span class>`', () => {
     expect(render('a @span(class tag) x span@ b')).toMatch(/<span class="tag">\s*x\s*<\/span>/);
+  });
+
+  it('lays out `@row` / `@col` as an invisible flex band with columns', () => {
+    const src =
+      '@row\n@col |size 220|\n@img |src a.png| |alt A|\ncol@\n@col\nBeside text.\ncol@\nrow@';
+    const out = render(src);
+    expect(out).toContain('display:flex');
+    expect(out).toContain('flex:0 0 220px'); // fixed image column
+    expect(out).toContain('flex:1 1 0'); // text column fills the rest
+    expect(out).toContain('<img src="a.png"');
+    expect(out).toContain('Beside text.');
+  });
+
+  it('accepts a percent column width', () => {
+    expect(render('@row\n@col |size 30%|\nx\ncol@\nrow@')).toContain('flex:0 0 30%');
   });
 });

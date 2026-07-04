@@ -114,6 +114,13 @@ body {
 .wit-doc dt { font-weight: 700; margin-top: 0.6em; }
 .wit-doc dd { margin: 0 0 0.3em 1.4em; }
 
+.wit-doc figure { margin: 1.5em 0; text-align: center; }
+.wit-doc figcaption {
+  margin-top: 0.5em;
+  font-size: 0.9em;
+  color: var(--wit-muted);
+}
+
 .wit-doc blockquote {
   margin: 1em 0;
   padding: 0.3em 0 0.3em 1em;

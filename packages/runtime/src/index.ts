@@ -8,6 +8,13 @@
 export { resolve } from './resolver.js';
 export { expand } from './expander.js';
 
+// External-data load pass — runs between parse and resolve. `loadExternalData`
+// rewrites `@load <alias> load@` uses into DataDefs via a host-supplied
+// DataLoader (the seam: CLI spawns programs; embedded hosts return from a
+// map). `toDataValue` is exposed so hosts can pre-normalise values too.
+export { loadExternalData, toDataValue } from './data-loader.js';
+export type { DataLoader, DataLoadRequest, DataSource } from './data-loader.js';
+
 // AST shapes consumers receive back.
 export type { ResolvedDocument } from './resolved-ast.js';
 export type { ExpandedDocument } from './expanded-ast.js';
