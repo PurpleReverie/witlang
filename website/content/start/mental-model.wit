@@ -1,0 +1,35 @@
+@h1 The mental model h1@
+
+Wit is a stack of layers. Each one is optional — you only climb as high as your
+document needs, and most documents stay near the bottom.
+
+@h2 Layer 0 — Prose h2@
+
+Plain paragraphs separated by blank lines, with @strong bold strong@ and
+@em italics em@ inline. Most of any document lives here, and this layer alone is
+a complete, valid document.
+
+@h2 Layer 1 — Nodes h2@
+
+Wrap content in a named structure with a node. The built-in vocabulary —
+headings, lists, tables, figures, sectioning — needs no setup; you just use it.
+
+@h2 Layer 2 — Definitions h2@
+
+Name a reusable piece once — a callout, a figure, a chapter — and use it
+anywhere. These are your own components; change one in a single place.
+
+@h2 Layer 3 — Data h2@
+
+Records and collections hold structured values you can pull into prose or hand
+to a table, instead of typing the same fact in five spots.
+
+@h2 Layer 4 — Logic h2@
+
+Conditionals and iteration build content @em from em@ that data — a draft
+versus a final, a table generated from a list.
+
+@h2 The governing rule h2@
+
+Content goes in a node's @strong body strong@; parameters are @strong metadata strong@.
+Structure appears only where the author reaches for it — never by accident.

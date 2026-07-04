@@ -1,0 +1,60 @@
+@h1 Core vocabulary h1@
+
+Wit ships a set of built-in nodes that map to document structure. You use them
+directly — no definition needed. Each maps to one HTML element.
+
+@h2 Headings h2@
+
+@ul
+@li @code h1 code@ through @code h6 code@ — section titles li@
+ul@
+
+@h2 Inline marks h2@
+
+@ul
+@li @code strong code@, @code em code@ — bold and italic li@
+@li @code code code@ — inline code li@
+@li @code sub code@, @code sup code@, @code mark code@, @code small code@ li@
+ul@
+
+@h2 Lists h2@
+
+@ul
+@li @code ul code@, @code ol code@, @code li code@ — bulleted and numbered lists li@
+@li @code dl code@, @code dt code@, @code dd code@ — definition lists li@
+ul@
+
+@h2 Links & media h2@
+
+@ul
+@li @code a code@ — links li@
+@li @code img code@, @code figure code@, @code figcaption code@ — images with captions li@
+@li @code audio code@, @code video code@ li@
+ul@
+
+@h2 Tables h2@
+
+@ul
+@li @code table code@ — with inline rows or from your data li@
+@li @code thead code@, @code tbody code@, @code tr code@, @code th code@, @code td code@, @code caption code@ li@
+ul@
+
+@h2 Layout h2@
+
+@ul
+@li @code row code@, @code col code@ — place content side by side li@
+@li @code div code@, @code span code@ — generic containers li@
+ul@
+
+@h2 Sectioning h2@
+
+@ul
+@li @code section code@, @code article code@, @code aside code@ li@
+@li @code header code@, @code footer code@, @code nav code@, @code main code@ li@
+ul@
+
+@h2 Blocks h2@
+
+@ul
+@li @code p code@, @code blockquote code@, @code pre code@, @code hr code@, @code cite code@ li@
+ul@

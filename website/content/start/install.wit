@@ -1,0 +1,36 @@
+@h1 Install h1@
+
+Wit runs on Node. You need @strong Node 20 or newer strong@.
+
+@h2 The command-line tool h2@
+
+Install the CLI globally:
+
+@@@pre
+npm install -g @witlang/cli
+pre@@@
+
+Check it works:
+
+@@@pre
+wit --version
+pre@@@
+
+@h2 As project packages h2@
+
+If you're building on Wit — parsing it, rendering it, embedding it — add the
+packages to your project instead:
+
+@@@pre
+npm install @witlang/parser @witlang/runtime @witlang/render-html
+pre@@@
+
+@h2 What the CLI gives you h2@
+
+@ul
+@li @code wit build code@ — compile a document to HTML, Markdown, or PDF li@
+@li @code wit fmt code@ — tidy a Wit file's indentation li@
+@li @code wit check code@ — report parse and reference errors li@
+ul@
+
+Next: write @a |href ../first-document/| your first document a@.

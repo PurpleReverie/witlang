@@ -1,0 +1,31 @@
+@h1 Choose your path h1@
+
+You've seen the shape of Wit — prose by default, structure when you reach for
+it. Where you go next depends on what you're here to do.
+
+@h2 ✍ I want to write h2@
+
+Keep a manuscript in git as plain text and compile reader-ready drafts in
+seconds. You'll learn prose, headings, lists, and quotes; then reusable
+components, citations, and multi-file manuscripts; then the draft-in-git
+workflow that ties it together.
+
+@ul
+@li Start with the writing basics and build up to a full manuscript. li@
+ul@
+
+@h2 ⌨ I want to build h2@
+
+Use @@@code @witlang/parser code@@@ in your own app, walk the typed AST, load
+external data, or write a custom renderer. You'll learn the pipeline, the AST,
+the embedding API, and the @code DataLoader code@ seam.
+
+@ul
+@li Start with the architecture and the API. li@
+ul@
+
+@h2 Just looking something up? h2@
+
+The @a |href ../../reference/core-vocabulary/| reference a@ has every node,
+flag, and error. The playground lets you edit Wit and see the result live in the
+browser.

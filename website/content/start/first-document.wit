@@ -1,0 +1,46 @@
+@h1 Your first document h1@
+
+Create a file called @code hello.wit code@ and just write. No markup required —
+a blank line starts a new paragraph.
+
+@@@pre
+Hello. This is a Wit document. It is only text,
+and it reads like text.
+
+A blank line starts a new paragraph. That is all
+you need to begin.
+pre@@@
+
+@h2 Build it h2@
+
+Turn it into a web page:
+
+@@@pre
+wit build hello.wit -o hello.html
+pre@@@
+
+…or a print-ready PDF:
+
+@@@pre
+wit build hello.wit -o hello.pdf
+pre@@@
+
+Open the result — it already looks like a real document, with no styling on
+your part.
+
+@h2 Add a little structure h2@
+
+Reach for a heading and some emphasis when you want them; the rest stays prose.
+
+@@@pre
+@h1 Hello h1@
+
+This is a Wit document. Add a heading when you want one,
+and *bold* or _italics_ inline.
+pre@@@
+
+@h2 The whole loop h2@
+
+Edit, run @code wit build code@, look at the output. That's the cycle. Keep the
+@code .wit code@ file in @strong git strong@ and every draft you send a reader
+is diff-able and versioned.

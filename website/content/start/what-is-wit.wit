@@ -1,0 +1,29 @@
+@h1 What is Wit? h1@
+
+Wit is a prose-first markup language for people who write — and for the
+systems that consume what they write. You type plain text, and it stays plain
+text. Structure, data, and logic layer in only where you reach for them.
+
+@h2 Prose is the default h2@
+
+Most of any document is just prose. A blank line starts a new paragraph, and
+nothing needs marking up. You never fight the tool to write a sentence — the
+markup gets out of the way until you want it.
+
+@h2 Structure when you need it h2@
+
+When you do need a heading, a table, a citation, or a reusable component, you
+reach for a @em node em@ — and only there. Everything around it stays ordinary
+prose, readable in a plain text editor and friendly to @strong git strong@.
+
+@h2 Where Wit fits h2@
+
+@table |rows [[Tool, Loved for, Breaks when you need], [Markdown, quick prose, captions, data, conditionals], [HTML, total control, it stops being writing], [LaTeX, beautiful output, the syntax and the toolchain], [Wit, prose that scales into structure, it is still young]]|
+
+@h2 One source, many outputs h2@
+
+The same document renders to semantic HTML, to Markdown, or to a paginated,
+print-ready PDF — with a single command. Keep the source in git as text;
+compile a reader-ready draft in seconds.
+
+@blockquote Write the paper. Not the preamble. blockquote@
