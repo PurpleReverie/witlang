@@ -45,6 +45,49 @@ function titleFromFragment(html, fallback) {
 }
 
 // ---------------------------------------------------------------------------
+// Build-time syntax highlighting for `<pre>` blocks.
+//
+// `@@@pre` renders to a bare `<pre>` whose (HTML-escaped) body is literal Wit.
+// A single-pass tokenizer wraps recognised constructs in <span class="tok-…">;
+// the token CSS colours them. Static output — no client JS, no flash. Shell
+// examples (npm/wit commands) tokenise sensibly too (the `wit` keyword, refs).
+// The proper long-term signal is `<pre class="language-wit">` — see the
+// renderer enhancement noted in the docs plan.
+// ---------------------------------------------------------------------------
+
+const HL_RE = new RegExp([
+  '(~[^\\n]*)',                       // comment
+  '(@@@|@@|!!)',                      // literal fences
+  '(\\((?:if|each|end)\\b[^)]*\\))',  // (if…)/(each…)/(end)
+  '(\\{\\{[^}]*\\}\\})',              // {{ interpolation }}
+  '(::[A-Za-z0-9_-]+::)',             // ::capture::
+  '(\\|[^|\\n]*\\|)',                 // |captures|
+  '((?<!\\S)reference\\b)',           // reference
+  '((?<!\\S)wit(?=\\s))',             // wit (CLI)
+  '(@[A-Za-z0-9_-]+)',                // @node open
+  '([A-Za-z0-9_-]+@(?!@))',           // node@ close
+  '(#[A-Za-z0-9_-]+)',                // #def open
+  '([A-Za-z0-9_-]+#(?!#))',           // def# close
+  '(\\.\\/[^\\s]+)',                  // ./path
+].join('|'), 'g');
+const HL_CLS = ['tok-com', 'tok-fence', 'tok-ctrl', 'tok-interp', 'tok-interp',
+  'tok-cap', 'tok-kw', 'tok-kw', 'tok-node', 'tok-node', 'tok-def', 'tok-def', 'tok-str'];
+
+function highlightWit(escaped) {
+  return escaped.replace(HL_RE, (...a) => {
+    for (let i = 1; i <= HL_CLS.length; i++) {
+      if (a[i] !== undefined) return `<span class="${HL_CLS[i - 1]}">${a[0]}</span>`;
+    }
+    return a[0];
+  });
+}
+
+function highlightPre(fragment) {
+  return fragment.replace(/<pre>([\s\S]*?)<\/pre>/g,
+    (_m, body) => `<pre class="hl">${highlightWit(body)}</pre>`);
+}
+
+// ---------------------------------------------------------------------------
 // Link helpers — relative so the built site works over file:// or any host
 // ---------------------------------------------------------------------------
 
@@ -151,7 +194,7 @@ function main() {
     const abs = path.join(CONTENT, it.file);
     if (!existsSync(abs)) { console.warn('  skip (missing):', it.file); continue; }
     let fragment;
-    try { fragment = renderWit(abs); }
+    try { fragment = highlightPre(renderWit(abs)); }
     catch (e) { console.error(`  ERROR ${it.file}: ${e.message}`); failed++; continue; }
     const title = it.title || titleFromFragment(fragment, it.slug);
     writePage(it.slug, layout({ slug: it.slug, title, fragment }));
@@ -224,6 +267,16 @@ a{color:var(--accent)}
 .wit-doc pre{background:#1b1811;color:#d8cfbf;border:1px solid #2e2820;border-radius:11px;
   padding:1.1rem 1.3rem;overflow-x:auto;font-family:var(--mono);font-size:.85rem;line-height:1.6}
 .wit-doc pre code{background:none;padding:0;color:inherit}
+/* Wit syntax tokens (build-time highlighter) */
+.wit-doc pre .tok-com{color:#8a8069;font-style:italic}
+.wit-doc pre .tok-node{color:#e0a24f}
+.wit-doc pre .tok-def{color:#e394a4}
+.wit-doc pre .tok-fence{color:#6fbfa6}
+.wit-doc pre .tok-ctrl{color:#c79ae0}
+.wit-doc pre .tok-interp{color:#74c6b4}
+.wit-doc pre .tok-cap{color:#a0c97e}
+.wit-doc pre .tok-kw{color:#c79ae0;font-weight:600}
+.wit-doc pre .tok-str{color:#a0c97e}
 .wit-doc table{border-collapse:collapse;width:100%;margin:1.2em auto;font-family:var(--sans);font-size:.93rem}
 .wit-doc th,.wit-doc td{border:1px solid var(--border);padding:.45rem .7rem;text-align:left;vertical-align:top}
 .wit-doc thead th{background:var(--surface-2)}
