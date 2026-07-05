@@ -9,6 +9,39 @@ fix-before-ship list.
 Legend: 🔴 blocks/embarrasses a docs launch · 🟠 real bug to fix or document ·
 🟡 honesty/framing · ⚪ don't-transcribe (stale source).
 
+## ✅ Resolution status (2026-07-05 fix pass)
+
+Fixed and committed:
+- **A (version + count drift):** `wit --version` → 0.2.0, CHANGELOG 0.2.0
+  entry, "47"→52 comment.
+- **B (broken examples):** all committed examples now build — not just the
+  four listed below but also `04`, `05`, `06`, `07`, `17` (found during the
+  fix pass). 19/19 top-level examples green.
+- **Prose backslash escapes** (`\@ \# \* \_ \~ \|`): were fully broken
+  (`\@handle` raised an error, `\*` still emphasised, `\|` ate the run).
+  Now work; +lexer tests; Escapes/Prose/Inline-marks docs corrected; the
+  build-time docs highlighter is escape-aware.
+- **C `@figure`/`@p` stray `<p>`:** `<figcaption>` and `@p` no longer nest
+  an invalid `<p>`; +render tests; five doc callouts removed.
+
+Investigated but **deferred** (documented, low ROI / high risk):
+- **C-1 comment-as-first-child collapse:** the lexer is flat (no node-body
+  context), so a leading-comment paragraph break would also fire inside
+  form-fill bodies and risk regressing fixtures. Blank-line workaround is
+  trivial and documented.
+
+Newly discovered (documented under Limitations, not yet fixed):
+- 🟠 **Parens/block same-name close collision:** a self-closing `@x(...)`
+  plus a block `@x … x@` of the *same name* in one file makes the parens
+  call read as `E_UNCLOSED_NODE`. Workaround: don't open one node name two
+  ways (used in `examples/05`).
+- 🟠 **A literal `@` cannot live in a record/data value** (starts a node),
+  even quoted. Workaround: store host/local-part separately.
+- 🟠 **Script output only renders in top-level prose:** `@scriptCall(...)`
+  and inline `<% %>` render empty inside a node body.
+- 🟡 **A colon def (`#name: value`, incl. `#n: {…}` / `#n: […]`) runs to a
+  blank line or `!!`** — an un-terminated one swallows following lines.
+
 ## A. Version & count drift (quick fixes)
 
 - 🔴 **Version drift.** `packages/cli/src/bin.ts` `VERSION = '0.1.0'` and

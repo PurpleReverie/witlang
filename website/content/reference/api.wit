@@ -62,14 +62,6 @@ pre@@@
 DataSource · ResolvedDocument · ExpandedDocument · ResolveOptions · FileReader ·
 RuntimeErrorCodeName code@.
 
-@aside(class note)
-@strong Doc drift: strong@ the header comment in @code runtime/index.ts code@
-(line 37) says "the 47 reserved node names" — the actual
-@code CORE_VOCAB_NAMES code@ list is @strong 52 strong@. Metadata drift, not a
-runtime bug — see @a |href /docs/reference/limitations/| limitations a@.
-
-aside@
-
 @h2 witlang/render-html h2@
 
 Package @@@code @witlang/render-html code@@@.

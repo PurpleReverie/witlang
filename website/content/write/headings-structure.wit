@@ -92,7 +92,7 @@ you like.
 @ul
 @li _Wrapping section prose in a paragraph node._ A @@@code @section code@@@
 already paragraph-wraps its text, so an explicit @@@code @p … p@ code@@@ inside
-double-wraps it. Write bare prose inside a section. li@
+is redundant. Write bare prose inside a section. li@
 @li _A comment as the first line of a container body._ A leading comment inside a
 @@@code @header code@@@ or @@@code @section code@@@ can collapse the heading right
 after it. Leave a blank line after the comment — see

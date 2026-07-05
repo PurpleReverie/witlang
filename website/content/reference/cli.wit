@@ -16,17 +16,9 @@ wit tour <file>
 wit --version | --help
 pre@@@
 
-@aside(class note)
-@strong Version drift: strong@ the code constant is @code VERSION = '0.1.0' code@
-(printed by @code wit --version code@), but a @code v0.2.0 code@ git tag exists.
-This page quotes the constant and flags the gap — see
-@a |href /docs/reference/limitations/| limitations a@.
-
-aside@
-
 @h2 Global h2@
 
-@table |rows [[Invocation, Result, Exit], [wit --help or -h, usage text, 0], [wit --version or -v, prints 0.1.0, 0], [unknown command, help on stderr, 2]]| |caption Global flags| table@
+@table |rows [[Invocation, Result, Exit], [wit --help or -h, usage text, 0], [wit --version or -v, prints 0.2.0, 0], [unknown command, help on stderr, 2]]| |caption Global flags| table@
 
 @h2 wit parse h2@
 

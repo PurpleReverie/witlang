@@ -41,7 +41,7 @@ Two quick checks. First, the version:
 wit --version
 pre@@@
 
-That prints @code 0.1.0 code@. Then the help, which is also your map of what the
+That prints @code 0.2.0 code@. Then the help, which is also your map of what the
 tool can do:
 
 @@@pre
@@ -51,7 +51,7 @@ pre@@@
 You'll see the full usage block:
 
 @@@pre
-wit v0.1.0
+wit v0.2.0
 
 Usage:
   wit parse <file>

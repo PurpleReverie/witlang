@@ -4,9 +4,44 @@ Release history for Wit. The format follows Keep a Changelog and is driven by
 Changesets; pre-1.0, the version stays in the 0.x range and breaking changes are
 allowed with notes.
 
+@h2 0.2.0 h2@
+
+@code wit --version code@ reports @code 0.2.0 code@, matching the published
+packages.
+
+@h3 Language features h3@
+
+@ul
+@li Literal and frozen raw nodes (@@@code @@name … @@ code@@@,
+@@@code @@@name … @@@ code@@@) with @@@code {{path}} code@@@ interpolation inside
+raw-node bodies. li@
+@li A styled render target and a Word/Docs-style default theme. li@
+@li External data: the @@@code @load code@@@ node pulls a
+JSON/CSV/TSV/lines/text result from a configured program
+(@code wit.sources.json code@) into a def. li@
+@li @@@code @table |rows @data| code@@@ — build a table from a referenced data
+collection. li@
+@li Image sizing and placement (@code |size| code@, @code |align| code@) plus
+invisible @@@code @row code@@@ / @@@code @col code@@@ layout containers. li@
+@li Core vocabulary grew to 52 names (adds @code div code@, @code span code@,
+@code cite code@, @code row code@, @code col code@). li@
+@li Typed parameters and iterable captures; emphasis and escape fixes — a
+backslash now escapes @@@code @ code@@@, @@@code # code@@@, @@@code | code@@@, and
+the emphasis marks in prose. li@
+ul@
+
+@h3 Tooling h3@
+
+@ul
+@li @code wit fmt code@ — re-indents a document to match its nesting without
+changing structure. li@
+@li HTML-like indentation and PDF output (with a @code <base href> code@ so
+relative assets resolve). li@
+ul@
+
 @h2 0.1.0 — initial public release h2@
 
-The first public release. @code wit --version code@ reports @code 0.1.0 code@.
+The first public release, which reported @code 0.1.0 code@.
 
 @h3 Packages h3@
 
@@ -32,16 +67,6 @@ full list. li@
 @li The opaque @@@code @node code@@@ pass-through. li@
 @li The form-fill body shape and record-argument invocation. li@
 ul@
-
-@h2 A note on version drift h2@
-
-@aside(class note) 💡 The published changelog and @code wit --version code@ both
-report @code 0.1.0 code@, but a @code v0.2.0 code@ git tag and later feature
-commits (typed parameters, iterable captures) exist in history. The installed CLI
-and the git log therefore disagree; treat @code 0.1.0 code@ as the released
-version until this is reconciled. The older changelog text also cites a stale
-core-vocabulary count — rely on the core vocabulary reference for the current
-list, not a number. aside@
 
 @h2 See also h2@
 
