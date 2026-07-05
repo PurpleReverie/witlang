@@ -128,6 +128,10 @@ function consumeParagraphContent(state: LexState): void {
   let buf: RunBuf = { value: '', start: snapshot(state.cur) };
   while (state.cur.offset < state.src.length) {
     if (scanParagraphBreak(state).endOffset !== -1) break;
+    // A backslash escape appends the literal char to the CURRENT run and
+    // continues without resetting it — it suppresses the recognizer for that
+    // char rather than emitting a token, so the surrounding text stays intact.
+    if (tryBackslashEscape(state, buf)) continue;
     if (runRecognizers(state, buf)) { buf = freshBuf(state); continue; }
     const c = state.src.charAt(state.cur.offset);
     buf.value += c;
@@ -161,7 +165,6 @@ function lineStartsStructural(src: string, i: number): boolean {
 }
 
 function runRecognizers(state: LexState, buf: RunBuf): boolean {
-  if (tryBackslashEscape(state, buf)) return true;
   if (tryBlockComment(state, buf)) return true;
   if (tryLineComment(state, buf)) return true;
   if (tryReferenceDirective(state, buf)) return true;
@@ -186,16 +189,23 @@ function freshBuf(state: LexState): RunBuf {
   return { value: '', start: snapshot(state.cur) };
 }
 
-// M15.form-fill: backslash escape for `\|` in prose context — suppresses
-// the pipe-open recognizer so the `|` becomes literal text. Other special
-// chars (`:`, `"`, `{`, `}`, `\\`) are handled later (param-state lexer
-// inside brackets, or the body post-processor for prose). Leaving the
-// backslash + char unchanged in the text run lets the post-processor see
-// it (e.g. `name\:Tauraj` must NOT be lifted by the colon-scatter scan).
+// Backslash escapes for the characters that lead a recognizer in prose
+// context: the param pipe (`\|`), the node/def openers (`\@`, `\#`), the
+// emphasis marks (`\*`, `\_`), and the line-comment lead (`\~`). The
+// backslash is dropped and the char becomes literal text, suppressing the
+// recognizer that would otherwise fire — so `\@handle` renders a literal
+// `@handle` instead of parsing a reference, and `\*star\*` stays literal.
+//
+// Other escapes (`:`, `"`, `{`, `}`, `,`, `\\`) are handled later (the
+// param-state lexer inside brackets, or the body post-processor for prose):
+// leaving the backslash + char unchanged in the text run lets the
+// post-processor see it (e.g. `name\:Tauraj` must NOT be lifted by the
+// colon-scatter scan).
+const PROSE_ESCAPABLE = '|@#*_~';
 function tryBackslashEscape(state: LexState, buf: RunBuf): boolean {
   if (state.src.charAt(state.cur.offset) !== '\\') return false;
   const next = state.src.charAt(state.cur.offset + 1);
-  if (next !== '|') return false;
+  if (next === '' || !PROSE_ESCAPABLE.includes(next)) return false;
   buf.value += next;
   advance(state);
   advance(state);

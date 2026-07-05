@@ -16,18 +16,24 @@ whitespace, quote it.
 @h2 The escape set by context h2@
 
 @ul
-@li @strong Prose text strong@ recognises @code \: code@, @code \" code@,
-@code \\ code@, @@@code \{ code@@@, @@@code \} code@@@, and @code \, code@. li@
-@li @strong Form-fill values strong@ recognise @code \" code@, @code \\ code@,
-@code \: code@, and @code \, code@. Others such as @code \_ code@ and
-@code \* code@ pass through as backslash-plus-character, because the inline
-parser does not run on these values — so emphasis markers stay literal there
-regardless. li@
-@li @strong Colon-scatter strong@ uses @code \: code@ as the opt-out: it
+@li @strong Prose text strong@ recognises @@@code \@ code@@@, @@@code \# code@@@,
+@@@code \* code@@@, @@@code \_ code@@@, @@@code \~ code@@@, and @@@code \| code@@@
+— the six characters that lead a structural reader (a node or definition opener,
+an emphasis mark, a line comment, a parameter pipe). The backslash is dropped and
+the character stays literal, so @@@code \@handle code@@@ renders a plain
+@@@code @handle code@@@ and @@@code \*star\* code@@@ keeps its asterisks. Any
+other character is already literal in prose, so it needs no escape. li@
+@li @strong Pipe values strong@ recognise @@@code \| code@@@, which carries a
+literal pipe through the value (@@@code |href a\|b| code@@@ yields
+@@@code a|b code@@@). li@
+@li @strong Colon-scatter strong@ uses @@@code \: code@@@ as the opt-out: it
 suppresses the lift and the backslash is stripped from the output
 (fixture 24-colon-scatter/body-scatter-escape). li@
 @li @strong Quoted strings strong@ (in records and parameters) recognise only
-@code \" code@ and @code \\ code@. li@
+@@@code \" code@@@ and @@@code \\ code@@@. li@
+@li @strong Form-fill values strong@ carry text through as-is. The inline parser
+does not run on them, so emphasis markers like @@@code _ code@@@ and
+@@@code * code@@@ are already literal — no escape needed or consumed. li@
 ul@
 
 @h2 Quoting is the whitespace tool h2@
@@ -43,13 +49,14 @@ pre@@@
 The quotes protect the comma and the space and force a string type (fixtures
 09-records/quoted-string-value, 24-colon-scatter/body-scatter-quoted).
 
-@h2 The delimiter hole in pipes and parens h2@
+@h2 The delimiter hole in parens h2@
 
-There is one honest gap: @strong pipes and parens have no escape for their own
-delimiters strong@. A literal @@@code | code@@@ inside a pipe value, or a literal
-@code , code@ or @code ) code@ inside a parens value, cannot be escaped away.
-When you need those characters in a value, rephrase or switch to a body form —
-form-fill or record-arg — which do support quoting.
+There is one honest gap: @strong parens have no escape for their own
+delimiters strong@. A literal @@@code , code@@@ or @@@code ) code@@@ inside a
+parens value cannot be escaped away. Pipes do not share this gap — a pipe value
+escapes its own delimiter with @@@code \| code@@@ — so when you need a comma or a
+close-paren in a value, switch to a pipe, or to a body form (form-fill or
+record-arg) that supports quoting.
 
 @h2 The colon-scatter sharp edge h2@
 
@@ -67,10 +74,11 @@ it with the escape — @code name\:Tauraj code@ — or a space —
 @h2 Common mistakes h2@
 
 @ul
-@li Expecting @code \_ code@ or @code \* code@ to work in a form-fill value —
-they pass through literally, but so would the marker itself. li@
-@li Expecting a pipe or paren delimiter to be escapable — rephrase or use a body
-form. li@
+@li Reaching for @@@code \_ code@@@ or @@@code \* code@@@ in a form-fill value —
+the marker is already literal there, so the backslash just adds a stray
+character. (In prose those escapes are real and do strip.) li@
+@li Expecting a paren delimiter to be escapable — rephrase, switch to a pipe, or
+use a body form. li@
 @li Forgetting that quotes force a string type. li@
 ul@
 
