@@ -1,59 +1,43 @@
 ~ the escape hatch for everything the declarative model can't express:
-~ plain JavaScript between <% and %>. runs once after the initial DOM
-~ is rendered, via the `lh` bridge object.
+~ plain JavaScript between <% and %>, run through the `lh` bridge object.
+~ a <% ... %> block executes against your data; @scriptCall(fn) drops a
+~ function's return value into prose; an inline <% expr %> splices a value.
 
 #findings: [
-  { claim - Attention precedes perception, supported - true,  strength - strong    }
-  { claim - Looking is never neutral,       supported - true,  strength - strong    }
-  { claim - Attention is a form of labour,  supported - true,  strength - moderate }
-  { claim - Perception is neutral,          supported - false, strength - contested }
+  { claim - Attention precedes perception, supported - true, strength - strong }
+  { claim - Looking is never neutral, supported - true, strength - strong }
+  { claim - Attention is a form of labour, supported - true, strength - moderate }
+  { claim - Perception is neutral, supported - false, strength - contested }
 ]
 
-#paper: { title - On Attention, word count - 0 }
-
-@article |title @paper.title|
-
-@paper-stats paper-stats@
-
-For three years I kept my references in a database. Every paper I read,
-I logged — author, title, year, the lot.
-
-(each @findings as finding)
-@finding |claim @finding.claim| |strength @finding.strength| finding@
-(end)
-
-article@
-
 <%
-// lh.data — all #thing: definitions as plain JS objects
+// lh.data — every #thing: definition, as plain JS objects
 const findings = lh.data.findings;
-const supported = findings.filter(f => f.supported === 'true').length;
+const supported = findings.filter(f => f.supported === true).length;
 const pct = Math.round((supported / findings.length) * 100);
 
 // lh.prose() — the prose text nodes, with helpers like .wordCount()
 const words = lh.prose().wordCount();
 
-// lh.set(path, value) — update a value in the data
-lh.set('paper.word count', words);
+// expose readouts as named functions, ready for @scriptCall below
+function claimStats() { return supported + ' of ' + findings.length + ' findings supported (' + pct + '%)'; }
+function readingTime() { return '~' + Math.ceil(words / 200) + ' min to read'; }
 
-// lh.sort(name, fn) — reorder all instances of a node type
-const order = { strong: 0, moderate: 1, contested: 2 };
-lh.sort('finding', (a, b) => order[a.params.strength] - order[b.params.strength]);
-
-// lh.inject(id, source) — render Wit source into a node by id
-lh.inject('paper-stats', `
-  @statrow |label Supported|    |value ${supported} of ${findings.length} (${pct}%)| statrow@
-  @statrow |label Reading time| |value ~${Math.ceil(words / 200)} min|               statrow@
-`);
-
-// other lh calls available:
-//   lh.query(name)       every node of a given type, as { params, content } objects
+// other bridge calls available, not exercised here:
+//   lh.set(path, value)  update a value in the data
+//   lh.sort(name, fn)    reorder every instance of a node type
+//   lh.query(name)       every node of a type, as { params, content }
 //   lh.node(id)          a single node by its id parameter
 %>
 
-~ inline javascript inside a node body
+For three years I kept my references in a database. Every paper I read,
+I logged — author, title, year, the lot.
 
-@scene
-<% function randomTime() { return Math.randomTimeStamp(); } %>
-The train was late @scriptCall( randomTime )
-scene@
+~ @scriptCall(fn) evaluates a function defined above and inlines the result
+
+Supported findings: @scriptCall(claimStats). Reading time: @scriptCall(readingTime).
+
+~ an inline <% ... %> expression is spliced straight into the prose
+
+There are <% lh.data.findings.length %> findings in all, and by my own
+count the lamp has been lit <% 11 * 24 %> hours.

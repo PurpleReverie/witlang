@@ -1,8 +1,7 @@
-+#toc: @tocrow |number II| |title The Voice| tocrow@
-+#bibliography: @berger John Berger, Ways of Seeing, 1972, Penguin !!
++#toc: @li II — The Voice li@
++#bibliography: @li John Berger. _Ways of Seeing_. Penguin, 1972. li@
 
 #chapter_two
-@chapter |number II| |title The Voice|
+@h2 II — The Voice h2@
 He had not spoken aloud in so long that his own voice surprised him.
-chapter@
 chapter_two#

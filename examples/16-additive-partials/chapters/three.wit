@@ -1,8 +1,7 @@
-+#toc: @tocrow |number III| |title The Stranger| tocrow@
-+#bibliography: @arendt Hannah Arendt, The Human Condition, 1958, Chicago !!
++#toc: @li III — The Stranger li@
++#bibliography: @li Hannah Arendt. _The Human Condition_. Chicago, 1958. li@
 
 #chapter_three
-@chapter |number III| |title The Stranger|
+@h2 III — The Stranger h2@
 The hatch opens anyway. A stranger hauls themselves up, soaked through.
-chapter@
 chapter_three#
