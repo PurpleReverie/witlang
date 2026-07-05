@@ -14,7 +14,7 @@ cited.
 
 @h2 Rendering h2@
 
-@table |rows [[Limitation, Impact, Workaround], [figure wraps a block figcaption in a paragraph, cosmetic extra paragraph element, harmless — or use an inline figcaption], [raw table cannot resolve a ref, a raw double-at table leaves rows @ref literal, use the ordinary table node], [HTML renderer is configuration-free, one fixed HTML shape per AST kind; table and bibliography are hard-coded special cases, post-process the HTML or restyle with CSS], [table centering is theme-only, the reset-only raw pathway does not centre tables, add your own CSS under raw]]| |caption Rendering| table@
+@table |rows [[Limitation, Impact, Workaround], [raw table cannot resolve a ref, a raw double-at table leaves rows @ref literal, use the ordinary table node], [HTML renderer is configuration-free, one fixed HTML shape per AST kind; table and bibliography are hard-coded special cases, post-process the HTML or restyle with CSS], [table centering is theme-only, the reset-only raw pathway does not centre tables, add your own CSS under raw]]| |caption Rendering| table@
 
 @h2 Tooling and platform h2@
 

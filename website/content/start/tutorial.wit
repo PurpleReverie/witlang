@@ -145,11 +145,6 @@ Rebuild. You get a semantic @@@code <figure> code@@@ wrapping the
 readable in the source. The image's @code src code@ and @code alt code@ are
 metadata in parameters; the caption is content in a body.
 
-@aside(class note) 💡 One cosmetic quirk: the block @@@code @figcaption code@@@
-currently renders wrapped in an extra @@@code <p> code@@@ inside the figure. It's
-harmless and the caption displays correctly — don't be surprised by the tag in
-the output. aside@
-
 Your @code report.wit code@ now reads, in full:
 
 @@@pre

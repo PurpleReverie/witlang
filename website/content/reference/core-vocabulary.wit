@@ -146,15 +146,8 @@ pre@@@
 Emits:
 
 @@@pre
-<figure style="text-align:center"><img src="p.jpg" alt="A"><p><figcaption>Cap</figcaption></p></figure>
+<figure style="text-align:center"><img src="p.jpg" alt="A"><figcaption>Cap</figcaption></figure>
 pre@@@
-
-@aside(class note)
-Known quirk: a @strong block strong@ @code figcaption code@ inside
-@code figure code@ is wrapped in a stray @@@code <p> code@@@ (shown above).
-Cosmetic — see @a |href /docs/reference/limitations/| limitations a@.
-
-aside@
 
 @h3 figcaption / audio / video h3@
 

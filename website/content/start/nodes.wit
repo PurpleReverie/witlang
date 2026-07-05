@@ -116,11 +116,6 @@ Visit @a |href https://example.org| Example a@.
 figure@
 pre@@@
 
-@aside(class note) 💡 The block @@@code @figcaption code@@@ currently renders
-wrapped in a stray @@@code <p> code@@@ inside the figure. It's harmless and the
-caption still shows correctly — just don't be surprised by the extra tag in the
-output. aside@
-
 @h3 Blocks h3@
 
 The block-level shapes: @@@code @p code@@@ for an explicit paragraph,

@@ -87,10 +87,6 @@ parameter; keep the whole description on a single one. li@
 base URL is built to resolve them. li@
 ul@
 
-@aside(class note) 💡 A captioned figure wraps its caption in a paragraph inside
-the figure. It is a harmless cosmetic detail of the output — your caption still
-renders correctly and centred. aside@
-
 @h2 See also h2@
 
 @ul
