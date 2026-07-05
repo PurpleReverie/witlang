@@ -1,0 +1,229 @@
+@h1 Resolve & expand h1@
+
+Everything between "I parsed a file" and "I can render it" happens in two runtime
+passes. @code resolve code@ is @strong binding strong@ — it answers "what does
+@@@code @x code@@@ mean?", tying every use to the definition or data it names and
+merging partials and cross-file references. @code expand code@ is
+@strong evaluation strong@ — it produces the final tree: inlining bodies,
+substituting interpolations and body slots, running conditionals and iteration,
+and running scripts. A renderer author must know exactly what survives.
+
+@h2 resolve h2@
+
+@@@code resolve(doc: Document, options?: ResolveOptions) → ResolvedDocument code@@@.
+
+@code ResolveOptions code@ has three fields — and notably @strong no strong@
+@code readFile code@:
+
+@ul
+@li @code rootPath?: string code@ — the absolute path of the document. Required
+if the document has any @code reference code@ directive, or resolve throws
+@code E_MISSING_REFERENCE_FILE code@ up front. li@
+@li @code fileReader?: (absPath: string) => string code@ —
+@strong synchronous. strong@ How referenced files are read; defaults to a real
+filesystem reader. Supply your own for a virtual FS or in-memory documents. li@
+@li @@@code onMissingReference?: (path: string) => null | void code@@@ — called
+instead of throwing when a referenced file is missing. Return @code null code@ to
+skip it, or throw to restore strict behaviour. For in-progress documents. li@
+ul@
+
+@aside(class note) ⚠️ @code fileReader code@ is @strong synchronous. strong@ An
+@code async code@ reader returns a @code Promise code@ that resolve treats as the
+file contents — silently wrong. If your source is async (network, database),
+pre-read every referenced file into a map and hand resolve a synchronous lookup. aside@
+
+@h3 What resolve does h3@
+
+Three walks. First, it collects every @code NodeDef code@ and @code DataDef code@
+into name-keyed maps — a duplicate non-additive name throws
+@code E_DUPLICATE_DEFINITION code@; additive @@@code +#x code@@@ partials
+accumulate. Second, it merges referenced files' definitions and data in. Third,
+it walks every @code NodeUse code@ and records a binding.
+
+@h3 ResolvedDocument h3@
+
+@ul
+@li @code children code@ — the immutable parser AST (unchanged). li@
+@li @code definitions: Map<string, NodeDef> code@ ·
+@code dataDefs: Map<string, DataDef> code@. li@
+@li @code bindings: Map<NodeUse, Binding> code@ — the side table tying uses to
+what they mean. li@
+@li @code partials: Map<string, NodeDef[]> code@ — accumulated additive
+definitions. li@
+@li @code references: Set<string> code@ ·
+@code resolvedFiles: Map<string, ResolvedDocument> code@ — the cross-file graph,
+resolving every referenced file exactly once. li@
+@li @code unresolvedAt: Loc[] code@ — reserved; always empty today. li@
+ul@
+
+@h3 Binding rules h3@
+
+@ul
+@li A @@@code @@name code@@@ raw node records @strong no binding strong@ — it is
+an opaque carrier and its body is verbatim. li@
+@li An iteration item name in scope (@@@code (each … as X) code@@@) resolves at
+expand time, so no binding is recorded. A definition's own @code captures code@
+are pushed into scope the same way, so @@@code @cap code@@@ and
+@@@code @cap.field code@@@ inside a body don't fail resolution. li@
+@li Reserved core vocab and @@@code @node code@@@ @em without an access path em@
+pass through with no binding. li@
+@li A bare @@@code @x code@@@ resolves to @code NodeDef x code@ (falling back to
+@code DataDef x code@); a dotted @@@code @x.y code@@@ resolves to
+@code DataDef x code@ first (falling back to @code NodeDef code@). li@
+@li The first unresolved use throws @code E_UNRESOLVED_REFERENCE code@ at its
+@code loc code@. li@
+ul@
+
+@h2 expand h2@
+
+@@@code expand(resolved: ResolvedDocument) → ExpandedDocument code@@@. It walks
+the resolved tree and, in order: inlines each bound @code NodeUse code@'s
+definition body; substitutes @code Interpolation code@ (@@@code ::name:: code@@@)
+and @code BodySlot code@ (@code ... code@); evaluates each
+@code IfStatement code@ to one branch; unrolls each @code EachStatement code@;
+resolves ref-valued params onto @code param.typedValue code@; then builds the
+@code lh code@ bridge and @strong runs the scripts. strong@
+
+@@@code ExpandedDocument = { kind: 'expanded-document', children: Block[], loc } code@@@.
+
+@h3 What is gone after expand h3@
+
+@code nodeDef code@, @code dataDef code@, @code reference code@,
+@code interpolation code@, @code bodySlot code@, and the evaluated
+@code if code@ / @code each code@ (their chosen blocks are spliced in). A
+survivor of any of those signals an expansion failure — a renderer may treat it
+as an error or warning. Recursive definitions throw
+@code E_EXPANSION_DEPTH_LIMIT code@ at depth 256.
+
+@h2 Basic — a definition and a use h2@
+
+@@@pre
+#greeting
+Hello from a def.
+greeting#
+
+@greeting
+pre@@@
+
+@code resolve code@ reports @@@code definitions: ['greeting'] code@@@ and
+@@@code bindings.size: 1 code@@@; @code expand code@ leaves
+@@@code children: ['paragraph'] code@@@ (the definition inlined and gone);
+render → @code <p>Hello from a def.</p> code@.
+
+@h2 Realistic — additive partials h2@
+
+@@@pre
+#tags
+@li alpha li@
+tags#
+
++#tags
+@li beta li@
+tags#
+
+@ul @tags ul@
+pre@@@
+
+The base @@@code #tags code@@@ and the @@@code +#tags code@@@ partial fold into a
+single merged @code NodeDef code@ → @code <ul><li>alpha</li><li>beta</li></ul> code@.
+Fixture @code 08-additive-partials code@.
+
+@h2 Realistic — iteration h2@
+
+@@@pre
+#team: [
+  { name - Ada, role - lead }
+  { name - Béla, role - ic }
+]
+
+@ul
+(each @team as p)
+@li @p.name — @p.role li@
+(end)
+ul@
+pre@@@
+
+→ @code <ul><li>Ada — lead</li><li>Béla — ic</li></ul> code@. Fixture
+@code 13-iteration code@.
+
+@h2 Realistic — conditional h2@
+
+@@@pre
+#book: { status - draft }
+
+(if @book.status is draft)
+@p Draft — do not distribute. p@
+(else)
+@p Final. p@
+(end)
+pre@@@
+
+The draft branch renders; the else branch is dropped entirely. Fixture
+@code 12-conditionals code@.
+
+@h2 Edge — cross-file references, in memory h2@
+
+Because @code fileReader code@ is just a @@@code (absPath) => string code@@@, you
+can resolve a document whose @code reference code@ points at a file that exists
+only in memory:
+
+@@@pre
+const files = {
+  '/proj/shared.wit': '#brand: { name - Northlight }',
+  '/proj/main.wit':   'reference ./shared.wit\n\n@brand.name',
+};
+const doc      = parse(files['/proj/main.wit'], '/proj/main.wit');
+const resolved = resolve(doc, {
+  rootPath: '/proj/main.wit',
+  fileReader: (abs) => files[abs],   // synchronous lookup
+});
+renderHtml(expand(resolved)); // → <article class="wit-doc"><p>Northlight</p></article>
+pre@@@
+
+@h2 Every option / edge h2@
+
+@ul
+@li @code onMissingReference code@ returning @code null code@ silently skips the
+missing file; throwing from it restores strict resolution. li@
+@li @code rootPath code@ absent with a @code reference code@ present →
+@code E_MISSING_REFERENCE_FILE code@. li@
+@li A circular @code reference code@ → @code E_CIRCULAR_REFERENCE code@;
+@code resolvedFiles code@ caches each file once, so a shared file parses only
+once. li@
+@li A duplicate non-additive @@@code #name code@@@ →
+@code E_DUPLICATE_DEFINITION code@; a partial whose shape disagrees with its
+base → @code E_PARTIAL_SHAPE_MISMATCH code@. li@
+@li A captured param carrying a @code typedValue code@ (collection, record, or
+scalar) is pushed as an iteration frame, so @@@code @cap.field code@@@ and
+@@@code (each @cap) code@@@ resolve inside a definition body. li@
+@li @code E_NOT_ITERABLE code@ when @@@code (each) code@@@ targets a
+non-collection; @code E_MISSING_FIELD code@,
+@code E_MISSING_RECORD_FIELD code@, @code E_EXTRA_RECORD_FIELD code@,
+@code E_AMBIGUOUS_RECORD_KEY code@, and @code E_TYPE_MISMATCH code@ for record
+access mismatches. Fixtures @code 11-data-access code@ and @code 16-ambiguity code@. li@
+@li An unknown @@@code @name code@@@ (no definition, no data, not core vocab) →
+@code E_UNRESOLVED_REFERENCE code@ at @strong resolve, strong@ before render.
+Contrast a @em surviving em@ unresolved access path, which the renderer shows
+as a visible span (see @a |href /docs/build/rendering/| Rendering a@). li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Passing an @code async code@ @code fileReader code@ — silently wrong. li@
+@li Handing a @code ResolvedDocument code@ to a renderer; renderers expect an
+@code ExpandedDocument code@. li@
+@li Expecting @code dataDefs code@ to still be in the expanded tree — they are
+consumed. li@
+@li Expecting @code bindings code@ to cover inlined clones —
+@code expand code@ re-resolves by name, by design, so the side table does not
+list them. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/ast-reference/| AST reference a@ ·
+@a |href /docs/build/external-data/| External data a@ (runs before resolve) ·
+@a |href /docs/build/rendering/| Rendering a@ ·
+@a |href /docs/build/scripting/| Scripting a@ (the tail of expand) ·
+@a |href /docs/build/errors-reference/| Errors reference a@.

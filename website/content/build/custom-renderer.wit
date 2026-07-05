@@ -1,0 +1,119 @@
+@h1 Build your own renderer h1@
+
+The ship renderers are just tree walks. Anyone can write another — to LaTeX,
+RTF, JSON, Slack blocks, plain text, anything. A renderer is a pure recursive
+walk over @code ExpandedDocument.children code@; @@@code @witlang/render-html code@@@
+(~350 lines) and @@@code @witlang/render-markdown code@@@ are the reference
+implementations to mirror.
+
+@h2 The kinds you actually handle h2@
+
+After @code expand code@ the tree is narrow. You handle: @code paragraph code@,
+@code text code@, @code italic code@, @code bold code@, @code nodeUse code@, and a
+stray @code record code@ or @code collection code@ (from a definition body that
+collapsed to a literal). Everything else — @code nodeDef code@,
+@code dataDef code@, @code reference code@, @code interpolation code@,
+@code bodySlot code@, @code if code@, @code each code@ — should be @strong gone. strong@
+Treat a survivor as an error or warning. @code comment code@,
+@code scriptBlock code@, and @code scriptCall code@ may appear but are normally
+dropped.
+
+@h2 The minimal renderer h2@
+
+A render-to-plain-text you can run today. It is the whole pattern:
+
+@@@pre
+import type { ExpandedDocument } from '@witlang/runtime';
+import { isReservedNodeName, RESERVED_OPAQUE } from '@witlang/runtime';
+
+function render(node: any): string {
+  switch (node.kind) {
+    case 'paragraph':  return node.children.map(render).join('') + '\n\n';
+    case 'text':       return node.value;
+    case 'italic':     return '*' + node.children.map(render).join('') + '*';
+    case 'bold':       return '**' + node.children.map(render).join('') + '**';
+    case 'nodeUse':    return renderNodeUse(node);
+    case 'record':     return node.fields.map((f: any) =>
+                          `${f.key}: ${renderValue(f.value)}`).join('\n');
+    case 'collection': return node.items.map(renderValue).join('\n');
+    default:           return ''; // if/each/defs should be gone by now
+  }
+}
+
+function renderNodeUse(use: any): string {
+  const body = (use.body ?? []).map(render).join('');
+  if (use.name === RESERVED_OPAQUE) return dispatchByType(use, body); // @node
+  if (isReservedNodeName(use.name)) return body;    // core vocab: your mapping
+  return body;                                      // user def: body was inlined
+}
+
+function getParam(use: any, name: string): string | undefined {
+  return use.params.find((p: any) => p.name === name)?.value;
+}
+pre@@@
+
+@h2 Dispatching a NodeUse h2@
+
+The runtime exports two classifiers. @code isReservedNodeName code@ is true for
+the 52 core-vocab names @strong plus strong@ @@@code node code@@@ (53 in all);
+@code isCoreVocabName code@ is true for the core names @strong minus strong@
+@@@code node code@@@. Use them to branch three ways:
+
+@ul
+@li @@@code use.name === RESERVED_OPAQUE code@@@ (the string @code 'node' code@) —
+the opaque container. Dispatch on its @code type code@ param (see
+@a |href /docs/build/custom-nodes/| Custom nodes a@). li@
+@li @code isReservedNodeName(use.name) code@ — core vocab. Map it to your target's
+element in a lookup table of your own. li@
+@li Otherwise — a bound user definition. Its body was @strong already inlined strong@
+by @code expand code@, so just emit @code use.body code@. li@
+ul@
+
+@h2 Reading params h2@
+
+@code getParam(use, 'x') code@ reads a string value. A param that referenced data
+carries @code param.typedValue code@ — a @code DataValue code@ — so read that
+rather than re-parsing @code param.value code@:
+
+@@@pre
+const p = use.params.find((x: any) => x.name === 'rows');
+const rows = p?.typedValue;   // a Collection, ready to walk — don't re-parse p.value
+pre@@@
+
+@h2 Every edge to cover h2@
+
+@ul
+@li @strong Raw and frozen bodies. strong@ When @code use.raw code@ or
+@code use.frozen code@ is set, @code body code@ is a single verbatim
+@code Text code@ child. Emit it unescaped @em only em@ for raw-text elements you
+trust (@@@code @@style code@@@, @@@code @@script code@@@); escape everything
+else. li@
+@li @strong Inline vs. block. strong@ @code use.inline code@ tells you which;
+mirror the HTML renderer's @code BLOCK_KINDS code@ set for the rest. li@
+@li @strong A surviving access path. strong@ @code use.access code@ on a
+@code NodeUse code@ that survived expansion is an unresolved data path — surface
+it visibly rather than dropping it (the HTML renderer emits a
+@code wit-unresolved code@ span). li@
+@li @strong body can be null. strong@ Guard @@@code (use.body ?? []) code@@@; a
+self-closing node has @code null code@, not @@@code [] code@@@. li@
+@li @strong Testing. strong@ Mirror the ship renderers' test files — parse,
+resolve, and expand a fixture, then assert on your output string. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Handling @code if code@, @code each code@, or @code nodeDef code@ in your walk.
+They are gone after @code expand code@; if you see one, expansion failed. li@
+@li Re-parsing @code param.value code@ when @code param.typedValue code@ already
+holds the structured value. li@
+@li Escaping a raw @@@code @@style code@@@ or @@@code @@script code@@@ body. li@
+@li Forgetting @code body code@ can be @code null code@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/ast-reference/| AST reference a@ ·
+@a |href /docs/build/rendering/| Rendering a@ ·
+@a |href /docs/build/custom-nodes/| Custom nodes a@ ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@.

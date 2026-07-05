@@ -1,0 +1,90 @@
+@h1 Custom nodes / extending vocabulary h1@
+
+Core vocab is closed: 52 reserved names, not extensible. Everything else you add
+either by @strong composition strong@ — a definition, no code — or through the
+@strong opaque strong@ @@@code @node code@@@ plus renderer dispatch. This page
+covers both sides: what an author writes and what a renderer does with it.
+
+@h2 Three ways to extend h2@
+
+@ul
+@li @strong A definition. strong@ @@@code #name … name# code@@@ is pure
+composition; the expander inlines it, and no renderer changes. Reach for this
+first. li@
+@li @strong The opaque node. strong@ @@@code @node |type X| code@@@ survives
+@code expand code@ as an ordinary @code NodeUse code@ (@code name: 'node' code@),
+and your renderer dispatches on the @code type code@ param. Reach for this when
+you need @em new rendering em@ that composition can't express. li@
+@li @strong Core vocab. strong@ Fixed and @em not em@ extensible;
+@code isReservedNodeName code@ rejects any redefinition. Shown here only for
+contrast. li@
+ul@
+
+@h2 The opaque-node contract h2@
+
+@@@code @node code@@@ needs a @code type code@ param; all other params and the
+body survive into the expanded AST. The HTML renderer dispatches two ways:
+
+@ul
+@li @strong type is itself a core-vocab name. strong@ The renderer re-emits that
+element. Verified:
+@@@code @node |type img| |src ./lamp.png| |alt …| code@@@ →
+@@@code <img src="./lamp.png" alt="The keeper&#39;s lamp"> code@@@. li@
+@li @strong type is anything else. strong@ The renderer emits a generic
+@code <div> code@ carrying @strong every named param as strong@ @code data-* code@.
+Verified:
+@@@code @node |type chart| |layout horizontal| A body node@ code@@@ →
+@@@code <div data-type="chart" data-layout="horizontal"><p> A body </p></div> code@@@. li@
+ul@
+
+@aside(class note) ⚠️ It is @code data-type code@, not @code data-wit-type code@
+— the source comment is loose. @strong Every strong@ named param, @code type code@
+included, becomes a @code data-* code@ attribute. Markdown has no opaque
+container, so it emits just the body. aside@
+
+@h2 The preferred authoring pattern h2@
+
+Raw @@@code @node code@@@ is noisy in prose. Wrap it in a definition so authors
+get a natural name while the AST still carries @code type code@ for the renderer:
+
+@@@pre
+#highlight ||content||
+@node |type highlight| ::content:: node@
+highlight#
+
+@highlight Some emphasised text highlight@
+pre@@@
+
+The author writes @@@code @highlight … code@@@; the expanded AST carries
+@@@code type highlight code@@@ for the renderer to dispatch on. Fixture
+@code 20-opaque-node/user-defined-wrapper.wit code@.
+
+@h2 Every edge h2@
+
+@ul
+@li @strong Block form vs. self-closing. strong@ @@@code @node … node@ code@@@ has
+a body; @@@code @node |type img| code@@@ self-closes. Fixtures
+@code node-with-body code@ and @code bare-node-passthrough code@. li@
+@li @strong Unknown types stay portable. strong@ An unknown @code type code@ is
+round-trippable via @code data-* code@, so a document survives across renderers
+that don't know the type. li@
+@li @strong Names are unique. strong@ A duplicate non-additive @@@code #name code@@@
+throws @code E_DUPLICATE_DEFINITION code@; core names cannot be redefined at all. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Trying to redefine @@@code @table code@@@ or @@@code @h1 code@@@ — they are
+reserved. li@
+@li Expecting Markdown to render an opaque container — it emits the body only. li@
+@li Reading @code data-wit-type code@ — the attribute is @code data-type code@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/custom-renderer/| Build your own renderer a@ ·
+@a |href /docs/build/rendering/| Rendering a@ ·
+@a |href /docs/build/ast-reference/| AST reference a@ (@code NodeUse code@,
+@code raw code@ / @code frozen code@) ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@.

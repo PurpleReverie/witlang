@@ -1,0 +1,189 @@
+@h1 Parsing → the AST h1@
+
+@code parse() code@ is the only way in. Every tool built on Wit — a linter, an
+LSP, a codemod, a custom renderer — starts by calling it and branching on the
+tree's @code kind code@ discriminators. This page covers the signature, the
+shape of what comes back, the side-door parsers for fragments, and the
+formatter.
+
+@h2 Signature h2@
+
+@@@code parse(source: string, file?: string) → Document code@@@. The
+@code file code@ argument defaults to @code '<inline>' code@ and only feeds
+@code loc.file code@ on every node — it does not read the file for you; you pass
+the text. @code parse code@ is @strong not total: strong@ it throws
+@code WitError code@ (12 codes) with a @code .code code@ and a @code .loc code@.
+Wrap it.
+
+@@@pre
+import { parse, WitError } from '@witlang/parser';
+
+try {
+  const doc = parse(source, 'report.wit');
+} catch (err) {
+  if (err instanceof WitError) {
+    console.error(`${err.code} at ${err.loc.line}:${err.loc.col}`);
+  }
+}
+pre@@@
+
+@h2 The universal node shape h2@
+
+Every node is a tagged-union member: a @code kind code@ string plus a
+@code loc code@. @code Loc code@ is
+@@@code { file, line, col, offset, length } code@@@ — @code line code@ and
+@code col code@ are 1-based; @code offset code@ and @code length code@ index
+into the source string. There are three top-level unions —
+@code Block code@, @code Inline code@, and @code DataValue code@ — plus helpers
+(@code Param code@, @code AccessPath code@, @code Condition code@). The
+@a |href /docs/build/ast-reference/| AST reference a@ documents every field; this
+page is the map.
+
+@h2 Basic — prose parses to inline children h2@
+
+@@@pre
+parse('The keeper trimmed the wick _slowly_.')
+pre@@@
+
+The document has one @code Paragraph code@ whose @code children code@ are three
+inline nodes, each carrying its own @code loc code@ (trimmed here):
+
+@@@pre
+{ "kind": "paragraph", "children": [
+  { "kind": "text",   "value": "The keeper trimmed the wick " },
+  { "kind": "italic", "children": [ { "kind": "text", "value": "slowly" } ] },
+  { "kind": "text",   "value": "." }
+] }
+pre@@@
+
+@h2 Realistic — a node use h2@
+
+@@@code @aside good aside@ code@@@ parses to a single @code NodeUse code@:
+
+@@@pre
+{ "kind": "nodeUse", "name": "aside", "params": [], "paramsSource": "none",
+  "body": [ { "kind": "paragraph",
+             "children": [ { "kind": "text", "value": " good " } ] } ],
+  "inline": false, "closeStyle": "named" }
+pre@@@
+
+Two things to note. A named node on its own line is @code inline: false code@ —
+being on its own line, not being named, is what makes it a block.
+@code closeStyle code@ is @code 'named' code@ because it closed with
+@@@code aside@ code@@@ rather than parentheses or a bare newline.
+
+@h2 Edge — a parse error h2@
+
+@@@code @aside oops code@@@ with no close throws:
+
+@@@pre
+parse('@aside oops');
+// WitError { code: 'E_UNCLOSED_NODE', loc: { line: 1, col: 1, … } }
+pre@@@
+
+@h2 NodeUse — the node you branch on most h2@
+
+@code NodeUse code@ is the center of gravity. Its fields, at a glance:
+
+@ul
+@li @code name code@ — the node name (@code 'aside' code@, @code 'table' code@,
+your definition's name). li@
+@li @code access code@ — @@@code string[] code@@@, present for a dotted use like
+@@@code @author.name code@@@; absent otherwise. li@
+@li @code params code@ / @code paramsSource code@ — the parameters and @em how em@
+they were written (see below). li@
+@li @code body code@ — @@@code (Block | Inline)[] | null code@@@. @code null code@
+is self-closing; @@@code [] code@@@ is an empty body. They are @strong not the
+same strong@ — see the AST reference. li@
+@li @code inline code@ — whether it sits inline in prose or stands as a block. li@
+@li @code closeStyle code@ — @code 'named' code@, @code 'parens' code@, or
+@code 'bare' code@. li@
+@li @code raw code@ / @code frozen code@ — set by @@@code @@name code@@@ and
+@@@code @@@name code@@@ (verbatim / no interpolation). li@
+ul@
+
+@h2 paramsSource — how the arguments were written h2@
+
+@code paramsSource code@ records the surface syntax, which a formatter or
+codemod needs even though @code params code@ holds the same values:
+
+@ul
+@li @code 'parens' code@ — @@@code @x(k v) code@@@ · fixture
+@code 05-nodes-parens code@. li@
+@li @code 'pipes' code@ — @@@code @x |k v| code@@@ · fixture
+@code 06-parameters-pipes code@. li@
+@li @code 'record' code@ — @@@code @x { k: v } code@@@ · fixture
+@code 22-record-args code@. li@
+@li @code 'form-fill' code@ — a multi-line @@@code k: v code@@@ body · fixture
+@code 23-form-fill code@. li@
+@li @code 'mixed' code@ — more than one of the above on one call · fixture
+@code 26-all-param-forms code@. li@
+@li @code 'none' code@ — no parameters. li@
+ul@
+
+@h2 raw and frozen h2@
+
+@@@code @@name … name@@ code@@@ sets @code raw: true code@: the body is a single
+verbatim @code Text code@ child, not re-parsed. @@@code @@@name code@@@ also sets
+@code frozen: true code@: verbatim @em and em@ no @@@code {{ }} code@@@
+interpolation. This is how @@@code @@style code@@@ and @@@code @@@pre code@@@
+carry CSS or literal source untouched. Fixture @code 20-opaque-node code@ and the
+raw-node parser tests.
+
+@h2 The formatter h2@
+
+@@@code format(source: string, opts?: FormatOptions) → string code@@@, where
+@@@code FormatOptions = { indent: string } code@@@ (default two spaces). It is a
+@strong structural re-indenter, strong@ not a pretty-printer: it rewrites only
+leading whitespace and never reflows prose. Raw @@@code @@ code@@@ bodies,
+@@@code <% %> code@@@ scripts, and record / form-fill values are left verbatim.
+It backs @code wit fmt code@ and the VS Code formatter.
+
+@@@pre
+import { format } from '@witlang/parser';
+const tidy = format(messySource, { indent: '    ' }); // 4-space indent
+pre@@@
+
+@h2 Side-door parsers h2@
+
+Three exports parse a @em fragment em@ without a whole document. They exist
+because the expander re-parses captured text — turning a captured string back
+into emphasis nodes at interpolation time — and a tool author can reuse them:
+
+@ul
+@li @@@code parseInlineFromText(source, file?='<interpolation>') → Inline[] code@@@
+— parse a snippet of prose (text, emphasis, inline nodes) with no enclosing
+paragraph. li@
+@li @@@code tryParseRecordFromText(src, base: Loc) → { record, endPos } | null code@@@
+— probe whether a string starts with a @@@code { … } code@@@ record. li@
+@li @@@code tryParseCollectionFromText(src, base: Loc) → { collection, endPos } | null code@@@
+— the same for a @@@code [ … ] code@@@ collection. li@
+ul@
+
+The two @code try… code@ functions return @code null code@ rather than throwing
+when the text is not a literal, which is what makes them safe to probe with.
+
+@h2 wit parse h2@
+
+From the terminal, @code wit parse file.wit code@ prints the whole AST as JSON —
+the fastest way to see what a construct parses to before you write code against
+it.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Reading @code node.content code@ for a node body. The field is
+@code body code@; @strong only strong@ @code ScriptBlock code@ uses
+@code content code@ (for its JS text). li@
+@li Assuming @@@code @x code@@@ on its own line is @code inline: true code@. It is
+@code false code@ — a named node on its own line is a block. li@
+@li Treating @code parse code@ as total. It throws @code WitError code@; a tool
+that does not catch it crashes on the first malformed input. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/ast-reference/| AST reference a@ (the field tables) ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@ ·
+@a |href /docs/build/errors-reference/| Errors reference a@ ·
+@a |href /docs/build/scripting/| Scripting a@.

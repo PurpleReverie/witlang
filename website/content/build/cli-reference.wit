@@ -1,0 +1,108 @@
+@h1 CLI reference h1@
+
+The @code wit code@ binary is both a tool and the model host implementation.
+Every embedding question — how to wire a data loader, how output paths are
+chosen — is answered concretely by the CLI's source. This page is the command
+reference and the @code wit.sources.json code@ schema.
+
+@h2 Commands h2@
+
+@ul
+@li @code wit parse <file> code@ — print the AST as JSON. li@
+@li @code wit check <file> code@ — parse, resolve, and expand; report errors only
+(non-zero exit on failure). li@
+@li @@@code wit fmt <file> [-w|--write] code@@@ — structural re-indent via
+@code format() code@. li@
+@li @code wit build <file> [options] code@ — compile to HTML, Markdown, or PDF
+(see below). li@
+@li @code wit tour <file> code@ — a narrated walkthrough of the document. li@
+@li @code wit --version code@ / @code wit --help code@. li@
+ul@
+
+@aside(class note) 💡 @code wit --version code@ prints @code 0.2.0 code@, the
+@code VERSION code@ constant in @code bin.ts code@, matching the published
+packages. aside@
+
+@h2 build h2@
+
+@@@pre
+wit build <file>
+  [-o out.html | out.md | out.pdf]
+  [--format html | md | pdf]
+  [--raw | --fragment]
+  [--sources wit.sources.json --allow-exec]
+  [--env .env]
+pre@@@
+
+The output format is inferred from the @code -o code@ extension
+(@code .html code@ or @code .htm code@ → HTML, @code .md code@ or
+@code .markdown code@ → Markdown, @code .pdf code@ → PDF) or set with
+@code --format code@. With no @code -o code@, the default is a styled HTML
+@strong document strong@ on stdout.
+
+@ul
+@li @code --fragment code@ — emit the bare @code <article> code@ instead of a
+full page. li@
+@li @code --raw code@ — use @code rawThemeCss code@ (the mechanical reset) instead
+of the house style. li@
+@li @strong PDF strong@ — renders document-mode HTML, then paginates with a
+discovered headless Chrome. @code WIT_CHROME code@ overrides the binary;
+@code --no-pdf-header-footer code@ drops the running header and footer. li@
+ul@
+
+@aside(class note) ⚠️ The CLI defaults to document mode; the
+@a |href /docs/build/rendering/| library a@ defaults to @code fragment code@. The
+two surfaces disagree on purpose — a CLI user wants a file, a library caller
+usually wants a fragment to inject. aside@
+
+@h2 The external-data host h2@
+
+The CLI is one implementation of the @@@code @load code@@@ seam. @code env code@
+is built in — it returns the process environment (plus an optional
+@code --env code@ dotenv file) as a record. Every other alias comes from
+@code wit.sources.json code@:
+
+@@@pre
+{
+  "sources": {
+    "downloads": {
+      "run": ["node", "scripts/downloads.js"],
+      "format": "json",
+      "timeoutMs": 30000
+    }
+  }
+}
+pre@@@
+
+@code format code@ is one of @code json code@, @code csv code@, @code tsv code@,
+@code lines code@, @code text code@, @code svg code@, or @code html code@ — seven
+output formats, plus the built-in @code env code@.
+
+@h3 The security boundary h3@
+
+Running an aliased program requires @code --allow-exec code@. A document can name
+only an @strong alias, strong@ never a command — the command lives in
+@code wit.sources.json code@, which the document author does not control. That
+separation is the whole security model of the data host.
+
+@h3 How captures reach the program h3@
+
+Two ways, both at once: @@@code {{name}} code@@@ tokens are substituted into the
+@code run code@ argv, and the full capture object is written to the program's
+stdin as JSON. CSV and TSV get a minimal header-keyed parse — @strong no quoted
+fields. strong@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting @@@code @load <alias> code@@@ to run a program without
+@code --allow-exec code@ — only @code env code@ works unguarded. li@
+@li Expecting quoted CSV fields to parse — the parser is minimal. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/external-data/| External data a@ ·
+@a |href /docs/build/embed/| Embed Wit in an app a@ ·
+@a |href /docs/build/rendering/| Rendering a@ ·
+@a |href /docs/build/errors-reference/| Errors reference a@.

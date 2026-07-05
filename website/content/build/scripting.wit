@@ -1,0 +1,147 @@
+@h1 Scripting & the lh bridge h1@
+
+@@@code <% %> code@@@ is the escape hatch: plain JavaScript run against the
+expanded tree through a bridge object called @code lh code@. Reach for it when
+the declarative model can't express something — a derived value, a sort, injected
+generated content.
+
+@h2 Where scripts run h2@
+
+Scripts execute @strong inside strong@ @code expand() code@, after inline, if,
+and each expansion, in document order (last script wins on shared state). They
+are not a separate stage, and renderers never see them: @code ScriptBlock code@
+and @code ScriptCall code@ are dropped from output because their effects already
+ran.
+
+@h2 Two forms h2@
+
+@ul
+@li @strong Block strong@ @@@code <% … %> code@@@ — run for side effects.
+Top-level @@@code function NAME(){} code@@@ declarations are captured across
+blocks (the runner appends @code __env.NAME = NAME code@). li@
+@li @strong Inline strong@ @@@code <% expr %> code@@@ — evaluated for its return
+value, which is spliced into prose as a @code Text code@ node.
+@@@code @scriptCall(fn, …) code@@@ invokes a captured function and splices its
+return the same way. li@
+ul@
+
+@h2 The lh bridge h2@
+
+@ul
+@li @code lh.data.<name> code@ — a read-only proxy over resolved
+@code DataDef code@s. Scalars come back as JS primitives; records as a proxy with
+@strong canonical-key strong@ access (@code lh.data.paper.word_target code@
+reaches a field keyed @code word target code@); collections as arrays. Unknown
+name → @code undefined code@. Writes are ignored. li@
+@li @code lh.query(kindName) code@ — every node whose @strong AST kind strong@
+equals @code kindName code@, as raw nodes. It queries by @em kind, em@ not by node
+name — to find your @@@code @finding code@@@ nodes, query @code 'nodeUse' code@
+and filter on @code params code@. li@
+@li @code lh.node(id) code@ — the first @code nodeUse code@ whose @code params code@
+has a matching @code id code@, or @code undefined code@. li@
+@li @code lh.sort(kindName, cmp) code@ — reorder all instances of a kind in place
+within each parent (siblings preserved). @code cmp code@ receives raw nodes, so
+compare on @code a.params.find(p => p.name === 'weight')?.value code@. li@
+@li @code lh.inject(id, witSource) code@ — parse and expand @code witSource code@
+and replace the body of the node whose @code id code@ param matches. Best-effort
+in v1. li@
+@li @code lh.set(path, value) code@ — write into an @strong overlay map strong@
+(no AST mutation); later @code lh.data code@ reads see it. li@
+@li @code lh.prose() code@ → @@@code { text, wordCount() } code@@@ — concatenated
+text content with a word counter. li@
+ul@
+
+@h2 Basic — inline expr and a scriptCall h2@
+
+@@@pre
+#paper: { word count - 1200 }
+
+The paper has <% lh.data.paper['word count'] %> words.
+
+<% function greet(name){ return 'hello, ' + name; } %>
+
+The system says: @scriptCall(greet, "world")
+pre@@@
+
+→ @@@code <p>The paper has 1200 words.</p><p>The system says: hello, &quot;world&quot;</p> code@@@.
+
+@aside(class note) ⚠️ @@@code @scriptCall(greet, "world") code@@@ passes the arg as
+the @strong raw source token strong@ @code "world" code@ — quotes included — so
+the output is @code hello, "world" code@. @code args: string[] code@ are literal
+tokens, never JS-parsed values. aside@
+
+@h2 Realistic — query, then inject a count h2@
+
+@@@pre
+@node |id fc|  |type finding| A holds node@
+@node |id fc2| |type finding| B holds node@
+@node |id count| node@
+
+<%
+const findings = lh.query('nodeUse')
+  .filter(n => n.params.some(p => p.name === 'type' && p.value === 'finding'));
+lh.inject('count', '@p ' + findings.length + ' findings. p@');
+%>
+pre@@@
+
+The @@@code @node |id count| code@@@ div's body becomes @code 2 findings. code@
+Note the query is @code 'nodeUse' code@ (the AST kind) filtered by the
+@code type code@ param — not @code 'finding' code@.
+
+@h2 Edge — sort, overlay, and prose in one pass h2@
+
+@@@pre
+<%
+lh.sort('nodeUse', (a, b) => weight(a) - weight(b));
+lh.set('wordcount', lh.prose().wordCount());
+lh.inject('stats', '@p Total: ' + lh.data.wordcount + ' words. p@');
+%>
+pre@@@
+
+@h2 Execution model & security h2@
+
+Scripts are compiled with @code new Function('lh', '__env', …args, src) code@ —
+@strong there is no real sandbox. strong@ A script sees @code lh code@, the
+captured @code __env code@ functions, and the host's global scope. Authoring
+input is trusted by design in v1.
+
+@aside(class note) ⚠️ @strong Never run scripts from untrusted input. strong@
+There is no sandbox — a @@@code <% %> code@@@ block can reach anything the host
+process can. If you embed documents from users you don't trust, do not enable
+scripting on them. aside@
+
+@h2 Errors h2@
+
+@ul
+@li A throwing script → @code E_SCRIPT_ERROR code@ with the block or call
+@code loc code@; the throw aborts expansion. li@
+@li An unknown @@@code @scriptCall(name) code@@@ → @code E_SCRIPT_ERROR code@
+(@code references unknown function code@). li@
+ul@
+
+@aside(class note) 💡 The bundled @code examples/17-scripting.wit code@ is
+@strong illustrative, not runnable standalone strong@ — it references undefined
+nodes (@@@code @paper-stats code@@@, @@@code @finding code@@@) so
+@code resolve code@ throws @code E_UNRESOLVED_REFERENCE code@. Read it for the
+shape of a real scripting document, but use self-contained snippets like the ones
+above for anything you actually run. aside@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting @code lh.query('finding') code@ to find @@@code @finding code@@@
+nodes — it queries the AST @em kind, em@ so use @code 'nodeUse' code@ and filter. li@
+@li Expecting @@@code @scriptCall code@@@ args to be JS values — they are raw
+tokens; a quoted string keeps its quotes. li@
+@li Expecting @code lh.set code@ to mutate the AST — it writes an overlay only. li@
+@li Expecting scripts to run at render time — they run in @code expand code@. li@
+@li Embedding untrusted input — there is no sandbox. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/resolve-expand/| Resolve & expand a@ (scripts are its tail) ·
+@a |href /docs/build/ast-reference/| AST reference a@ (@code ScriptBlock code@,
+@code ScriptCall code@) ·
+@a |href /docs/build/rendering/| Rendering a@ (script nodes dropped) ·
+@a |href /docs/build/errors-reference/| Errors reference a@.

@@ -1,0 +1,129 @@
+@h1 Architecture h1@
+
+Wit is not a monolith. It is four — optionally five — pure-ish functions in a
+line, each with a named, inspectable output type. Source text goes in one end;
+a string comes out the other. Once you see the shape you know where to
+intervene: swap the data loader, re-theme the renderer, write a renderer of
+your own, or catch an error at the right boundary.
+
+@h2 The pipeline h2@
+
+@@@code parse code@@@ turns source text into a @code Document code@ AST.
+@@@code loadExternalData code@@@ (optional) rewrites @@@code @load code@@@ nodes
+into data. @code resolve code@ binds every use to the definition or data it
+names and merges partials and cross-file references. @code expand code@
+evaluates — it inlines definition bodies, substitutes interpolations and body
+slots, runs conditionals and iteration, and runs @@@code <% %> code@@@ scripts.
+@code renderHtml code@ and @code renderMarkdown code@ walk the
+fully-substituted tree to a string.
+
+@@@pre
+ source ──parse──▶ Document ──loadExternalData──▶ Document ──resolve──▶ ResolvedDocument
+   str            (@witlang/parser)   (optional, @witlang/runtime)      (@witlang/runtime)
+                                                                              │
+                                                                            expand
+                                                                       (@witlang/runtime,
+                                                                        runs <% %> scripts)
+                                                                              ▼
+   str ◀──renderHtml / renderMarkdown── ExpandedDocument
+        (@witlang/render-html / -markdown)
+pre@@@
+
+Three things to read off the diagram. The dashed @@@code loadExternalData code@@@
+step sits @em between em@ parse and resolve. Scripts run at the @strong tail of
+expand strong@ — not as their own stage. Rendering is a pure tree walk: no I/O,
+no configuration beyond @code mode code@ and @code css code@.
+
+@h2 The stages h2@
+
+@table |schema [Stage, Input, Output, Package, May throw]| |rows [[parse, string, Document, parser, WitError], [loadExternalData, Document + source, Document, runtime, E_LOAD_FAILED], [resolve, Document, ResolvedDocument, runtime, ResolverError], [expand, ResolvedDocument, ExpandedDocument, runtime, ExpanderError], [render, ExpandedDocument, string, render-html/-markdown, none]]|
+
+Order is @strong parse → loadExternalData → resolve → expand → render strong@,
+exactly as the CLI does it. @@@code loadExternalData code@@@ is optional: skip
+it and a document with no @@@code @load code@@@ behaves identically, so call it
+always or never — your choice.
+
+@h2 The six-line pipeline h2@
+
+The whole machine, wired by hand:
+
+@@@pre
+import { parse } from '@witlang/parser';                    // → Document
+import { loadExternalData, resolve, expand } from '@witlang/runtime';
+import { renderHtml } from '@witlang/render-html';          // → string
+
+const doc      = parse(source, 'file.wit');       // parse(source, file?='<inline>')
+const loaded   = loadExternalData(doc, dataSrc);  // optional: rewrites @load → DataDef
+const resolved = resolve(loaded, { rootPath });   // → ResolvedDocument
+const expanded = expand(resolved);                // → ExpandedDocument (runs scripts too)
+const html     = renderHtml(expanded, { mode: 'document' });
+pre@@@
+
+For a document that needs no external data and no cross-file references, the
+whole thing composes into one line:
+
+@@@pre
+renderHtml(expand(resolve(parse('Hello from a *def*.'))))
+// → <article class="wit-doc"><p>Hello from a <strong>def</strong>.</p></article>
+pre@@@
+
+@h2 Watch the tree change shape h2@
+
+Each stage's output is a plain object you can inspect. A pipeline inspector over
+one source makes the passes concrete — log the block kinds, then the definitions
+and bindings the resolver found, then the block kinds that survive expansion:
+
+@@@pre
+const src = '#greeting\nHello from a def.\ngreeting#\n\n@greeting';
+
+const doc      = parse(src, 'demo.wit');
+const resolved = resolve(doc);
+const expanded = expand(resolved);
+
+doc.children.map(c => c.kind);          // ['nodeDef', 'nodeUse']
+[...resolved.definitions.keys()];       // ['greeting']
+resolved.bindings.size;                 // 1
+expanded.children.map(c => c.kind);     // ['paragraph']   ← the def is gone
+pre@@@
+
+The definition disappears because @code expand code@ inlined its body at the
+use site. That is the whole story of the middle of the pipeline, in four lines.
+
+@h2 Design notes worth knowing h2@
+
+@ul
+@li @strong Immutability. strong@ The resolver never mutates the parser AST.
+Bindings live in a side table — @@@code ResolvedDocument.bindings: Map<NodeUse, Binding> code@@@
+— not on the nodes. li@
+@li @strong Re-resolution. strong@ @code expand code@ re-resolves uses by
+@em name em@ rather than reading that side table, because inlined bodies produce
+fresh @code NodeUse code@ clones the table never saw. li@
+@li @strong Scripts are part of expand. strong@ The @code lh code@ bridge is
+built and @@@code <% %> code@@@ scripts run at the tail of @code expand code@,
+so renderers never encounter a script node. li@
+@li @strong Inspectability. strong@ @code ResolvedDocument code@ carries
+@code Map code@s (@code definitions code@, @code dataDefs code@,
+@code bindings code@, @code partials code@), so log @code .keys() code@ or
+@code .size code@ rather than @code JSON.stringify code@ to see inside them. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Handing a renderer a @code ResolvedDocument code@. Definitions,
+@@@code (each) code@@@, and @@@code (if) code@@@ are still present; renderers
+expect an @code ExpandedDocument code@. TypeScript catches it — the types are
+distinct on purpose. li@
+@li Expecting @@@code loadExternalData code@@@ to be required. It is a no-op for
+documents with no @@@code @load code@@@. li@
+@li Expecting scripts to run at render time. They ran during @code expand code@;
+their effects are already baked into the tree. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/parsing-ast/| Parsing → the AST a@ ·
+@a |href /docs/build/ast-reference/| AST reference a@ ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@ ·
+@a |href /docs/build/rendering/| Rendering a@ ·
+@a |href /docs/build/errors-reference/| Errors reference a@.

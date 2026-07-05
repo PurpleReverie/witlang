@@ -2,5 +2,6 @@
 #   node packages/cli/dist/bin.js build website/site.wit -o website/site.html --raw
 site.html
 
-# generated docs site
-build/
+# generated docs site (anchored so it does NOT match website/content/build/,
+# the authored Build track)
+/build/

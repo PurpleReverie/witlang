@@ -1,0 +1,242 @@
+@h1 AST reference h1@
+
+Every AST kind, every field. This page exists so a tool author never has to open
+@code ast.ts code@. It is the authoritative shape reference for the tree that
+@code parse code@ returns and that @code resolve code@ and @code expand code@
+transform.
+
+@h2 The model h2@
+
+Nodes are discriminated unions keyed on @code kind code@. Every node extends
+@code HasLoc code@ (@@@code { loc: Loc } code@@@). There are three top-level
+unions — @code Block code@, @code Inline code@, and @code DataValue code@ — plus
+the helpers @code Param code@, @code AccessPath code@, and @code Condition code@.
+@code AstNode code@ is the umbrella union of all of them.
+
+@aside(class note) 💡 @code Comment code@ and @code NodeUse code@ appear in
+@strong both strong@ the @code Block code@ and @code Inline code@ unions — a
+comment or a node can be a block on its own line or inline in prose. Don't assume
+a @code kind code@ tells you which context you are in; @code inline code@ does. aside@
+
+@h2 Top level h2@
+
+@ul
+@li @code Document code@ — @@@code children: Block[] code@@@. The root
+@code parse code@ returns. (After expansion the root is a distinct
+@code ExpandedDocument code@ — see @a |href /docs/build/resolve-expand/| Resolve & expand a@.) li@
+ul@
+
+@h2 The Block union h2@
+
+@@@code Block = Paragraph | Comment | NodeUse | NodeDef | DataDef | ReferenceDirective | IfStatement | EachStatement | ScriptBlock code@@@
+
+@h3 Paragraph h3@
+
+@@@code children: Inline[] code@@@ → @code <p> code@. A run of prose.
+
+@h3 Comment h3@
+
+@code text: string code@ · @code inline: boolean code@. A @code ~ code@ comment.
+Dropped by renderers unless @code WIT_DEBUG_COMMENTS=1 code@.
+
+@h3 NodeUse — the central node h3@
+
+@ul
+@li @code name: string code@ — the node name. li@
+@li @code access?: string[] code@ — segments of a dotted use
+(@@@code @a.b.c code@@@ → @@@code ['b','c'] code@@@ after the head). li@
+@li @code params: Param[] code@ — the arguments (see @code Param code@). li@
+@li @code paramsSource code@ —
+@@@code 'parens' | 'pipes' | 'mixed' | 'record' | 'form-fill' | 'none' code@@@. li@
+@li @code body code@ — @@@code (Block | Inline)[] | null code@@@.
+@code null code@ = self-closing; @@@code [] code@@@ = empty body. li@
+@li @code inline: boolean code@ — inline in prose vs. its own block. li@
+@li @code closeStyle code@ — @@@code 'named' | 'parens' | 'bare' code@@@. li@
+@li @code raw?: boolean code@ — @@@code @@name code@@@; body is one verbatim
+@code Text code@. li@
+@li @code frozen?: boolean code@ — @@@code @@@name code@@@; verbatim @em and em@
+no @@@code {{ }} code@@@ interpolation. li@
+ul@
+
+@h3 NodeDef h3@
+
+@ul
+@li @code name: string code@ — the name authors invoke with @@@code @name code@@@. li@
+@li @code captures: string[] code@ — the named holes a caller fills. li@
+@li @code shape code@ — @@@code 'block' | 'single-line' | 'value-block' code@@@. li@
+@li @code body code@ — @@@code (Block | Inline | Record | Collection)[] code@@@. li@
+@li @code additive: boolean code@ — @code true code@ for a @@@code +#name code@@@
+partial. li@
+ul@
+
+A single-line definition whose whole value is a literal collapses: its
+@code body code@ becomes @@@code [Record] code@@@ or @@@code [Collection] code@@@
+even though those kinds are not in the @code Block code@ or @code Inline code@
+unions. That collapse case is the one time @code body code@ holds a
+@code DataValue code@.
+
+@h3 DataDef h3@
+
+@code name: string code@ · @code value: DataValue code@. A @@@code #name: … code@@@
+data definition. @@@code @load code@@@ nodes become @code DataDef code@s during
+@a |href /docs/build/external-data/| loadExternalData a@.
+
+@h3 ReferenceDirective h3@
+
+@code path: string code@. A @code reference ./other.wit code@ line.
+
+@h3 IfStatement h3@
+
+@code cond: Condition code@ · @code then: Block[] code@ · @code else?: Block[] code@.
+Evaluated to one branch by @code expand code@.
+
+@h3 EachStatement h3@
+
+@code collection: AccessPath code@ · @code itemName: string code@ ·
+@code body: Block[] code@. Unrolled by @code expand code@.
+
+@h3 ScriptBlock h3@
+
+@code content: string code@ (the JS text) · @code inline: boolean code@.
+
+@aside(class note) ⚠️ @code ScriptBlock code@ is the @strong one strong@ node
+whose text lives in @code content code@, not @code body code@. Every other node
+uses @code body code@. Do not conflate them. aside@
+
+@h2 The Inline union h2@
+
+@@@code Inline = Text | Italic | Bold | Interpolation | BodySlot | NodeUse | ScriptCall | ScriptBlock | Comment code@@@
+
+@ul
+@li @code Text code@ — @code value: string code@. li@
+@li @code Italic code@ — @code children: Inline[] code@ → @code <em> code@. li@
+@li @code Bold code@ — @code children: Inline[] code@ → @code <strong> code@. li@
+@li @code Interpolation code@ — @code name: string code@. The
+@@@code ::name:: code@@@ capture hole. li@
+@li @code BodySlot code@ — no fields. The @code ... code@ slot in a definition
+body. li@
+@li @code ScriptCall code@ — @code fnName: string code@ ·
+@@@code args: string[] code@@@. Args are @strong raw source tokens strong@ — a
+quoted arg keeps its quotes (see @a |href /docs/build/scripting/| Scripting a@). li@
+ul@
+
+@h2 The DataValue union h2@
+
+@@@code DataValue = StringValue | NumberValue | BooleanValue | NullValue | Record | Collection code@@@
+
+@ul
+@li @code StringValue code@ — @code value: string code@. li@
+@li @code NumberValue code@ — @code value: number code@. li@
+@li @code BooleanValue code@ — @code value: boolean code@. li@
+@li @code NullValue code@ — no fields. li@
+@li @code Record code@ — @@@code fields: { key: string; value: DataValue }[] code@@@.
+An @strong ordered array, strong@ not a JS object. li@
+@li @code Collection code@ — @code items: DataValue[] code@. li@
+ul@
+
+@aside(class note) ⚠️ @code Record code@ is an @strong ordered array of key/value
+pairs, strong@ not a plain object. Two same-named keys can coexist, and order is
+preserved — renderers and @code lh.data code@ rely on it. Never treat
+@code record.fields code@ as a dictionary. aside@
+
+@h2 Helpers h2@
+
+@ul
+@li @code Param code@ — @@@code name: string | null code@@@ (@code null code@ =
+positional) · @code value: string code@ · @code typedValue?: DataValue code@.
+@code typedValue code@ is shape-probed: it is populated when the captured text
+looks like @@@code [...] code@@@, @@@code {...} code@@@, or a scalar literal —
+this is what lets @@@code @table |rows @sales| code@@@ consume a collection.
+@code value code@ always exists; @code typedValue code@ is additive. li@
+@li @code AccessPath code@ — @code segments: string[] code@. li@
+@li @code Condition code@ — either
+@@@code ExistenceCondition { path: AccessPath } code@@@ or
+@@@code ComparisonCondition { left: AccessPath; op: 'is' | 'equals'; right: DataValue } code@@@. li@
+@li @code Loc code@ — @@@code { file, line, col, offset, length } code@@@ ·
+@code HasLoc code@ — @@@code { loc: Loc } code@@@. li@
+ul@
+
+@h2 Worked shapes h2@
+
+Each below is a one-line source and the trimmed JSON it parses to, lifted from
+the fixture that verifies the shape.
+
+@h3 DataDef + Record h3@
+
+@@@pre
+#author: { name - Mara Finch }
+pre@@@
+
+@@@pre
+{ "kind": "dataDef", "name": "author",
+  "value": { "kind": "record",
+    "fields": [ { "key": "name",
+                  "value": { "kind": "stringValue", "value": "Mara Finch" } } ] } }
+pre@@@
+
+Fixture @code 09-records code@.
+
+@h3 Collection h3@
+
+@@@pre
+#tags: [ a, b ]
+pre@@@
+
+@@@pre
+{ "kind": "dataDef", "name": "tags",
+  "value": { "kind": "collection", "items": [
+    { "kind": "stringValue", "value": "a" },
+    { "kind": "stringValue", "value": "b" } ] } }
+pre@@@
+
+Fixture @code 10-collections code@.
+
+@h3 EachStatement h3@
+
+@@@pre
+(each @team as p)
+@li @p.name li@
+(end)
+pre@@@
+
+@@@pre
+{ "kind": "eachStatement", "itemName": "p",
+  "collection": { "kind": "accessPath", "segments": ["team"] },
+  "body": [ { "kind": "nodeUse", "name": "li", … } ] }
+pre@@@
+
+Fixtures @code 13-iteration code@ and @code 12-conditionals code@ (for
+@code IfStatement code@).
+
+@h2 Edges h2@
+
+@ul
+@li @code NodeUse.body === null code@ (self-closing) is distinct from
+@@@code [] code@@@ (empty body). Branch on both. li@
+@li @code Param.name === null code@ marks a positional parameter. li@
+@li @code Record.fields code@ order is preserved; do not reorder it. li@
+@li @code typedValue code@ is additive — @code param.value code@ is always the
+raw string, @code typedValue code@ the structured view when one applies. li@
+@li A @code NodeDef.body code@ may hold a @code Record code@ or
+@code Collection code@ (the collapse case) even though those are not
+@code Block code@ or @code Inline code@. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Treating @code Record code@ as a JS object — it is an ordered
+@@@code { key, value } code@@@ array. li@
+@li Treating @code body: null code@ and @@@code body: [] code@@@ as the same. li@
+@li Forgetting @code Comment code@ and @code NodeUse code@ live in @strong both strong@
+the @code Block code@ and @code Inline code@ unions. li@
+@li Reaching for @code content code@ on a normal node — only @code ScriptBlock code@
+has it. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/parsing-ast/| Parsing → the AST a@ ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@ (what is gone
+post-expand) ·
+@a |href /docs/build/custom-renderer/| Build your own renderer a@.

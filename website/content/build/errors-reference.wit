@@ -1,0 +1,117 @@
+@h1 Errors reference h1@
+
+Errors are the developer's contract with the pipeline. There are two typed
+families, both carrying a stable, switchable @code .code code@ and a
+@code .loc code@. This page lists every code, the stage that throws it, and the
+fix.
+
+@h2 The two families h2@
+
+@ul
+@li @strong Parse strong@ — @code WitError code@, @code .code: ErrorCodeName code@,
+@strong 12 codes. strong@ Thrown by @code parse code@. li@
+@li @strong Runtime strong@ — @code RuntimeError code@ (base), with subclasses
+@code ResolverError code@ (resolve) and @code ExpanderError code@ (expand),
+@code .code: RuntimeErrorCodeName code@, @strong 14 codes. strong@ li@
+ul@
+
+Both extend the same shape, so one @code instanceof code@ per family catches
+everything:
+
+@@@pre
+import { WitError } from '@witlang/parser';
+import { RuntimeError } from '@witlang/runtime';
+
+try { /* parse → resolve → expand → render */ }
+catch (err) {
+  if (err instanceof WitError || err instanceof RuntimeError) {
+    console.error(`${err.loc.line}:${err.loc.col}: ${err.code}: ${err.message}`);
+  } else throw err;
+}
+pre@@@
+
+@h2 Parser codes — WitError h2@
+
+All thrown during @code parse code@. Cause and fix for each:
+
+@ul
+@li @code E_UNCLOSED_NODE code@ — a node opened but never closed
+(@@@code @aside oops code@@@). Fix: add the closing @@@code aside@ code@@@. li@
+@li @code E_UNCLOSED_COMMENT code@ — a block comment left open. Close it. li@
+@li @code E_UNCLOSED_DEFINITION code@ — a @@@code #name code@@@ block without its
+@@@code name# code@@@. Close the definition. li@
+@li @code E_UNCLOSED_PAREN code@ — a @@@code @x( code@@@ param list with no
+@code ) code@. Balance the parens. li@
+@li @code E_MISMATCHED_CLOSE code@ — a close tag names the wrong node
+(@@@code @a … b@ code@@@). Match the opener's name. li@
+@li @code E_MALFORMED_RECORD code@ — a @@@code { … } code@@@ record with a field
+missing its key or separator. Use @@@code key - value code@@@ or
+@@@code key: value code@@@. li@
+@li @code E_UNCLOSED_COLLECTION code@ — a @@@code [ … code@@@ collection with no
+closing @code ] code@. Close it. li@
+@li @code E_UNCLOSED_SCRIPT code@ — a @@@code <% code@@@ with no @@@code %> code@@@.
+Close the script. li@
+@li @code E_UNCLOSED_RAW_NODE code@ — a @@@code @@name code@@@ raw node left open.
+Add @@@code name@@ code@@@. li@
+@li @code E_MIXED_PARAM_SOURCE code@ — parens and pipes mixed illegally on one
+call. Pick one param form. li@
+@li @code E_MALFORMED_FORM_FIELD code@ — a form-fill body line that isn't
+@@@code key: value code@@@. Fix the field. li@
+@li @code E_UNTERMINATED_STRING code@ — a quoted value with no closing quote.
+Close the quote. li@
+ul@
+
+@h2 Runtime codes — RuntimeError h2@
+
+Thrown during @code resolve code@ or @code expand code@ (and load):
+
+@ul
+@li @code E_UNRESOLVED_REFERENCE code@ — resolve: @@@code @name code@@@ names no
+definition, data, or core node. Define it, or fix the name. li@
+@li @code E_CIRCULAR_REFERENCE code@ — resolve: @code reference code@ files form a
+cycle. Break the cycle. li@
+@li @code E_MISSING_REFERENCE_FILE code@ — resolve: a @code reference code@
+directive but no @code rootPath code@ (or the file is missing). Pass
+@code rootPath code@, or handle it with @code onMissingReference code@. li@
+@li @code E_DUPLICATE_DEFINITION code@ — resolve: two non-additive
+@@@code #name code@@@ definitions. Rename one, or make it a @@@code +#name code@@@
+partial. li@
+@li @code E_PARTIAL_SHAPE_MISMATCH code@ — resolve: a @@@code +#name code@@@
+partial's shape disagrees with its base. Match the base shape. li@
+@li @code E_MISSING_FIELD code@ — expand: an access path reaches a field that
+doesn't exist. Fix the path or the data. li@
+@li @code E_MISSING_RECORD_FIELD code@ / @code E_EXTRA_RECORD_FIELD code@ —
+expand: record arguments don't match the expected fields. Align them. li@
+@li @code E_AMBIGUOUS_RECORD_KEY code@ — expand: a key resolves to more than one
+field. Disambiguate the key. li@
+@li @code E_TYPE_MISMATCH code@ — expand: a value used where another type was
+required. Fix the type. li@
+@li @code E_NOT_ITERABLE code@ — expand: @@@code (each) code@@@ targets a
+non-collection. Point it at a collection. li@
+@li @code E_EXPANSION_DEPTH_LIMIT code@ — expand: a recursive definition past
+depth 256. Remove the recursion. li@
+@li @code E_SCRIPT_ERROR code@ — expand: a @@@code <% %> code@@@ block threw, or
+@@@code @scriptCall code@@@ named an unknown function. Fix the script. li@
+@li @code E_LOAD_FAILED code@ — load: a @@@code @load code@@@ alias's loader threw
+or the dict had no entry. Supply the data or fix the loader. li@
+ul@
+
+@h2 How the CLI surfaces them h2@
+
+@code wit build code@ formats both families identically through
+@code formatStageError code@:
+
+@@@pre
+report.wit:12:5: E_UNRESOLVED_REFERENCE: Unresolved reference @author
+pre@@@
+
+That is @code file:line:col: CODE: message code@ — the same shape the
+@a |href /docs/build/embed/| embed helper a@ produces.
+
+@h2 See also h2@
+
+@a |href /docs/build/parsing-ast/| Parsing → the AST a@ ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@ ·
+@a |href /docs/build/external-data/| External data a@ ·
+@a |href /docs/build/scripting/| Scripting a@ ·
+@a |href /docs/build/cli-reference/| CLI reference a@.
