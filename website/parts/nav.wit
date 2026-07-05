@@ -9,6 +9,7 @@
         @a |href #features| Features a@
         @a |href #examples| Examples a@
         @a |href #why| Why Wit a@
+        @a |href docs/index.html| Docs a@
         @a |href https://github.com| GitHub a@
         @div(class toggle) ◑ Dark div@
       div@
