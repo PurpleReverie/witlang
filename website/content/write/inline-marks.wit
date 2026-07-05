@@ -82,8 +82,8 @@ an "unclosed node" error. Every @@@code @code … code@ code@@@ needs its
 @@@code code@ code@@@. li@
 @li _Using inline code to hold an at-sign._ An inline code node that contains an
 email breaks, because the @@@code keeper@ code@@@ inside it is read as a close.
-To show an at-sign or an email in prose, use a frozen inline literal or reword.
-See @a |href /docs/write/prose/| Paragraphs & prose a@. li@
+In prose, escape the at-sign — @@@code keeper\@example.org code@@@ — or use a
+frozen inline literal. See @a |href /docs/write/prose/| Paragraphs & prose a@. li@
 @li _Reaching for underline for emphasis._ Online, underline reads as a link. Use
 _italic_ or *bold* for stress and keep underline for the rare case that truly
 means it. li@

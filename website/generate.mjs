@@ -69,6 +69,7 @@ const HL_RE = new RegExp([
   '(#[A-Za-z0-9_-]+)',                // #def open
   '([A-Za-z0-9_-]+#(?!#))',           // def# close
   '(\\.\\/[^\\s]+)',                  // ./path
+  '(\\\\[@#|*_~])',                   // backslash escape — literal, no class
 ].join('|'), 'g');
 const HL_CLS = ['tok-com', 'tok-fence', 'tok-ctrl', 'tok-interp', 'tok-interp',
   'tok-cap', 'tok-kw', 'tok-kw', 'tok-node', 'tok-node', 'tok-def', 'tok-def', 'tok-str'];

@@ -102,46 +102,37 @@ quotes. What you type is what you get. Numbers that happen to look like syntax
 stay literal too: a year followed by a period (@code 1970. code@), a decimal
 (@code 3.14 code@), and arithmetic shapes (@code 5*6*7 code@) are all plain prose.
 
-@h2 Three characters to keep off your prose h2@
+@h2 Escaping a character at the edge of a word h2@
 
-Three characters carry meaning at the edges of words, and a bare one glued to a
-letter can be misread as markup. None of them has a backslash escape in running
-prose, so the fix is always to reword or to wrap the mention in inline code.
+A few characters carry meaning at the edges of words — the at-sign, the hash, the
+pipe, and the emphasis marks — and a bare one glued to a letter can be misread as
+markup. When you mean the character itself, put a backslash in front of it: the
+backslash disappears and the character stays literal.
 
-@h3 A literal at-sign glued to letters h3@
+@h3 A literal at-sign h3@
 
-An at-sign directly against letters is read as a node boundary. An email address
-in the middle of a sentence does _not_ survive:
+An at-sign directly against letters is read as a node boundary, so a bare email
+address in a sentence would be mangled. Escape it:
 
 @@@pre
-Email me at keeper@example.org today.
+Email me at keeper\@example.org today.
 pre@@@
 
-renders as two broken paragraphs — the address is mangled, because
-@@@code keeper@ code@@@ is read as a node close. Wrapping it in
-@@@code @code … code@ code@@@ does not rescue it either. There is no backslash
-escape for the at-sign in prose.
+renders the address verbatim. An at-sign before a _space_ or a _digit_ is already
+safe — "Meet me @ home", "in @2024" — so only the letter-glued case needs the
+backslash. You can also put an address in a link's @code href code@ parameter (see
+@a |href /docs/write/links-media/| Links & media a@).
 
-@aside(class note) 💡 The fix: keep a bare at-sign off a following letter.
-Rephrase to "keeper at example.org", split the address so no word-at-word pair
-sits in the text, or put the address in a link's @code href code@ parameter (see
-@a |href /docs/write/links-media/| Links & media a@). An at-sign before a _space_
-or a _digit_ is always safe — "Meet me @ home", "in @2024" — so only the
-letter-glued case is a hazard. aside@
+@h3 A hash, a pipe, an emphasis mark h3@
 
-@h3 A hash glued to a letter at the start of a line h3@
-
-A hash pressed against a letter at the start of a line begins a _definition_ and
-swallows the line — so a line that opens with a word-tag renders as nothing.
-Keep a hash off a following letter: a hash before a space or a digit is fine.
-When you need to write about a hash-tag or a sharp-key like C-sharp in prose,
-wrap the mention in inline code.
-
-@h3 A bare pipe in running text h3@
-
-A bare vertical bar opens parameter state and is swallowed, so a sentence that
-puts bars between three numbers loses them. Avoid a bare pipe in running prose;
-if you must show one, put it inside frozen inline code.
+The same backslash works for the other edge characters. A hash pressed against a
+letter at the start of a line would begin a _definition_ — write
+@@@code \#tag code@@@ for a literal hash-tag or @@@code C\# code@@@ for a sharp
+key. A bare pipe opens parameter state — write @@@code \| code@@@ for a literal
+bar between numbers. And an asterisk or underscore that should not become emphasis
+takes the same escape: @@@code a literal \*asterisk\* code@@@ stays literal. A
+character before a space or a digit is already safe, so most prose never needs an
+escape at all — see @a |href /docs/guides/escapes/| Escapes a@ for the full set.
 
 @h2 A tilde attached to a token is prose h2@
 
@@ -149,17 +140,19 @@ A tilde is only special as a comment marker when it leads a line with a space
 after it (or as the doubled comment fence). Glued to a token it is ordinary
 text, so shell paths and approximations are safe: a home path like
 @code ~/Documents code@ and an approximation like @code ~6 hours code@ both stay
-literal. Comments have their own page.
+literal. To open a line with a literal tilde, escape it — @@@code \~ code@@@.
+Comments have their own page.
 
 @h2 Common mistakes h2@
 
 @ul
 @li _Wrapping prose in a paragraph node._ Prose auto-paragraphs, so an explicit
-@@@code @p … p@ code@@@ around a sentence double-wraps it into
-@code <p><p>…</p></p> code@. Only reach for the paragraph node when a container
-needs a paragraph you can target or attribute. li@
-@li _Trusting an email or a raw pipe in prose._ Both break silently (above).
-Reword, or move the value into a parameter. li@
+@@@code @p … p@ code@@@ around a plain sentence is redundant. Only reach for the
+paragraph node when a container needs a paragraph you can target or attribute. li@
+@li _Forgetting to escape an edge character._ A letter-glued at-sign, a
+line-leading hash, or a bare pipe reads as markup; put a backslash in front
+(@@@code \@ code@@@, @@@code \# code@@@, @@@code \| code@@@) or move the value
+into a parameter. li@
 @li _Expecting a hard line break from a wrapped line._ A lone newline is a soft
 break that reads as a space; use the break node for a real one. li@
 ul@
