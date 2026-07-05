@@ -1,16 +1,34 @@
 # Wit website
 
-The Wit landing page — written entirely in Wit and assembled from many files
-into one page. It doubles as a stress test of the language's ergonomics.
+The Wit site — a landing page plus a full documentation site, both written
+entirely in Wit. It doubles as a stress test of the language's ergonomics. The
+landing page lives here as `site.wit` + `parts/`; the docs are authored in
+[content/](content/) and compiled to static HTML by [generate.mjs](generate.mjs).
 
-## Build
+## Build & preview
+
+The quickest path is the [Makefile](Makefile) in this folder:
+
+```sh
+make build    # compile the landing page + all docs into build/
+make serve    # build, then serve build/ at http://localhost:8000
+make open     # open the served site in a browser
+make clean    # remove generated output
+```
+
+`make serve` produces one static tree — `build/index.html` is the landing page
+and `build/docs/` is the documentation — and serves it, so the landing's `◑`
+dark/light toggle and every docs cross-link work as they would in production.
+Override the port with `make serve PORT=9000`. The build imports the compiled
+`@witlang` packages; if `dist/` is missing it runs `pnpm build` for you, and
+`make dist` forces a refresh after you edit the parser or a renderer.
+
+To build just the landing page on its own (the committed `site.html`):
 
 ```sh
 # from the repo root
 node packages/cli/dist/bin.js build website/site.wit -o website/site.html --raw
 ```
-
-Then open `website/site.html` in a browser. The `◑` control toggles dark/light.
 
 The `--raw` render pathway is used so the page owns all of its own CSS (in
 [theme.wit](theme.wit)) and JS (in [script.wit](script.wit)).
