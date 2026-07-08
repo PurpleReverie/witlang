@@ -1,121 +1,149 @@
 @h1 Tables h1@
 
-Wit builds a table without making you wrestle a grid of pipes. You give it the
-data in whichever form you already have — a small block of comma-separated rows,
-a schema plus rows, or a collection of records you defined or loaded — and it
-draws the table, header and all. Tables centre on the page by default.
+A Wit table is one node. Hand it rows and it draws a full
+@@@code <table> code@@@ — caption, header, body — with no grid of pipes to align.
+Rows can come as inline text, as a collection of records, or as @code @row code@ /
+@code @col code@ child nodes when cells need links and emphasis.
 
-@h2 The quickest table: inline rows h2@
+@h2 A quick table from inline rows h2@
 
-Give the table a list of rows. The first row is the header; the rest are the
-body:
-
-@@@pre
-@table |rows [[Client Hours, COUN603, COUN704, Total], [One to One, 62.75, 41.25, 104], [Couple, 0.75, 0, 0.75]]| |caption Practicum Hours|
-pre@@@
-
-That renders — live, right here — as:
-
-@table |rows [[Client Hours, COUN603, COUN704, Total], [One to One, 62.75, 41.25, 104], [Couple, 0.75, 0, 0.75]]| |caption Practicum Hours|
-
-Each inner list is a row; commas separate the cells; the caption parameter adds a
-centred, muted caption above the table.
-
-@h2 A table from records h2@
-
-The form that sets Wit apart: build a table straight from a collection of
-records — data you defined once, or loaded at build time — with the columns drawn
-from a schema. Define the records, then point the table at them:
+Pass a list of rows in the @code rows code@ parameter. Row 0 is the header; every
+later row is a body row. A @code caption code@ rides above the table.
 
 @@@pre
-#sites: [{ name - Dunmore Head, status - operational }, { name - Slyne Head, status - automated }] !!
-
-@table |schema [name, status]| |rows @sites|
+@table |rows [[Format, Extension], [Web page, .html], [Markdown, .md], [Print, .pdf]]| |caption Output formats|
 pre@@@
 
-The schema names which keys become columns, in order, and each record becomes a
-row. When you pass a record collection with _no_ schema, the columns are derived
-from the keys of the first record — handy for a table straight off loaded data.
-
-@h2 Every input form h2@
-
-@h3 Inline rows h3@
-
-A list of rows, header first: @@@code |rows [[H1, H2], [a, b]]| code@@@. The
-simplest form, good for a handful of literal values.
-
-@h3 Positional schema h3@
-
-@@@code |schema [name, status]| code@@@ names the columns by key, in order, and
-the keys double as the header labels. Pair it with a record collection in
-@code rows code@. The headers are the raw keys — lowercase, exactly as written.
-
-@h3 Labelled schema h3@
-
-When you want display headers different from the keys, give each key a label:
+Emits:
 
 @@@pre
-@table |schema { name - Site, status - Status }| |rows @sites|
+<table><caption>Output formats</caption><thead><tr><th>Format</th><th>Extension</th></tr></thead><tbody><tr><td>Web page</td><td>.html</td></tr><tr><td>Markdown</td><td>.md</td></tr><tr><td>Print</td><td>.pdf</td></tr></tbody></table>
 pre@@@
 
-Now the header reads "Site" and "Status" while the data still keys off
-@code name code@ and @code status code@.
-
-@h2 Header and caption controls h2@
-
-By default row zero is the header. You can override that:
-
-@ul
-@li _Suppress the header_ with @@@code |header false| code@@@ — the table renders
-with a body only, no header row. li@
-@li _Choose which row is the header_ with @@@code |header 1| code@@@ — row one
-becomes the header and the rows before it are dropped. li@
-@li _Set an explicit header_ with @@@code |header [Name, Value]| code@@@ — this
-header is used and _every_ data row is kept as a body row. li@
-@li _Add a caption_ with @@@code |caption Practicum Hours| code@@@ — a centred,
-muted caption above the table. li@
-ul@
-
-@h2 Commas and multi-line cells h2@
-
-Because commas separate cells, a comma _inside_ a value would split it into two
-cells. When a cell needs to hold a comma — or span several lines — wrap its value
-in a pair of exclamation marks:
+Drop the header with @@@code |header false| code@@@ — the first row becomes a
+plain body row:
 
 @@@pre
-@table |rows [[Term, Meaning], [Kāwanatanga, ! The practice of good governance, spanning many contexts. !]]|
+@table |rows [[Web page, .html], [Markdown, .md]]| |header false|
+→ <table><tbody><tr><td>Web page</td><td>.html</td></tr><tr><td>Markdown</td><td>.md</td></tr></tbody></table>
 pre@@@
 
-The wrapped cell keeps its comma (and any line breaks) inside a single cell.
-There is no separate comma escape for record values, so the wrapper is the tool
-to reach for whenever a cell's text contains a comma.
+@aside(class note) 💡 Inline cells split on commas, and a comma inside a cell
+can't be escaped — a stray comma makes an extra cell. Keep inline cell text
+comma-free, or use the body form below where each cell is its own node. aside@
 
-@h2 An empty table h2@
+@h2 A table from a data collection h2@
 
-A table node with no parameters is legal and renders an empty table — useful as a
-placeholder you fill in later.
+Point @code rows code@ at a collection of records and each record becomes a row.
+With no schema, the columns come from the first record's keys:
 
-@h2 Common mistakes h2@
+@@@pre
+#packages: [ { name - parser, role - reads source }, { name - runtime, role - resolves data } ]
 
-@ul
-@li _Freezing a data-backed table._ The frozen literal form of the table (the
-tripled-fence version) does _not_ resolve a record collection — it renders empty.
-Always use the plain table node for any table backed by @@@code @records code@@@. li@
-@li _A stray comma splitting a cell._ A comma inside a value creates an extra
-cell. Wrap the value in the exclamation-mark cell wrapper (above). li@
-@li _Expecting positional-schema headers to be prettified._ They are the raw
-keys, lowercase. Use the labelled-schema form when you want display headers. li@
-@li _Hand-aligning numbers._ The table centres on the page and leaves column
-alignment to CSS; do not pad cells with spaces to align them. li@
-ul@
+@table |rows @packages|
+pre@@@
+
+Emits headings @code name code@ / @code role code@ over the two records. To choose
+and label the columns yourself, add a schema — @@@code |schema [name, role]| code@@@
+for raw keys in order, or @@@code |schema { name - Package, role - Role }| code@@@
+for display headings. Loading the records from a file at build time works the same
+way; see @a |href /docs/guides/data/| Data a@.
+
+@h2 Rich cells: the body form h2@
+
+The inline and collection forms hold plain strings. When a cell needs a link,
+emphasis, or a nested node, author the rows as child nodes instead: a
+@@@code @row code@@@ per row, a @@@code @col code@@@ per cell. Leave off the
+@code rows code@ parameter and the renderer reads the body.
+
+@@@pre
+@table |caption Modules|
+  @row @col Module col@ @col Notes col@ row@
+  @row @col Parser col@ @col Reads *source*; see @a |href /docs/reference/syntax/| the syntax a@. col@ row@
+table@
+pre@@@
+
+Emits:
+
+@@@pre
+<table><caption>Modules</caption><thead><tr><th>Module</th><th>Notes</th></tr></thead><tbody><tr><td>Parser</td><td>Reads <strong>source</strong>; see <a href="/docs/reference/syntax/">the syntax</a>.</td></tr></tbody></table>
+pre@@@
+
+The first @@@code @row code@@@ is the header — its cells render as
+@@@code <th> code@@@ — unless you pass @code header false code@. A
+@@@code @th code@@@ cell is always a header cell, even inside a body row. The
+HTML-style names @@@code @tr code@@@ / @@@code @td code@@@ / @@@code @th code@@@
+work as aliases for @@@code @row code@@@ / @@@code @col code@@@, and the whole row
+can sit on one line: @@@code @row @col a col@ @col b col@ row@ code@@@.
+
+@@@code @row code@@@ and @@@code @col code@@@ are interchangeable: the outer node
+is the row, the inner one the cell, whichever keyword you use. So
+@@@code @col @row a row@ @row b row@ col@ code@@@ builds the same row as
+@@@code @row @col a col@ @col b col@ row@ code@@@.
+
+@h2 Data-driven rows with rich cells h2@
+
+This is the form the others can't reach: rows generated from data, with cells that
+still hold nodes. Wrap the @@@code @row code@@@ line in
+@@@code (each … as …) code@@@ and pull fields into each cell body.
+
+@@@pre
+#modules: [ { name - Parser, status - stable }, { name - Runtime, status - stable } ]
+
+@table |caption Modules|
+  @row @col Module col@ @col Status col@ row@
+  (each @modules as m)
+  @row @col @m.name col@ @col @em @m.status em@ col@ row@
+  (end)
+table@
+pre@@@
+
+Emits:
+
+@@@pre
+<table><caption>Modules</caption><thead><tr><th>Module</th><th>Status</th></tr></thead><tbody><tr><td>Parser</td><td><em>stable</em></td></tr><tr><td>Runtime</td><td><em>stable</em></td></tr></tbody></table>
+pre@@@
+
+The header row stays fixed; the loop appends one body row per record. Put an
+@@@code (if …) code@@@ inside the loop to filter which rows appear — here only the
+stable modules:
+
+@@@pre
+#modules: [ { name - Parser, status - stable }, { name - Sandbox, status - draft } ]
+
+@table |caption Stable modules|
+  @row @col Module col@ @col Status col@ row@
+  (each @modules as m)
+  (if @m.status is stable)
+  @row @col @m.name col@ @col @em @m.status em@ col@ row@
+  (end)
+  (end)
+table@
+pre@@@
+
+The draft row drops out; only Parser survives:
+
+@@@pre
+<table><caption>Stable modules</caption><thead><tr><th>Module</th><th>Status</th></tr></thead><tbody><tr><td>Parser</td><td><em>stable</em></td></tr></tbody></table>
+pre@@@
+
+@h2 One limitation: data resolves in the body, not in a parameter h2@
+
+A field reference resolves inside a cell @strong body strong@ — @@@code @col @m.name col@ code@@@
+works — but @strong not inside a parameter strong@. A link's @code href code@
+cannot yet be @@@code @m.url code@@@:
+
+@@@pre
+@col @a |href @m.url| @m.name a@ col@   ✗ the href is not resolved
+@col @a |href /modules/parser| @m.name a@ col@   ✓ literal href, data in the text
+pre@@@
+
+Keep every data-driven value in the cell body and write parameters as literals.
 
 @h2 See also h2@
 
 @ul
-@li @a |href /docs/write/components/| Reusable pieces a@ — defining the record
-collections a table reads. li@
-@li @a |href /docs/write/rendering/| Rendering a@ — loading live data for a table
-at build time. li@
-@li @a |href /docs/write/genres/| Document genres a@ — the data report, built
-around tables and figures. li@
+@li @a |href /docs/guides/logic/| Logic & assembly a@ — @@@code (each …) code@@@ and @@@code (if …) code@@@ in full, the engine behind data-driven rows. li@
+@li @a |href /docs/guides/data/| Data a@ — defining and loading the record collections a table reads. li@
+@li @a |href /docs/reference/syntax/| Syntax reference a@ — every table parameter and the exact HTML it emits. li@
 ul@

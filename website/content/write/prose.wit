@@ -1,171 +1,159 @@
-@h1 Paragraphs & prose h1@
+@h1 Writing text h1@
 
-Prose is the ground floor of Wit. Plain text is already a valid document —
-you type sentences, leave a blank line between paragraphs, and you are done.
-Nothing else is required to write. Wit never hijacks your punctuation or the
-way a line begins into structure, so you reach for markup only when you want a
-specific element.
+Type sentences. Separate paragraphs with a blank line. That is a complete Wit
+document — everything on this page is what to add when plain prose isn't enough.
 
-@h2 The one rule: a blank line starts a paragraph h2@
+@h2 Paragraphs h2@
 
-Write text. Separate two paragraphs with a blank line. That is the whole
-mechanic for ordinary writing.
+A blank line starts a new paragraph. A single newline inside a block is a soft
+wrap: HTML collapses it to a space, so the sentence flows on.
 
 @@@pre
-The rain had not stopped for three days.
+The reactor logged a coolant spike at 03:12.
 
-Mara pressed her palm to the cold glass and counted
-the boats that were no longer there.
+Two operators were on shift; neither
+had left the control room.
 pre@@@
 
-Those two blocks become two paragraphs. One blank line or several — the result
-is the same; extra blank lines never create empty paragraphs.
+That renders two paragraphs — the first line, then the two soft-wrapped lines as a
+single flowing paragraph. One blank line or several makes no difference, and
+extra blank lines never produce empty paragraphs. A "blank" line counts even if
+it holds only spaces or tabs, so text pasted from an editor that leaves trailing
+whitespace still splits correctly.
 
-@h2 Soft line breaks vs. paragraph breaks h2@
+Leading indentation, line length, and line endings (CRLF, CR, LF) carry no
+meaning — they are normalised before paragraphs are split. Wit has no
+Markdown-style block syntax, so a line that opens with @code - code@,
+@code * code@, @code > code@, or @code 1. code@ is literal prose, not a list or
+quote. Punctuation is never reserved: em-dashes, apostrophes, ampersands, and
+percent signs render as themselves, and quotes stay straight (no smart-quote
+substitution).
 
-A single line break inside a block is a _soft_ wrap: the newline is kept in the
-source, but because HTML collapses whitespace, the sentence simply flows on with
-a space. It does _not_ become a visible line break.
+@h2 Bold and italic h2@
+
+Two inline marks: @code *asterisks* code@ for *bold*, @code _underscores_ code@
+for _italic_. Each wraps a run of text and can span several words.
 
 @@@pre
-The keeper had not spoken in eleven days,
-and his silence had begun to feel like weather.
+The lens held _the last of the evening light_, and the flame *never wavered*.
 pre@@@
 
-That renders as one flowing paragraph. Add a blank line between the two lines
-instead and you get two paragraphs. That single extra newline is the only
-difference between a wrapped sentence and a new paragraph.
-
-@aside(class note) 💡 Need a hard line break inside a paragraph — for an address
-block or a line of verse? Use the break node, covered in
-@a |href /docs/write/inline-marks/| Inline marks a@. A lone newline will not do
-it. aside@
-
-@h2 Nothing is hijacked h2@
-
-Wit has no Markdown-style block syntax. A line that opens with a number, a dash,
-an asterisk, or a greater-than sign is just prose, and it renders verbatim:
+A mark only fires when the character flanks the text from the outside. Pressed
+against a digit or a letter it stays literal, which is why arithmetic and
+identifiers are safe with emphasis left on:
 
 @@@pre
-> she said nothing at all.
-* the asterisk keeps its place.
-- and so does the hyphen.
-1. The first time, it rained.
+The product 5*6*7 and the path file_name_here both stay plain text.
 pre@@@
 
-Each of those becomes its own literal paragraph — the leaders survive exactly
-as typed (the greater-than sign is HTML-escaped for safety, but reads normally).
-Because there is no bullet or blockquote block syntax to trip over, your
-punctuation is always your own. When you want a real list or quotation, you ask
-for it with a node — see @a |href /docs/write/lists/| Lists a@ and
-@a |href /docs/write/quotes-code-rules/| Quotes, code & rules a@.
+Nest them with *bold on the outside*: @@@code *_both_* code@@@ gives
+bold-and-italic. The reverse, @@@code _*x*_ code@@@, leaves the inner asterisks
+literal — the parser resolves the outer mark first, and italic-outside consumes
+its span before the inner bold is seen.
 
-@h2 What counts as a blank line h2@
+@aside(class note) 💡 A mark refuses to touch a token containing its own
+character — the underscore mark will not italicise @code snake_case code@. For
+that, use the node form: @@@code @em snake_case em@ code@@@ (italic) or
+@@@code @strong … strong@ code@@@ (bold). An empty pair like @code __ code@ also
+stays literal. aside@
 
-A "blank line" is a line that is empty _or_ contains only spaces and tabs. A
-line of pure whitespace still separates paragraphs — it will not silently merge
-two blocks. This matters when you copy text between editors that leave trailing
-spaces on "empty" lines: the split still works as you expect.
+@h2 Inline mark nodes h2@
 
-@h2 Whitespace, length, and line endings h2@
-
-Wit is forgiving about the mechanical details of a text file, so you rarely
-think about them:
-
-@ul
-@li _Leading whitespace is cosmetic._ Indenting a paragraph with spaces or tabs is
-preserved in the source but collapsed by the browser, so indented prose reads
-normally. Use indentation freely to keep your source tidy. li@
-@li _Line length carries no meaning._ A single 500-character line is one
-paragraph; there is no column limit and no need to hard-wrap. li@
-@li _Line endings are normalised._ Windows (CRLF), classic-Mac (CR), Unix (LF),
-or a mix in one file all normalise before paragraphs are split, so a file
-authored on any platform renders identically. li@
-@li _File edges are forgiving._ An empty file is an empty document, not an error.
-A missing trailing newline, or several trailing newlines, both render the same
-single paragraph — no phantom empty paragraphs appear. li@
-ul@
-
-@h2 Punctuation and special characters h2@
-
-Ordinary punctuation is never reserved. Em-dashes, apostrophes, colons,
-semicolons, quotation marks, ampersands, and percent signs all render as
-themselves (with the few HTML-sensitive characters escaped for you):
+For anything past bold and italic, call the mark by name. Each is an inline node
+mapping to the same-named HTML element:
 
 @@@pre
-"It was a matter of degree," she said — half to herself, half to the sea.
-Costs rose 40% between 1847 and 1851; nobody noticed.
+@code … code@    inline code: commands, identifiers, paths
+@u … u@       underline (reads as a link online — use sparingly)
+@s … s@       strike-through: retractions, "was X, now Y"
+@sub … sub@     subscript: chemical formulae, footnote marks
+@sup … sup@     superscript: exponents, ordinals, note refs
+@mark … mark@    highlight: draw the eye to a phrase
+@small … small@   small print, fine print
+@br         a hard line break inside one paragraph
 pre@@@
 
-Quotation marks round-trip verbatim — Wit does _not_ substitute "smart" curly
-quotes. What you type is what you get. Numbers that happen to look like syntax
-stay literal too: a year followed by a period (@code 1970. code@), a decimal
-(@code 3.14 code@), and arithmetic shapes (@code 5*6*7 code@) are all plain prose.
-
-@h2 Escaping a character at the edge of a word h2@
-
-A few characters carry meaning at the edges of words — the at-sign, the hash, the
-pipe, and the emphasis marks — and a bare one glued to a letter can be misread as
-markup. When you mean the character itself, put a backslash in front of it: the
-backslash disappears and the character stays literal.
-
-@h3 A literal at-sign h3@
-
-An at-sign directly against letters is read as a node boundary, so a bare email
-address in a sentence would be mangled. Escape it:
+In a single run:
 
 @@@pre
-Email me at keeper\@example.org today.
+Call @code shutdown() code@ to scram; water is H@sub 2 sub@O, the area is
+4@sup 2 sup@, an @s old figure s@ became a @mark new one mark@, with
+@small caveats small@ in the footnotes.
 pre@@@
 
-renders the address verbatim. An at-sign before a _space_ or a _digit_ is already
-safe — "Meet me @ home", "in @2024" — so only the letter-glued case needs the
-backslash. You can also put an address in a link's @code href code@ parameter (see
-@a |href /docs/write/links-media/| Links & media a@).
+@@@code @br code@@@ is self-closing and needs no body. A lone newline is a soft
+break; use @@@code @br code@@@ for a real one — an address block, a line of verse,
+a signature:
 
-@h3 A hash, a pipe, an emphasis mark h3@
+@@@pre
+Ada Lovelace @br
+12 Analytical Way @br
+London
+pre@@@
 
-The same backslash works for the other edge characters. A hash pressed against a
-letter at the start of a line would begin a _definition_ — write
-@@@code \#tag code@@@ for a literal hash-tag or @@@code C\# code@@@ for a sharp
-key. A bare pipe opens parameter state — write @@@code \| code@@@ for a literal
-bar between numbers. And an asterisk or underscore that should not become emphasis
-takes the same escape: @@@code a literal \*asterisk\* code@@@ stays literal. A
-character before a space or a digit is already safe, so most prose never needs an
-escape at all — see @a |href /docs/guides/escapes/| Escapes a@ for the full set.
+Markdown output has no reliable inline break, so @@@code @br code@@@ degrades to a
+space there. Keep to HTML or PDF when hard breaks matter.
 
-@h2 A tilde attached to a token is prose h2@
+@h2 Comments h2@
 
-A tilde is only special as a comment marker when it leads a line with a space
-after it (or as the doubled comment fence). Glued to a token it is ordinary
-text, so shell paths and approximations are safe: a home path like
-@code ~/Documents code@ and an approximation like @code ~6 hours code@ both stay
-literal. To open a line with a literal tilde, escape it — @@@code \~ code@@@.
-Comments have their own page.
+A comment is a note that never reaches the reader — stripped before any output.
+A tilde followed by a space starts a line comment to end-of-line:
 
-@h2 Common mistakes h2@
+@@@pre
+~ verify the coolant spike time against the incident log
 
-@ul
-@li _Wrapping prose in a paragraph node._ Prose auto-paragraphs, so an explicit
-@@@code @p … p@ code@@@ around a plain sentence is redundant. Only reach for the
-paragraph node when a container needs a paragraph you can target or attribute. li@
-@li _Forgetting to escape an edge character._ A letter-glued at-sign, a
-line-leading hash, or a bare pipe reads as markup; put a backslash in front
-(@@@code \@ code@@@, @@@code \# code@@@, @@@code \| code@@@) or move the value
-into a parameter. li@
-@li _Expecting a hard line break from a wrapped line._ A lone newline is a soft
-break that reads as a space; use the break node for a real one. li@
-ul@
+The reactor logged a spike at 03:12.
+pre@@@
+
+Two tildes open a block comment; the fence @@@code ~~/ code@@@ closes it. It can
+vanish mid-sentence or span many lines:
+
+@@@pre
+The bell ~~ TODO: confirm the year ~~/ rang on the hour.
+
+~~
+Draft note: this passage may move to chapter two.
+Ask the editor before cutting it.
+~~/
+pre@@@
+
+Only the exact closing fence ends a block, so a home path like
+@code ~/Documents code@ or a lone doubled tilde inside the block is safe content.
+
+@aside(class note) 💡 Put a blank line on each side of a standalone comment.
+A line comment wedged between two prose lines eats the newlines around it and
+runs the paragraphs together; a comment as the first line of a container body can
+fold the next block into a paragraph. A blank line each side prevents both. aside@
+
+@h2 Escaping edge characters h2@
+
+Six characters lead a structural reader: @code @ code@, @code # code@,
+@@@code | code@@@, @@@code * code@@@, @@@code _ code@@@, and @code ~ code@. A
+backslash keeps any of them literal — the backslash is dropped, the character
+stays.
+
+@@@pre
+Email me at ada\@example.org today.
+Write \#tag for a literal hash, C\# for the key.
+The range is 4\|8 amps, a literal \*asterisk\*, and \~ leads a line.
+pre@@@
+
+The escape is only needed when the character is glued to a letter (or leads a
+line, for @code # code@ and @code ~ code@). A character before a space or a digit
+is already safe: "Meet me @ home", "in @2024", "it took ~6 hours", and
+"x ~ y" all render as typed, no backslash required. Most prose needs no escapes
+at all.
+
+@aside(class note) 💡 An email won't survive inside an inline
+@@@code @code … code@ code@@@ node — the @code @ code@ reads as the node's close.
+Escape it in prose (@@@code ada\@example.org code@@@), or open a frozen code
+node with @@@code @@@code code@@@ and close it with the matching triple-fence: it
+renders its body verbatim, at-signs and all. aside@
 
 @h2 See also h2@
 
 @ul
-@li @a |href /docs/write/emphasis/| Emphasis a@ — the two inline marks that never
-fire by accident. li@
-@li @a |href /docs/write/comments/| Comments a@ — the tilde forms, kept out of
-every output. li@
-@li @a |href /docs/write/using-nodes/| Using nodes a@ — the one shape behind every
-element. li@
-@li @a |href /docs/start/nodes/| Nodes & core vocabulary a@ — where structure
-comes from. li@
+@li @a |href /docs/write/structure/| Structure a@ — headings, lists, blocks, and how nodes nest. li@
+@li @a |href /docs/write/components/| Components a@ — the node form behind every mark, and defining your own. li@
+@li @a |href /docs/start/mental-model/| Mental model a@ — the one node shape and the five layers above prose. li@
 ul@

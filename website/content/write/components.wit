@@ -1,79 +1,64 @@
-@h1 Reusable pieces h1@
+@h1 Reuse: components & multi-file h1@
 
-Wit lets you define your own nodes and use them anywhere. Name a piece of
-writing once, then drop it into your prose by name — and if you change the
-definition, every use updates. This is how a manuscript stays consistent: one
-source of truth for a recurring value, a chapter template, a citation format, a
-callout.
+Name a piece of content once, use it by name anywhere, and change it in one place.
+Hash defines, at-sign uses. This page covers your own nodes, captures, the
+parameter forms at a glance, splitting a document across files, and the draft
+workflow that ties it together.
 
-@h2 Define once, use everywhere h2@
+@h2 Define your own node h2@
 
-A definition begins with a hash and a name; a use is the same name with an
-at-sign. Hash defines, at-sign uses. That is the whole relationship.
+Three body shapes, from shortest to fullest. Each is a definition with a
+@@@code # code@@@; each is recalled later with a bare @@@code @name code@@@.
 
-@h2 A single-line value h2@
-
-The simplest definition names a short value. A colon after the name means "no
-body":
+A single-line value — a colon, then the value on one line:
 
 @@@pre
-#year: 1923
+#year: 1965
 
-The lamp was first lit in @year, and relit every winter since.
+The bridge opened in @year and has not closed since.
 pre@@@
 
-The reference stands in for the value, so you write the year once and mention it
-by name as often as you like. Change the definition and every mention follows.
+That renders @strong The bridge opened in 1965 and has not closed since. strong@
+Write the year once; every mention follows the definition.
 
-@h2 A value block h2@
-
-When the value is longer — a few lines, its own paragraph, some emphasis — wrap
-it between a colon and a closing double-bang fence:
+A value block, for content that runs longer — a colon, then indented lines, then a
+@@@code !! code@@@ fence:
 
 @@@pre
 #epigraph:
-The sea does not forgive forgetting.
-— coastal proverb
+The river keeps no record of the boats.
+— dock proverb
 !!
 
 @epigraph
 pre@@@
 
-Now the epigraph is defined in one place and rendered wherever you write its
-name. This is the preferred way to name any chunk of content.
-
-@h2 A block definition with a body slot h2@
-
-The most powerful form is a wrapper: a definition whose body has a slot where the
-_caller's_ content will render. You write the surrounding structure once, mark
-the slot with three dots, and every use fills it:
+The block form, for a wrapper whose body has a slot. Open with just the
+hash-name, mark the slot with @@@code ... code@@@, close with the name and a hash.
+The caller's body drops in where the dots are:
 
 @@@pre
-#chapter
+#note
 @hr hr@
-
 ...
-chapter#
+note#
 
-@chapter
-The road climbed for an hour before the house appeared.
-chapter@
+@note
+Deliveries pause for the harvest week.
+note@
 pre@@@
 
-The three dots are where the invocation's body drops in. Notice the two fences:
-a block definition opens with just the hash-name (no colon) and closes with the
-name and a hash.
+@aside(class note) 💡 Definitions are hoisted, so a use may come before its
+definition, and a definition body may reference another definition. aside@
 
-@h2 Captures — parameters for your own nodes h2@
+@h2 Captures: parameters for your own node h2@
 
-A definition can name parameters and interpolate them into its body. You declare
-the parameter names between double bars, and drop each one in with a
-double-colon wrapper:
+Declare parameters between double bars on the definition, drop each one into the
+body with a @@@code ::field:: code@@@ wrapper, and pass them at the call:
 
 @@@pre
 #chapter ||number, title||
 @h2 Chapter ::number:: — ::title:: h2@
-
 ...
 chapter#
 
@@ -82,34 +67,98 @@ The road climbed for an hour before the house appeared.
 chapter@
 pre@@@
 
-The call supplies "I" and "The Arrival"; the definition places them in the
-heading and renders the body where the dots are. One template, consistent
-chapters.
+The call supplies @code I code@ and @code The Arrival code@; the definition places
+them in the heading and splices the body where the dots are. One template,
+consistent chapters.
 
-@aside(class note) 💡 A double-colon capture such as @@@code ::title:: code@@@
-only lives _inside_ a definition body. It is not a way to interpolate a value
-into ordinary prose — for that, define a value and reference it by name. aside@
+The capture list is optional — leave it off and Wit infers the parameters by
+scanning the body for @@@code ::name:: code@@@ holes. A @@@code ::field:: code@@@
+resolves @strong only inside a definition body strong@; in ordinary prose it
+renders literally. To put a value into a sentence, define it and reference it by
+name instead.
 
-@h2 Common mistakes h2@
+@h2 Parameter forms at a glance h2@
+
+The same definition can be filled several ways. The governing rule:
+@strong content goes in the body, metadata in parameters strong@. Pick by shape —
+the full grammar is in the @a |href /docs/reference/syntax/| syntax reference a@.
 
 @ul
-@li _A comma inside a record field value._ Commas separate fields, so a comma in
-a value breaks the record. Keep values comma-free, or use a table's cell wrapper
-for tabular data. See @a |href /docs/write/tables/| Tables a@. li@
-@li _Expecting a capture to work in prose._ A double-colon capture only resolves
-inside a definition body, never in running text. li@
-@li _A hash glued to a letter at the top of a file._ A line that opens with a
-hash pressed against a word is read as a definition and can silently swallow the
-line. Keep a hash off a following letter in prose — see
-@a |href /docs/write/prose/| Paragraphs & prose a@. li@
+@li @strong Pipes strong@ — @@@code |key value| code@@@; the only form that also
+carries a body. li@
+@li @strong Parens strong@ — @@@code @badge(tone good) code@@@; self-closing, good
+for one or two inline params. li@
+@li @strong Record strong@ — @@@code { key - value } code@@@ or
+@@@code { key: value } code@@@; self-closing, structured, no body. li@
+@li @strong Form-fill strong@ — the body @em is em@ the params, one
+@@@code key: value code@@@ per line; best when there are many fields. li@
+@li @strong Colon-scatter strong@ — @@@code key:value code@@@ tokens lifted from a
+one-line body, for tagging a node mid-sentence. li@
 ul@
+
+Every value is type-probed, so a number, record, or collection passed through any
+form arrives as a real typed value you can iterate or reach into.
+
+@h2 Split a document across files h2@
+
+A long work does not want one enormous file. Put shared definitions — a citation
+format, a schema, recurring values — in their own file, and pull them in with a
+@code reference code@ directive at the top of a line:
+
+@@@pre
+reference ./shared/sources.wit
+reference ./shared/schema.wit
+pre@@@
+
+Everything defined in those files is now available here, as if typed in place. The
+namespace is flat and definitions hoist, so import order does not matter.
+
+@aside(class note) 💡 @code reference code@ is only special at the very start of a
+line, followed by a path — which is why you only ever see it in a code block. In
+running prose the same word is just a word. aside@
+
+Wrap each chapter in a block definition so it emits nothing on its own, then let a
+thin master file place the parts in order:
+
+@@@pre
+reference ./chapters/one.wit
+reference ./chapters/two.wit
+
+@chapter_one chapter_one@
+@chapter_two chapter_two@
+pre@@@
+
+Reorder the uses and the chapters reorder; add a third and it slots in. The master
+file is the table of contents made executable.
+
+@h2 The draft workflow h2@
+
+The source is plain @code .wit code@ text in a git repository, so every draft is a
+readable diff — you see which sentences moved, not an opaque blob:
+
+@@@pre
+git commit -am "Tighten the opening; cut the second epigraph"
+pre@@@
+
+Tag or branch a draft the way you would any code, and rebuild to share:
+
+@@@pre
+wit build manuscript.wit -o draft.pdf
+pre@@@
+
+Run @code wit fmt manuscript.wit -w code@ before committing to re-indent to the
+real structure and keep diffs clean; it parses the file first, so it doubles as a
+sanity check.
 
 @h2 See also h2@
 
 @ul
-@li @a |href /docs/write/using-nodes/| Using nodes a@ — how a use is written. li@
-@li @a |href /docs/write/citations/| Citations & references a@ — the signature use
-of definitions. li@
-@li @a |href /docs/write/multi-file/| Multi-file manuscripts a@ — sharing
-definitions across chapter files. li@
+@li @a |href /docs/guides/data/| Data a@ — records and collections behind
+@@@code @name.field code@@@. li@
+@li @a |href /docs/guides/logic/| Logic & assembly a@ — @@@code (if …) code@@@ and
+@@@code (each …) code@@@ inside a template. li@
+@li @a |href /docs/recipes/manuscript/| Manuscript recipe a@ — a full multi-file
+book assembled end to end. li@
+@li @a |href /docs/reference/syntax/| Syntax reference a@ — every parameter form
+and the full grammar. li@
 ul@

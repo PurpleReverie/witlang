@@ -1,117 +1,102 @@
-@h1 Rendering: HTML, Markdown & PDF h1@
+@h1 Rendering & styling h1@
 
-One source, several outputs. The same @code .wit code@ file becomes a web page, a
-Markdown file for a repository, or a paginated PDF for a reader — each with a
-single command. This page covers what each format is good for and every option
-for producing it.
+One @code .wit code@ source builds to four outputs. The @code -o code@ extension
+picks the format; two flags shape the HTML; three levels of styling take you from
+zero effort to full art direction.
 
-@h2 The default: a finished HTML document h2@
+@h2 Pick a format with -o h2@
 
-The plain build command prints a complete, self-contained, styled HTML document
-to your terminal:
+The extension on @code -o code@ decides what you get:
 
 @@@pre
-wit build essay.wit
+wit build doc.wit -o doc.html    ~ complete self-contained styled page
+wit build doc.wit -o doc.md      ~ GitHub-flavoured Markdown
+wit build doc.wit -o doc.pdf     ~ paginated print-ready PDF
 pre@@@
 
-"Self-contained" means the theme's CSS is inlined into the page head — one file
-you can open in any browser or email, with no external stylesheet to ship
-alongside. Redirect it to a file, or use the output flag below.
-
-@h2 Embedding: a bare fragment h2@
-
-When you want to drop the content into a page you already have — a blog template,
-a CMS — ask for a fragment instead:
+With no @code -o code@, the HTML prints to stdout — handy for piping:
 
 @@@pre
-wit build essay.wit --fragment
+wit build doc.wit | grep '<h1>'
 pre@@@
 
-That emits just the article element, with no page head and no theme, ready to
-nest inside your own HTML.
+"Self-contained" means the theme's CSS is inlined into the page head: one file
+you can open in any browser or email with no stylesheet shipped alongside. An
+unrecognised extension is an error, not a guess.
 
-@h2 Choosing the output format h2@
+@h2 HTML variants: --fragment and --raw h2@
 
-Two ways to pick a format. The output flag infers the format from the file
-extension:
+To drop the content into a page you already have — a blog template, a CMS — ask
+for a fragment. You get just the bare @@@code <article> code@@@, no page head and
+no theme:
 
 @@@pre
-wit build essay.wit -o essay.html     ~ HTML
-wit build essay.wit -o essay.md       ~ Markdown
-wit build essay.wit -o essay.pdf      ~ PDF
+wit build doc.wit --fragment
 pre@@@
 
-An unrecognised extension is an error rather than a guess. To force a format
-regardless of extension, name it explicitly:
+To keep the full page shell but drop the built-in theme, use @code --raw code@.
+It leaves a minimal reset instead, so you bring your own CSS:
 
 @@@pre
-wit build essay.wit --format md
+wit build doc.wit --raw -o doc.html
 pre@@@
 
-@h2 Markdown h2@
+@h2 Styling, three levels h2@
 
-Markdown output gives you GitHub-flavoured Markdown — headings, bold and italic,
-lists, a pipe table, blockquotes. It is the right choice for a README, an issue,
-or anywhere portable plain text is wanted. Remember that a few HTML-only features
-degrade: a hard line break becomes a space, and embedded audio or video has no
-Markdown equivalent.
+@strong Level 1 — the default theme, no work. strong@ Out of the box a built
+document looks like a clean word-processor page: a sans-serif body, a comfortable
+reading measure, an inch of margin on a soft grey canvas. It follows dark-mode
+preference and carries print rules so PDFs paginate sensibly — headings, figures,
+and tables kept from breaking across pages. You write no CSS.
 
-@h2 PDF h2@
-
-PDF renders the same document through a headless browser into a paginated,
-print-ready file. It is the format to send a reader or hand to a printer. It
-needs a local Chrome or Chromium (or one you point to with an environment
-variable); without a browser, the build stops and tells you to render HTML and
-convert instead.
-
-@h2 The raw base h2@
-
-By default your document carries the batteries-included theme. Swap it for a
-mechanical reset — a blank canvas you style yourself — with the raw flag:
+@strong Level 2 — small overrides with a style block. strong@ To change one
+thing, drop a @@@code @@style … style@@ code@@@ literal into the document. Its CSS
+cascades _over_ the theme, touching only what you name. The theme scopes its rules
+to the document's own @code .wit-doc code@ class, so scope your overrides there
+too:
 
 @@@pre
-wit build essay.wit --raw
+@@style
+.wit-doc { --wit-accent: #2b6a4f; }
+style@@
 pre@@@
 
-Raw output keeps the document shell but drops the theme, leaving only a minimal
-reset. Reach for it when you want total art direction — see
-@a |href /docs/write/styling/| Styling a@.
+@strong Level 3 — full control with --raw. strong@ Build with @code --raw code@
+for a blank canvas, then style everything with your own style blocks and wrapping
+nodes. The same CSS drives HTML and PDF, so your print rules carry straight into
+the PDF.
 
-@h2 Building with live data h2@
-
-A document can pull in data produced at build time — a table of figures, a team
-roster — through a load node wired to a data source. Building such a document
-needs a sources file and permission to run the program that produces the data:
+Inside a raw @code @@ code@@ node body you can inject a value with
+@@@code {{path}} code@@@ interpolation — useful when a colour or size lives in your
+data:
 
 @@@pre
-wit build report.wit --sources wit.sources.json --allow-exec --env .env
+@@style
+.wit-doc { --wit-accent: {{theme.accent}}; }
+style@@
 pre@@@
 
-The loaded data flows into lists, tables, and headings exactly as if you had
-typed it. The full external-data machinery lives in the Guides section; this is
-the writer's-eye view of what the flags do.
+@aside(class note) 💡 @@@code {{path}} code@@@ is live _only_ inside a raw
+@code @@ code@@ block's body or string — never in ordinary prose, where it stays
+literal. To put a value into running text, define it and reference it by name. aside@
 
-@h2 Which format when h2@
+@h2 Markdown, briefly h2@
 
-@table |rows [[Format, Reach for it when, Watch out for], [HTML, sharing or embedding on the web, nothing — it is the native target], [Markdown, a README or a repository, media and hard breaks degrade to text], [PDF, a reader or the printer, needs a local browser to render]]|
+Markdown output is GitHub-flavoured: headings, bold and italic, lists, pipe
+tables, blockquotes. Right for a README, an issue, or any portable plain text.
+A few HTML-only features degrade — a hard line break becomes a space, and embedded
+audio or video has no Markdown equivalent.
 
-@h2 Common mistakes h2@
+@h2 PDF needs a browser h2@
 
-@ul
-@li _Expecting the default output to be a fragment._ The plain build is a
-finished document; use the fragment flag to embed. li@
-@li _Expecting media in Markdown or PDF._ Audio and video are HTML-only. li@
-@li _An unknown output extension._ The output flag errors on an extension it does
-not recognise; use a known one or force the format. li@
-ul@
+PDF paginates the HTML through a headless Chrome, so a system Chrome or Chromium
+must be installed (or point @code WIT_CHROME code@ at a browser executable).
+Without one, the build stops and names the fix. HTML and Markdown need no browser.
 
 @h2 See also h2@
 
 @ul
-@li @a |href /docs/write/draft-workflow/| The draft workflow a@ — building drafts
-in practice. li@
-@li @a |href /docs/write/styling/| Styling a@ — the default theme and the raw
-base. li@
-@li @a |href /docs/write/images/| Images & figures a@ — how paths resolve in
-PDF. li@
+@li @a |href /docs/start/install/| Install a@ — set up @code wit code@ and build your first document. li@
+@li @a |href /docs/reference/cli/| CLI reference a@ — every @code build code@ flag in full. li@
+@li @a |href /docs/write/components/| Components a@ — the wrapping nodes you hang classes on. li@
 ul@
