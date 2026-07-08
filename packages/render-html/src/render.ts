@@ -30,8 +30,9 @@ import type {
 import type { ExpandedDocument } from '@witlang/runtime';
 import { escapeHtml } from './escape.js';
 import { defaultThemeCss } from './theme.js';
-import { tryRenderCore } from './render-core-vocab.js';
+import { tryRenderCore, paramValue } from './render-core-vocab.js';
 import { tryRenderTable } from './render-table.js';
+import { renderMath } from './render-math.js';
 
 export interface RenderHtmlOptions {
   /**
@@ -179,10 +180,25 @@ function renderNodeUse(use: NodeUse): string {
     const rawEl = tryRenderRawTextElement(use);
     if (rawEl !== null) return rawEl;
   }
+  const mathEl = tryRenderMathElement(use);
+  if (mathEl !== null) return mathEl;
   if (use.access !== undefined && use.access.length > 0) {
     return renderUnresolvedAccess(use);
   }
   return renderNodeUseShell(use);
+}
+
+// `@@math … math@@` (inline) and `@@mathblock … mathblock@@` (display) carry
+// verbatim math source in a raw/frozen body; render it to MathML. The
+// `engine` parameter selects the input syntax (default AsciiMath) once the
+// lexer captures params on raw nodes.
+function tryRenderMathElement(use: NodeUse): string | null {
+  if (use.raw !== true && use.frozen !== true) return null;
+  if (use.name !== 'math' && use.name !== 'mathblock') return null;
+  return renderMath(rawBodyText(use), {
+    display: use.name === 'mathblock',
+    engine: paramValue(use.params, 'engine'),
+  });
 }
 
 // Raw-text HTML elements (`<style>`, `<script>`) whose content must NOT be

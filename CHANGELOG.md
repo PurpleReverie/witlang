@@ -6,6 +6,11 @@ All notable changes to Wit will be documented in this file.
 
 ### Language features
 
+- Math via AsciiMath: `@@math … math@@` (inline) and `@@mathblock …
+  mathblock@@` (display) render verbatim AsciiMath to MathML — no runtime
+  JS, and consistent in the PDF path (headless Chromium). Uses a built-in,
+  zero-dependency converter (common subset), dispatched through an engine
+  registry so other input syntaxes can be added later.
 - Literal and frozen raw nodes (`@@name … @@`, `@@@name … @@@`) with
   `{{path}}` interpolation inside raw-node bodies.
 - Styled render target and a Word/Docs-style default theme.
