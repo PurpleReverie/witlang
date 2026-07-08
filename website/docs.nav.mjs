@@ -13,16 +13,9 @@ export const nav = [
   {
     section: 'Get Started',
     items: [
-      { title: 'What is Wit?',            slug: 'start/what-is-wit',        file: 'start/what-is-wit.wit' },
-      { title: 'Your first document',     slug: 'start/first-document',     file: 'start/first-document.wit' },
-      { title: 'Install',                 slug: 'start/install',            file: 'start/install.wit' },
-      { title: 'Nodes & core vocab',      slug: 'start/nodes',              file: 'start/nodes.wit' },
-      { title: 'The mental model',        slug: 'start/mental-model',       file: 'start/mental-model.wit' },
-      { title: 'Choose your path',        slug: 'start/choose-your-path',   file: 'start/choose-your-path.wit' },
-      { title: 'Tutorial',                slug: 'start/tutorial',           file: 'start/tutorial.wit' },
-      { title: 'Migration from Markdown', slug: 'start/migration-markdown', file: 'start/migration-markdown.wit' },
-      { title: 'Migration from LaTeX',    slug: 'start/migration-latex',    file: 'start/migration-latex.wit' },
-      { title: 'Troubleshooting',         slug: 'start/troubleshooting',    file: 'start/troubleshooting.wit' },
+      { title: 'What is Wit?',                  slug: 'start/what-is-wit',  file: 'start/what-is-wit.wit' },
+      { title: 'Install & your first document', slug: 'start/install',      file: 'start/install.wit' },
+      { title: 'Nodes & the mental model',      slug: 'start/mental-model', file: 'start/mental-model.wit' },
     ],
   },
   {

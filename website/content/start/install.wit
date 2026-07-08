@@ -1,143 +1,183 @@
-@h1 Install h1@
+@h1 Install & your first document h1@
 
-Wit runs on Node. Most people want one thing: the @code wit code@ command, on
-their machine, working. This page gets you there, proves it worked, and then
-covers the paths for developers embedding Wit and contributors building from a
-clone.
+Wit runs on Node 20+. Install the command-line tool, then build a real document
+from an empty file — prose first, structure added one piece at a time.
 
-@h2 Before you start h2@
-
-You need @strong Node 20 or newer strong@. Check what you have:
-
-@@@pre
-node --version
-pre@@@
-
-If that prints something below @code v20 code@, upgrade Node first — the tools
-are built against modern Node and will not run on older versions. You only need
-@strong pnpm 9+ strong@ if you plan to build Wit from a source clone (the last
-section); to use Wit you do not.
-
-@aside(class note) 💡 You don't have to install anything to try Wit. The
-in-browser playground runs the same engine client-side, so you can experiment
-before you commit to an install. aside@
-
-@h2 The command-line tool (for writers) h2@
-
-Install the CLI globally with npm:
+@h2 Install the CLI h2@
 
 @@@pre
 npm install -g @witlang/cli
 pre@@@
 
-This gives you the @code wit code@ command everywhere. It has no runtime
-dependencies, so the install is quick and clean.
-
-@h2 Prove it works h2@
-
-Two quick checks. First, the version:
+Check it landed:
 
 @@@pre
 wit --version
 pre@@@
 
-That prints @code 0.2.0 code@. Then the help, which is also your map of what the
-tool can do:
+That prints @code 0.2.0 code@. The @code wit code@ command has no runtime
+dependencies, so the install is quick. Below Node 20 the tool won't run — upgrade
+Node, not Wit.
+
+@h2 Write some prose h2@
+
+Make a file called @code hike.wit code@ and type ordinary sentences. A blank line
+starts a new paragraph; nothing else is required.
 
 @@@pre
-wit --help
+We reached Cairn Loop just after seven, ahead of the heat.
+
+The ridge was quiet — a single hawk, and the wind doing all
+the talking.
 pre@@@
 
-You'll see the full usage block:
+Build it to a web page:
 
 @@@pre
-wit v0.2.0
-
-Usage:
-  wit parse <file>
-  wit check <file>
-  wit fmt <file> [-w|--write]
-  wit build <file> [-o out.html|out.md|out.pdf] [--format html|md|pdf] [--raw | --fragment]
-  wit tour <file>
-  wit --version | --help
+wit build hike.wit -o hike.html
 pre@@@
 
-Five subcommands. @code build code@ compiles a document; @code check code@
-reports errors without building; @code fmt code@ tidies indentation;
-@code parse code@ and @code tour code@ show you the internal structure. That is
-the whole surface.
+Open @code hike.html code@. Two clean paragraphs in a finished-looking theme — you
+wrote no CSS, because the default HTML output is a complete, self-contained styled
+page.
 
-@h2 As project packages (for developers) h2@
+@h2 Add a heading and emphasis h2@
 
-If you're building @strong on strong@ Wit — parsing it inside your own app,
-walking its typed tree, rendering it your own way — you want the libraries
-rather than the CLI. Add them to a project:
+Put a title on top and mark two words. @code *stars* code@ make bold,
+@code _underscores_ code@ make italic:
 
 @@@pre
-npm install @witlang/parser @witlang/runtime @witlang/render-html @witlang/render-markdown
+@h1 Weekend hike: Cairn Loop h1@
+
+We reached Cairn Loop *just after seven*, ahead of the heat.
+The ridge was _completely_ silent.
 pre@@@
 
-These are the same zero-dependency packages the CLI itself is built from. The
-parser turns source into a tree, the runtime resolves and expands it, and the
-render packages turn the result into HTML or Markdown. The
-@a |href /docs/start/choose-your-path/| build path a@ picks up from here.
+Rebuild and refresh. The @@@code @h1 … h1@ code@@@ is a real heading, the starred
+words are bold, the underscored words italic. Everything you didn't mark stayed
+exactly as typed — the marks wrap a single token, so @code 5*6*7 code@ and
+@code file_name code@ are never touched.
 
-@h2 From a source clone (for contributors) h2@
-
-To hack on Wit itself, clone the repository and build every package with pnpm:
+@h2 Add a list h2@
 
 @@@pre
-pnpm install
-pnpm build
-pre@@@
-
-There is no published binary in a clone, so you invoke the freshly built CLI by
-its path:
-
-@@@pre
-node packages/cli/dist/bin.js build report.wit -o report.html
-pre@@@
-
-Everywhere these docs write @code wit … code@, a contributor working from a
-clone reads @code node packages/cli/dist/bin.js … code@ — same tool, same flags.
-
-@h2 The VS Code extension (optional) h2@
-
-There is an editor extension with syntax highlighting and live diagnostics. It
-is @strong not on the marketplace yet strong@ — you install it from a clone:
-
-@@@pre
-pnpm vscode:install
-pre@@@
-
-It needs VS Code 1.94 or newer and the @code code code@ command available on
-your PATH. Marketplace publishing is on the roadmap; until then this is the way
-in.
-
-@h2 One more thing, for PDF h2@
-
-Everything above is all you need for HTML and Markdown. @strong PDF output is
-different strong@: Wit produces a PDF by paginating its HTML through a headless
-copy of Chrome, so PDF needs a system Chrome or Chromium installed — or the
-@code WIT_CHROME code@ environment variable pointed at a browser executable.
-There is no bundled browser and nothing to download from Wit's side. If Chrome
-isn't found, @code wit build code@ tells you so plainly rather than failing in
-silence. The @a |href /docs/start/first-document/| first-document page a@ shows
-the exact message and the fix.
-
-@h2 Common mistakes h2@
+@h2 What we packed h2@
 
 @ul
-@li @strong Node too old. strong@ Below version 20, the tools won't run — upgrade Node, not Wit. li@
-@li @strong Looking for the extension on the marketplace. strong@ It isn't there yet; install it from a clone with @code pnpm vscode:install code@. li@
-@li @strong Thinking you must clone the repo to try Wit. strong@ You don't — the global CLI, or the in-browser playground, is enough. li@
-@li @strong Expecting PDF to work with no browser. strong@ PDF needs a system Chrome or @code WIT_CHROME code@; HTML and Markdown need neither. li@
+  @li Two litres of water each li@
+  @li Windshell and gloves li@
+  @li Trail bars li@
 ul@
+pre@@@
+
+That renders a @@@code <ul> code@@@ of three items. The indentation is for your
+eyes only — a node's scope comes from its @@@code @ul … ul@ code@@@ pair, not from
+columns. Swap @@@code @ul code@@@ for @@@code @ol code@@@ to number them.
+
+@h2 Add a table h2@
+
+Something Markdown can't do without dropping into HTML — a captioned table,
+written inline:
+
+@@@pre
+@table |rows [[Segment, Distance, Time], [Trailhead to ridge, 4.2 km, 1h10], [Ridge to summit, 2.8 km, 55m]]| |caption Splits|
+pre@@@
+
+Wit builds a full @@@code <table> code@@@: a @@@code <caption> code@@@, a
+@@@code <thead> code@@@ from the first row, and a @@@code <tbody> code@@@ from the
+rest. The rows ride in a parameter because they're structured metadata.
+
+@aside(class note) 💡 Cells in @@@code |rows [[…]]| code@@@ split on commas, and a
+comma inside a cell can't be escaped — keep cell text comma-free, or build the
+table from a @a |href /docs/guides/data/| data collection a@ instead. aside@
+
+@h2 Add a figure h2@
+
+A picture with a real caption (any @code .png code@ beside the file works for
+@code src code@):
+
+@@@pre
+@figure
+  @img |src ./ridge.png| |alt The ridge at dawn|
+  @figcaption First light on the ridge. figcaption@
+figure@
+pre@@@
+
+You get a semantic @@@code <figure> code@@@ wrapping the @@@code <img> code@@@ and
+its @@@code <figcaption> code@@@ — the @code src code@ and @code alt code@ are
+metadata in parameters; the caption is content in the body.
+
+@h2 The whole file h2@
+
+@@@pre
+@h1 Weekend hike: Cairn Loop h1@
+
+We reached Cairn Loop *just after seven*, ahead of the heat.
+The ridge was _completely_ silent.
+
+@h2 What we packed h2@
+
+@ul
+  @li Two litres of water each li@
+  @li Windshell and gloves li@
+  @li Trail bars li@
+ul@
+
+@table |rows [[Segment, Distance, Time], [Trailhead to ridge, 4.2 km, 1h10], [Ridge to summit, 2.8 km, 55m]]| |caption Splits|
+
+@figure
+  @img |src ./ridge.png| |alt The ridge at dawn|
+  @figcaption First light on the ridge. figcaption@
+figure@
+pre@@@
+
+One plain-text file — prose, a heading, emphasis, a list, a table, a figure — and
+it built to HTML at every step.
+
+@h2 The edit loop h2@
+
+Editing Wit is three beats: @strong edit strong@ the file, run @strong build strong@,
+@strong refresh strong@ the output. Two commands help alongside @code build code@:
+
+@ul
+@li @code wit check hike.wit code@ — report parse and reference errors without building. li@
+@li @code wit fmt hike.wit code@ — tidy indentation without changing meaning (@code -w code@ writes it back). li@
+ul@
+
+@aside(class note) 💡 There's no @code --watch code@ flag yet. Builds are fast
+enough to re-run on save, or wrap one in a loop:
+@code while true; do wit build hike.wit -o hike.html; sleep 1; done code@. aside@
+
+@h2 Build to PDF, Markdown, or a fragment h2@
+
+The @code -o code@ extension picks the format:
+
+@ul
+@li @code -o hike.html code@ — a complete, styled, self-contained page. li@
+@li @code -o hike.md code@ — clean Markdown, the same source for a different pipeline. li@
+@li @code -o hike.pdf code@ — a paginated, print-ready PDF. li@
+@li @strong No output flag strong@ — the HTML prints to your terminal, handy for piping. li@
+ul@
+
+Two flags fine-tune HTML: @code --fragment code@ emits just the bare
+@@@code <article> code@@@ for pasting into an existing site, and @code --raw code@
+swaps the built-in theme for a minimal reset so you can bring your own CSS.
+
+PDF is the one format with a system requirement: Wit paginates its HTML through a
+headless Chrome, so a system Chrome or Chromium must be installed. If none is
+found, the build says so and names the fix:
+
+@@@pre
+wit build: no headless Chrome/Chromium found for PDF output.
+Install Google Chrome, or point WIT_CHROME at a browser executable.
+pre@@@
+
+HTML and Markdown never need a browser; only PDF does.
 
 @h2 See also h2@
 
-With @code wit code@ installed, write
-@a |href /docs/start/first-document/| your first document a@. If a command errors,
-@a |href /docs/start/troubleshooting/| Troubleshooting a@ decodes it. To see where
-Wit is headed — including the marketplace publish — read
-@a |href /docs/start/what-is-wit/| What is Wit? a@
+@ul
+@li @a |href /docs/start/mental-model/| Nodes & the mental model a@ — the one shape behind every structure, and how the pieces layer up. li@
+@li @a |href /docs/write/prose/| Writing prose a@ — text, emphasis, comments, and escapes in depth. li@
+@li @a |href /docs/write/tables/| Tables a@ and @a |href /docs/write/media/| Images & media a@ — the constructs you just used, in full. li@
+ul@
