@@ -1,13 +1,13 @@
 @h1 Tables reference h1@
 
-Everything @@@code @table code@@@ accepts: four authoring forms, the header and
+Everything @@@code @table code@@@ accepts: five authoring forms, the header and
 caption controls, and the HTML each emits. @code table code@ is dispatched to a
 dedicated renderer, so it does not follow the generic id/class allowlist — the
 parameters below are the whole surface.
 
 @h2 Which form? h2@
 
-@table |rows [[You have, Use, Header comes from], [rows typed out as text, inline CSV, row 0 by default], [a collection + column order, schema-as-array, the schema keys], [a collection + custom labels, schema-as-record, the schema labels], [a collection and want auto columns, rows-by-ref, the first record's keys]]| |caption Pick a form| table@
+@table |rows [[You have, Use, Header comes from], [rows typed out as text, inline CSV, row 0 by default], [a collection + column order, schema-as-array, the schema keys], [a collection + custom labels, schema-as-record, the schema labels], [a collection and want auto columns, rows-by-ref, the first record's keys], [cells with links or emphasis, body form (row/col nodes), first row unless header false]]| |caption Pick a form| table@
 
 @h2 Inline CSV h2@
 
@@ -77,6 +77,33 @@ columns from. Use the ordinary @@@code @table code@@@. See
 @a |href /docs/reference/limitations/| limitations a@.
 
 aside@
+
+@h2 Body form (row / col nodes) h2@
+
+The only form whose cells hold @strong rich content strong@ — links, emphasis,
+nested nodes — rather than plain strings. With no @code rows code@ parameter, the
+renderer reads the body: @@@code @row code@@@ rows of @@@code @col code@@@ cells
+(the HTML-style @@@code @tr code@@@ / @@@code @td code@@@ / @@@code @th code@@@
+names work too).
+
+@@@pre
+@table |caption Splits|
+  @row @col Segment col@ @col Notes col@ row@
+  @row @col Ridge col@ @col A *steep* start; see @a |href /route| the route a@. col@ row@
+table@
+pre@@@
+
+Emits:
+
+@@@pre
+<table><caption>Splits</caption><thead><tr><th>Segment</th><th>Notes</th></tr></thead><tbody><tr><td>Ridge</td><td>A <strong>steep</strong> start; see <a href="/route">the route</a>.</td></tr></tbody></table>
+pre@@@
+
+The @strong first row is the header strong@ (its cells render as
+@@@code <th> code@@@) unless @code header false code@; a @@@code @th code@@@ cell
+is always a header cell, even in a body row. Both the single-line form
+(@@@code @row @col a col@ @col b col@ row@ code@@@) and the multi-line form above
+produce the same table.
 
 @h2 Header and caption controls h2@
 

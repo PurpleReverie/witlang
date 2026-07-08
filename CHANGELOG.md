@@ -12,6 +12,10 @@ All notable changes to Wit will be documented in this file.
 - External data seam: the `@load` node pulls a JSON/CSV/TSV/lines/text
   result from a configured program (`wit.sources.json`) into a def.
 - `@table |rows @data|` — build a table from a referenced data collection.
+- `@table` body form — author a table from `@row`/`@col` (or `@tr`/`@td`/
+  `@th`) child nodes. Unlike the string-only `|rows|` forms, its cells may
+  hold rich content (links, emphasis, nested nodes); the first `@row` is the
+  header unless `|header false|`, and a `@th` cell is always a header cell.
 - Image sizing and placement (`|size|`, `|align|`) plus invisible
   `@row`/`@col` layout containers.
 - Core vocabulary grows to 52 names (adds `div`, `span`, `cite`,

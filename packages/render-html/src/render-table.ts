@@ -1,13 +1,17 @@
 // `@table` HTML renderer (M10.core-vocab Thread 4).
 //
-// Supports three authoring forms:
+// Supports four authoring forms:
 //   1. Inline CSV-style: `|rows [[Header,...], [Row1,...], ...]|`
 //   2. Records with positional schema: `|schema [k1, k2]| |rows [...]|`
 //   3. Records with labelled schema: `|schema { k - Label, ... }| |rows [...]|`
+//   4. Body-based: `@row`/`@col` (or `@tr`/`@td`/`@th`) child nodes — the
+//      only form whose cells may carry rich content (links, emphasis,
+//      nested nodes) rather than plain strings.
 //
 // `|caption ...|` adds a `<caption>` element.
 // `|header N|`, `|header false|`, `|header [a,b,c]|` override the
-// default "row 0 of rows is the header" behaviour.
+// default "row 0 of rows is the header" behaviour (forms 1–3); for the
+// body-based form `|header false|` turns off the first-row header.
 //
 // Row values may be parsed Records (when `|rows @sites|` was inlined as
 // a Collection of Records by the resolver) or strings (CSV style).
@@ -21,22 +25,94 @@ import type {
 } from '@witlang/parser';
 import { escapeHtml } from './escape.js';
 
-type InlineRenderer = (items: readonly Inline[]) => string;
-type BlockRenderer = (blocks: readonly Block[]) => string;
+// Renders a node's body to HTML (shared with the main renderer) so
+// body-based table cells can hold the same rich content as any node.
+type NodeBodyRenderer = (use: NodeUse) => string;
 
 export function tryRenderTable(
   use: NodeUse,
-  _renderInlines: InlineRenderer,
-  _renderBlocks: BlockRenderer,
+  renderNodeBody: NodeBodyRenderer,
 ): string | null {
   if (use.name !== 'table') return null;
   const rows = readRowsParam(use.params);
-  if (rows === null) return '<table></table>';
+  // No `rows` param: author the table from `@row`/`@col` (or `@tr`/`@td`/
+  // `@th`) child nodes. Falls back to an empty `<table></table>` when the
+  // body has no row children (preserving `@table table@`).
+  if (rows === null) return renderBodyTable(use, renderNodeBody);
   const schema = readSchemaParam(use.params) ?? deriveSchemaFromRecords(rows);
   const header = pickHeader(use.params, rows, schema);
   const body = pickBody(rows, schema, header.usedFromRows);
   const caption = paramOf(use.params, 'caption');
   return renderHtmlTable(header.cells, body, schema, caption);
+}
+
+// ---------------------------------------------------------------------------
+// Body-based form: `@table` whose children are `@row`/`@tr` rows, each
+// holding `@col`/`@td`/`@th` cells. The first row is the header (its cells
+// render as `<th>`) unless `|header false|`; a `@th` cell is always a header
+// cell. Cell bodies render through the shared node-body renderer, so a cell
+// may contain links, emphasis, or nested nodes.
+// ---------------------------------------------------------------------------
+
+const ROW_NAMES = new Set<string>(['row', 'tr']);
+const CELL_NAMES = new Set<string>(['col', 'td', 'th']);
+
+function renderBodyTable(use: NodeUse, renderNodeBody: NodeBodyRenderer): string {
+  const rowNodes = childUses(use.body).filter((u) => ROW_NAMES.has(u.name));
+  const open = '<table>' + captionHtml(paramOf(use.params, 'caption'));
+  if (rowNodes.length === 0) return open + '</table>';
+  const headed = paramOf(use.params, 'header') !== 'false';
+  let out = open;
+  if (headed) out += `<thead>${renderNodeRow(rowNodes[0]!, true, renderNodeBody)}</thead>`;
+  out += '<tbody>';
+  for (let i = headed ? 1 : 0; i < rowNodes.length; i += 1) {
+    out += renderNodeRow(rowNodes[i]!, false, renderNodeBody);
+  }
+  return out + '</tbody></table>';
+}
+
+function renderNodeRow(
+  rowUse: NodeUse, isHead: boolean, renderNodeBody: NodeBodyRenderer,
+): string {
+  let out = '<tr>';
+  for (const cell of childUses(rowUse.body).filter((u) => CELL_NAMES.has(u.name))) {
+    const tag = isHead || cell.name === 'th' ? 'th' : 'td';
+    out += `<${tag}>${cellContent(cell, renderNodeBody)}</${tag}>`;
+  }
+  return out + '</tr>';
+}
+
+// A cell body arrives wrapped in `<p>…</p>` when it is a single paragraph;
+// unwrap it so a simple cell isn't `<td><p>x</p></td>` (matches the inline-
+// context flattening the generic renderer already does for `<td>`/`<th>`).
+function cellContent(cell: NodeUse, renderNodeBody: NodeBodyRenderer): string {
+  const html = renderNodeBody(cell).trim();
+  const m = /^<p>([\s\S]*)<\/p>$/.exec(html);
+  return m === null ? html : m[1]!.trim();
+}
+
+// Collect the child `NodeUse`s of a body, descending one level into a
+// Paragraph — an inline single-line `@row … row@` (or `@col … col@`) wraps
+// its children in a Paragraph, while a multi-line one keeps them as direct
+// block children. Both shapes must yield the same rows/cells.
+function childUses(body: readonly (Block | Inline)[] | null): NodeUse[] {
+  if (body === null) return [];
+  const out: NodeUse[] = [];
+  for (const child of body) {
+    const kind = (child as { kind: string }).kind;
+    if (kind === 'nodeUse') out.push(child as NodeUse);
+    else if (kind === 'paragraph') {
+      const kids = (child as unknown as { children: (Block | Inline)[] }).children;
+      for (const inner of kids) {
+        if ((inner as { kind: string }).kind === 'nodeUse') out.push(inner as NodeUse);
+      }
+    }
+  }
+  return out;
+}
+
+function captionHtml(caption: string | undefined): string {
+  return caption === undefined ? '' : `<caption>${escapeHtml(caption)}</caption>`;
 }
 
 // ---------------------------------------------------------------------------

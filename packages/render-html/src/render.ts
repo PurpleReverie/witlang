@@ -217,8 +217,9 @@ function renderUnresolvedAccess(use: NodeUse): string {
 }
 
 function renderNodeUseShell(use: NodeUse): string {
-  // `@table` has its own complex renderer (schema + rows + caption).
-  const tableHtml = tryRenderTable(use, renderInlines, renderBlocks);
+  // `@table` has its own complex renderer (schema + rows + caption, plus
+  // the `@row`/`@col` body form whose cells render via renderUseBody).
+  const tableHtml = tryRenderTable(use, renderUseBody);
   if (tableHtml !== null) return tableHtml;
   // `@bibliography` emits each contributed entry as its own paragraph
   // so APA citations don't run together. Predates core-vocab because

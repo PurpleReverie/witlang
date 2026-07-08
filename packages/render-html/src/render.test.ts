@@ -279,3 +279,73 @@ describe('renderHtml — integration', () => {
     expect(html.endsWith('</article>')).toBe(true);
   });
 });
+
+describe('renderHtml — body-based @table (@row/@col)', () => {
+  function render(src: string): string {
+    return renderHtml(expand(resolve(parse(src, 'table.wit'))));
+  }
+
+  it('renders @row/@col children; first row is the header', () => {
+    const src = [
+      '@table |caption Splits|',
+      '  @row @col Segment col@ @col Distance col@ row@',
+      '  @row @col Ridge col@ @col 2.8 km col@ row@',
+      'table@',
+    ].join('\n');
+    const html = render(src);
+    expect(html).toContain('<caption>Splits</caption>');
+    expect(html).toContain('<thead><tr><th>Segment</th><th>Distance</th></tr></thead>');
+    expect(html).toContain('<tbody><tr><td>Ridge</td><td>2.8 km</td></tr></tbody>');
+  });
+
+  it('keeps rich cell content (links, emphasis) the param form cannot', () => {
+    const src = [
+      '@table |header false|',
+      '  @row @col A *steep* climb; see @a |href /r| the route a@. col@ row@',
+      'table@',
+    ].join('\n');
+    const html = render(src);
+    expect(html).toContain('<strong>steep</strong>');
+    expect(html).toContain('<a href="/r">the route</a>');
+    expect(html).toMatch(/<td>.*<strong>steep<\/strong>.*<\/td>/);
+  });
+
+  it('|header false| puts every row in <tbody> with no <thead>', () => {
+    const src = [
+      '@table |header false|',
+      '  @row @col a col@ @col b col@ row@',
+      '  @row @col c col@ @col d col@ row@',
+      'table@',
+    ].join('\n');
+    const html = render(src);
+    expect(html).not.toContain('<thead>');
+    expect(html).toContain(
+      '<tbody><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></tbody>',
+    );
+  });
+
+  it('an explicit @th is a header cell even in a body row', () => {
+    const src = [
+      '@table |header false|',
+      '  @row @th Key th@ @col value col@ row@',
+      'table@',
+    ].join('\n');
+    expect(render(src)).toContain('<tr><th>Key</th><td>value</td></tr>');
+  });
+
+  it('accepts @tr/@td as row/cell names too', () => {
+    const src = [
+      '@table',
+      '  @tr @td x td@ @td y td@ tr@',
+      '  @tr @td 1 td@ @td 2 td@ tr@',
+      'table@',
+    ].join('\n');
+    const html = render(src);
+    expect(html).toContain('<thead><tr><th>x</th><th>y</th></tr></thead>');
+    expect(html).toContain('<tbody><tr><td>1</td><td>2</td></tr></tbody>');
+  });
+
+  it('an empty @table with no rows stays <table></table>', () => {
+    expect(render('@table table@')).toContain('<table></table>');
+  });
+});
