@@ -16,6 +16,8 @@ All notable changes to Wit will be documented in this file.
   `@th`) child nodes. Unlike the string-only `|rows|` forms, its cells may
   hold rich content (links, emphasis, nested nodes); the first `@row` is the
   header unless `|header false|`, and a `@th` cell is always a header cell.
+  Wrap the `@row` lines in `(each …)` to build the table from a collection,
+  with `(if …)` to filter rows.
 - Image sizing and placement (`|size|`, `|align|`) plus invisible
   `@row`/`@col` layout containers.
 - Core vocabulary grows to 52 names (adds `div`, `span`, `cite`,

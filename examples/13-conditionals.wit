@@ -31,3 +31,21 @@ Corresponding author: @author.name, @author.affiliation.
 @aside Final — internal only. aside@
 (end)
 (end)
+
+~ (if) inside (each) filters rows: only operational stations reach the
+~ table. combine with @row/@col to build a filtered table from a collection.
+
+#network: [
+  { name - Dunmore Head, status - operational }
+  { name - Carrick Point, status - closed }
+  { name - Ines Rock, status - operational }
+]
+
+@table |caption Operational stations|
+  @row @col Site col@ @col Status col@ row@
+  (each @network as s)
+  (if @s.status is operational)
+  @row @col @s.name col@ @col @s.status col@ row@
+  (end)
+  (end)
+table@

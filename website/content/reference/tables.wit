@@ -105,6 +105,28 @@ is always a header cell, even in a body row. Both the single-line form
 (@@@code @row @col a col@ @col b col@ row@ code@@@) and the multi-line form above
 produce the same table.
 
+@h3 Generating rows from data h3@
+
+Wrap the @@@code @row code@@@ lines in an @@@code (each …) code@@@ loop to build
+the table from a collection — the one form that pairs data-driven rows with rich
+cells. An @@@code (if …) code@@@ inside the loop filters which rows appear.
+
+@@@pre
+#stations: [ { name - Dunmore Head, status - operational }, { name - Ines Rock, status - operational } ]
+
+@table |caption Stations|
+  @row @col Site col@ @col Status col@ row@
+  (each @stations as s)
+  @row @col @s.name col@ @col @em @s.status em@ col@ row@
+  (end)
+table@
+pre@@@
+
+Data access resolves inside a cell @strong body strong@
+(@@@code @col @s.name col@ code@@@), but @strong not inside a parameter strong@ — a
+link's @@@code |href| code@@@ cannot be @@@code @s.url code@@@ yet, so keep
+data-driven values in the cell body.
+
 @h2 Header and caption controls h2@
 
 @table |rows [[Param, Effect], [caption text, prepends a caption element], [header false, no header row], [header N, use row index N as the header], [header [a b c], explicit header cells — all rows become data], [default, row 0 of rows is the header]]| |caption Header controls| table@

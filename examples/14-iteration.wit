@@ -39,3 +39,19 @@ nav@
 (each @chapters as ch)
 @h3 @ch.number — @ch.title h3@
 (end)
+
+~ iteration also builds tables. (each) generates the @row nodes; every @col
+~ cell can hold rich content — data, emphasis, a link — which the
+~ |rows [[...]]| form cannot. the first @row is the header row.
+
+#stations: [
+  { name - Dunmore Head, status - operational, keeper - A. Vane }
+  { name - Carrick Point, status - maintenance, keeper - M. Reyes }
+]
+
+@table |caption Stations|
+  @row @col Site col@ @col Status col@ @col Keeper col@ row@
+  (each @stations as s)
+  @row @col @s.name col@ @col @em @s.status em@ col@ @col @s.keeper col@ row@
+  (end)
+table@
