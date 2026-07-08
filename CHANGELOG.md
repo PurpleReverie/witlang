@@ -37,6 +37,11 @@ All notable changes to Wit will be documented in this file.
 
 ### Tooling
 
+- VS Code: embedded syntax highlighting inside raw nodes — LaTeX in
+  `@@math`/`@@mathblock`, Mermaid in `@@diagram` (Graphviz DOT with
+  `(engine graphviz)`), alongside the existing CSS (`@@style`) and JS
+  (`@@script`) embedding. Activates when a matching grammar extension is
+  installed; the body is scoped as an embedded block regardless.
 - `wit fmt` — re-indents a document to match its nesting without changing
   structure.
 - HTML-like indentation (whitespace is for the author; scope comes only

@@ -34,7 +34,15 @@
       {
         "language": "wit",
         "scopeName": "source.wit",
-        "path": "./syntaxes/wit.tmLanguage.json"
+        "path": "./syntaxes/wit.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.latex.wit": "latex",
+          "meta.embedded.block.mermaid.wit": "mermaid",
+          "meta.embedded.block.graphviz.wit": "dot",
+          "meta.embedded.block.css.wit": "css",
+          "meta.embedded.block.js.wit": "javascript",
+          "meta.embedded.javascript.wit": "javascript"
+        }
       }
     ]
   },
