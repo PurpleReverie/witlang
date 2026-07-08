@@ -36,9 +36,16 @@ export function tryRawNode(state: LexState, buf: RunBuf): boolean {
   const markerLen = frozen ? 3 : 2;
   if (!isAsciiLetter(src.charAt(cur.offset + markerLen))) return false;
 
-  let bodyStart = cur.offset + markerLen;
-  while (isHandleChar(src.charAt(bodyStart))) bodyStart += 1;
-  const name = src.slice(cur.offset + markerLen, bodyStart);
+  const nameEnd = (() => {
+    let b = cur.offset + markerLen;
+    while (isHandleChar(src.charAt(b))) b += 1;
+    return b;
+  })();
+  const name = src.slice(cur.offset + markerLen, nameEnd);
+  // Optional parameter group(s) glued to the name — `@@math(engine asciimath)`.
+  // Only a `(` immediately after the name counts; a space before it (or `(` in
+  // the body) stays body, keeping existing raw nodes unaffected.
+  const { params, bodyStart } = scanRawParams(src, nameEnd);
   const closer = name + (frozen ? '@@@' : '@@');
   const closeAt = src.indexOf(closer, bodyStart);
   const inline = src.charAt(bodyStart) !== '\n';
@@ -48,13 +55,25 @@ export function tryRawNode(state: LexState, buf: RunBuf): boolean {
   if (inline && bufHasAnyContent(buf)) flushTextRunBeforeInline(state, buf);
   else flushTextRun(state, buf);
   const rawBody = src.slice(bodyStart, closeAt);
-  emitRawNode(state, start, name, rawBody, inline, frozen, closeAt + closer.length);
+  emitRawNode(state, start, name, params, rawBody, inline, frozen, closeAt + closer.length);
   if (inline) state.afterInline = true;
   return true;
 }
 
+function scanRawParams(src: string, from: number): { params: string; bodyStart: number } {
+  let params = '';
+  let pos = from;
+  while (src.charAt(pos) === '(') {
+    const close = src.indexOf(')', pos);
+    if (close === -1) break;
+    params += src.slice(pos, close + 1);
+    pos = close + 1;
+  }
+  return { params, bodyStart: pos };
+}
+
 function emitRawNode(
-  state: LexState, start: Cursor, name: string,
+  state: LexState, start: Cursor, name: string, params: string,
   rawBody: string, inline: boolean, frozen: boolean, endOffset: number,
 ): void {
   while (state.cur.offset < endOffset) advance(state);
@@ -66,6 +85,7 @@ function emitRawNode(
     frozen,
     loc: locFrom(state.file, start, state.cur),
   };
+  if (params.length > 0) tok.params = params;
   state.tokens.push(tok);
 }
 
