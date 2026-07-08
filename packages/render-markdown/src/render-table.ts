@@ -7,22 +7,77 @@
 
 import { tryParseCollectionFromText } from '@witlang/parser';
 import type {
-  Collection as CollectionNode, DataValue, Inline, NodeUse, Param,
+  Block, Collection as CollectionNode, DataValue, Inline, NodeUse, Param,
   Record as RecordNode,
 } from '@witlang/parser';
 
-type InlineRenderer = (item: Inline) => string;
+// Renders a cell node's body to inline Markdown (shared with the block
+// renderer), so body-form cells keep links and emphasis.
+type CellBodyRenderer = (use: NodeUse) => string;
 
 export function renderTableMarkdown(
-  use: NodeUse, _renderInline: InlineRenderer,
+  use: NodeUse, renderCellBody: CellBodyRenderer,
 ): string {
   const rows = readRowsParam(use.params);
-  if (rows === null) return '';
+  // No `rows` param: author from `@row`/`@col` (or `@tr`/`@td`/`@th`) child
+  // nodes, mirroring the HTML renderer's body form.
+  if (rows === null) return renderBodyTableMarkdown(use, renderCellBody);
   const schema = readSchemaParam(use.params) ?? deriveSchemaFromRecords(rows);
   const header = pickHeader(use.params, rows, schema);
   const body = pickBody(rows, schema, header.usedFromRows);
   const caption = paramOf(use.params, 'caption');
   return assemble(header.cells, body, schema, caption);
+}
+
+// ---------------------------------------------------------------------------
+// Body-based form: `@row`/`@col` (or `@tr`/`@td`/`@th`) children. A Markdown
+// pipe table always needs a header row + delimiter, so `|header false|`
+// emits an empty header row rather than dropping the delimiter.
+// ---------------------------------------------------------------------------
+
+const ROW_NAMES = new Set<string>(['row', 'tr']);
+const CELL_NAMES = new Set<string>(['col', 'td', 'th']);
+
+function renderBodyTableMarkdown(
+  use: NodeUse, renderCellBody: CellBodyRenderer,
+): string {
+  const rowCells = childUses(use.body)
+    .filter((u) => ROW_NAMES.has(u.name))
+    .map((r) => childUses(r.body).filter((u) => CELL_NAMES.has(u.name)));
+  const caption = paramOf(use.params, 'caption');
+  const cols = Math.max(0, ...rowCells.map((cs) => cs.length));
+  if (rowCells.length === 0 || cols === 0) return '';
+  const headed = paramOf(use.params, 'header') !== 'false';
+  const lines: string[] = [];
+  if (caption !== undefined) lines.push(`**${caption}**`, '');
+  const headRow = headed ? cellTexts(rowCells[0]!, renderCellBody) : [];
+  lines.push(toPipeRow(padCells(headRow, cols)));
+  lines.push(toPipeRow(Array(cols).fill('---')));
+  for (let i = headed ? 1 : 0; i < rowCells.length; i += 1) {
+    lines.push(toPipeRow(padCells(cellTexts(rowCells[i]!, renderCellBody), cols)));
+  }
+  return lines.join('\n');
+}
+
+function cellTexts(cells: readonly NodeUse[], renderCellBody: CellBodyRenderer): string[] {
+  // Escape pipes so rich cell content can't break the table grid.
+  return cells.map((c) => renderCellBody(c).replace(/\|/g, '\\|'));
+}
+
+function childUses(body: readonly (Block | Inline)[] | null): NodeUse[] {
+  if (body === null) return [];
+  const out: NodeUse[] = [];
+  for (const child of body) {
+    const kind = (child as { kind: string }).kind;
+    if (kind === 'nodeUse') out.push(child as NodeUse);
+    else if (kind === 'paragraph') {
+      const kids = (child as unknown as { children: (Block | Inline)[] }).children;
+      for (const inner of kids) {
+        if ((inner as { kind: string }).kind === 'nodeUse') out.push(inner as NodeUse);
+      }
+    }
+  }
+  return out;
 }
 
 function assemble(

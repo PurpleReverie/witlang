@@ -71,4 +71,21 @@ describe('renderMarkdown — @table', () => {
     expect(out).not.toContain('---');
     expect(out).toContain('| a | b |');
   });
+
+  it('renders @row/@col children as a pipe-table; first row is header', () => {
+    const out = render(
+      '@table\n  @row @col Seg col@ @col Dist col@ row@\n  @row @col Ridge col@ @col 2.8 km col@ row@\ntable@',
+    );
+    expect(out).toContain('| Seg | Dist |');
+    expect(out).toContain('| --- | --- |');
+    expect(out).toContain('| Ridge | 2.8 km |');
+  });
+
+  it('keeps rich cell content (link + emphasis) in body-form cells', () => {
+    const out = render(
+      '@table |header false|\n  @row @col see @a |href /r| the route a@ and _go_ col@ row@\ntable@',
+    );
+    expect(out).toContain('[the route](/r)');
+    expect(out).toContain('*go*');
+  });
 });

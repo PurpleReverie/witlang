@@ -10,7 +10,9 @@
 
 import type { Block, Inline, NodeUse, Param } from '@witlang/parser';
 import { isCoreVocabName, RESERVED_OPAQUE } from '@witlang/runtime';
-import { renderInline, renderInlines, renderUnresolvedAccess } from './render-inline.js';
+import {
+  renderInline, renderInlines, renderInlineChildren, renderUnresolvedAccess,
+} from './render-inline.js';
 import { renderTableMarkdown } from './render-table.js';
 
 type BlockRecursor = (block: Block) => string;
@@ -42,7 +44,7 @@ export function renderNodeUseBlock(use: NodeUse): string {
   if (use.access !== undefined && use.access.length > 0) {
     return renderUnresolvedAccess(use);
   }
-  if (use.name === 'table') return renderTableMarkdown(use, renderInline);
+  if (use.name === 'table') return renderTableMarkdown(use, renderCellInline);
   if (use.name === RESERVED_OPAQUE) return renderOpaqueBlock(use);
   const handler = HANDLERS.get(use.name);
   if (handler !== undefined) return handler(use);
@@ -244,6 +246,13 @@ const HANDLERS = new Map<string, (use: NodeUse) => string>([
 // ---------------------------------------------------------------------------
 // Body rendering helpers.
 // ---------------------------------------------------------------------------
+
+// A table cell's body rendered as inline Markdown. Unlike renderInlineBody,
+// this keeps nested inline node uses (links, code) — a cell may hold rich
+// content — via renderInlineChildren, whose inline set includes `nodeUse`.
+function renderCellInline(cell: NodeUse): string {
+  return cell.body === null ? '' : renderInlineChildren(cell.body);
+}
 
 function renderInlineBody(use: NodeUse): string {
   const title = paramValue(use.params, 'title');
