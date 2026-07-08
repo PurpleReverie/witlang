@@ -105,6 +105,12 @@ is always a header cell, even in a body row. Both the single-line form
 (@@@code @row @col a col@ @col b col@ row@ code@@@) and the multi-line form above
 produce the same table.
 
+@@@code @row code@@@ and @@@code @col code@@@ are @strong interchangeable strong@ —
+the outer node is the row, the inner one the cell — so
+@@@code @col @row a row@ @row b row@ col@ code@@@ and
+@@@code @row @col a col@ @col b col@ row@ code@@@ render identically
+(@@@code @tr code@@@ / @@@code @td code@@@ / @@@code @th code@@@ work as aliases).
+
 @h3 Generating rows from data h3@
 
 Wrap the @@@code @row code@@@ lines in an @@@code (each …) code@@@ loop to build

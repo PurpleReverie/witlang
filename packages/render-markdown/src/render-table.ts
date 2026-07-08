@@ -30,13 +30,14 @@ export function renderTableMarkdown(
 }
 
 // ---------------------------------------------------------------------------
-// Body-based form: `@row`/`@col` (or `@tr`/`@td`/`@th`) children. A Markdown
-// pipe table always needs a header row + delimiter, so `|header false|`
-// emits an empty header row rather than dropping the delimiter.
+// Body-based form: row/cell child nodes. The outer node is the row, the inner
+// the cell — `@row` and `@col` are interchangeable (as are `@tr`/`@td`/`@th`).
+// A Markdown pipe table always needs a header row + delimiter, so
+// `|header false|` emits an empty header row rather than dropping the delimiter.
 // ---------------------------------------------------------------------------
 
-const ROW_NAMES = new Set<string>(['row', 'tr']);
-const CELL_NAMES = new Set<string>(['col', 'td', 'th']);
+const ROW_NAMES = new Set<string>(['row', 'col', 'tr']);
+const CELL_NAMES = new Set<string>(['col', 'row', 'td', 'th']);
 
 function renderBodyTableMarkdown(
   use: NodeUse, renderCellBody: CellBodyRenderer,

@@ -345,6 +345,18 @@ describe('renderHtml — body-based @table (@row/@col)', () => {
     expect(html).toContain('<tbody><tr><td>1</td><td>2</td></tr></tbody>');
   });
 
+  it('treats @row/@col as interchangeable — outer is the row, inner the cell', () => {
+    const rowOuter = render(
+      '@table\n  @row @col a col@ @col b col@ row@\n  @row @col c col@ @col d col@ row@\ntable@',
+    );
+    const colOuter = render(
+      '@table\n  @col @row a row@ @row b row@ col@\n  @col @row c row@ @row d row@ col@\ntable@',
+    );
+    expect(colOuter).toBe(rowOuter);
+    expect(colOuter).toContain('<thead><tr><th>a</th><th>b</th></tr></thead>');
+    expect(colOuter).toContain('<tbody><tr><td>c</td><td>d</td></tr></tbody>');
+  });
+
   it('an empty @table with no rows stays <table></table>', () => {
     expect(render('@table table@')).toContain('<table></table>');
   });

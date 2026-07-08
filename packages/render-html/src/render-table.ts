@@ -47,15 +47,18 @@ export function tryRenderTable(
 }
 
 // ---------------------------------------------------------------------------
-// Body-based form: `@table` whose children are `@row`/`@tr` rows, each
-// holding `@col`/`@td`/`@th` cells. The first row is the header (its cells
-// render as `<th>`) unless `|header false|`; a `@th` cell is always a header
-// cell. Cell bodies render through the shared node-body renderer, so a cell
-// may contain links, emphasis, or nested nodes.
+// Body-based form: `@table` whose children are rows, each holding cells. The
+// outer node is the row and the inner node is the cell — `@row` and `@col`
+// are interchangeable for either role (as are the HTML-style `@tr`/`@td`),
+// so `@row @col … col@ row@` and `@col @row … row@ col@` render the same.
+// The first row is the header (its cells render as `<th>`) unless
+// `|header false|`; a `@th` cell is always a header cell. Cell bodies render
+// through the shared node-body renderer, so a cell may contain links,
+// emphasis, or nested nodes.
 // ---------------------------------------------------------------------------
 
-const ROW_NAMES = new Set<string>(['row', 'tr']);
-const CELL_NAMES = new Set<string>(['col', 'td', 'th']);
+const ROW_NAMES = new Set<string>(['row', 'col', 'tr']);
+const CELL_NAMES = new Set<string>(['col', 'row', 'td', 'th']);
 
 function renderBodyTable(use: NodeUse, renderNodeBody: NodeBodyRenderer): string {
   const rowNodes = childUses(use.body).filter((u) => ROW_NAMES.has(u.name));
