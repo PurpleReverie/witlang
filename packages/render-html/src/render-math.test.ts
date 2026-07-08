@@ -69,3 +69,20 @@ describe('renderHtml — @@math nodes', () => {
     expect(html).toContain('∑');
   });
 });
+
+describe('renderHtml — @@diagram nodes', () => {
+  const render = (src: string): string =>
+    renderHtml(expand(resolve(parse(src, 'd.wit'))));
+
+  it('emits a mermaid <pre> container with escaped source', () => {
+    const html = render('@@diagram\ngraph TD\n  A-->B\ndiagram@@');
+    expect(html).toContain('<pre class="wit-diagram mermaid">');
+    expect(html).toContain('A--&gt;B');
+  });
+
+  it('names the class from the engine param and is not wrapped in <p>', () => {
+    const html = render('see @@diagram(engine graphviz) digraph{a->b} diagram@@ here');
+    expect(html).toContain('<pre class="wit-diagram graphviz">');
+    expect(html).not.toContain('<p><pre');
+  });
+});

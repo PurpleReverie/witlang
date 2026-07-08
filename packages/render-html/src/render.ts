@@ -56,7 +56,12 @@ export interface RenderHtmlOptions {
 }
 
 export function renderHtml(doc: ExpandedDocument, options?: RenderHtmlOptions): string {
-  const inner = renderBlocks(doc.children);
+  // A single-line `@@diagram` parses inline and is grouped into a paragraph,
+  // so it arrives wrapped in `<p>`. The diagram `<pre>` is block-level and
+  // must not sit inside a `<p>` — unwrap a paragraph that holds only it.
+  const inner = renderBlocks(doc.children).replace(
+    /<p>(<pre class="wit-diagram[\s\S]*?<\/pre>)<\/p>/g, '$1',
+  );
   const fragment = `<article class="wit-doc">${inner}</article>`;
   if (options?.mode !== 'document') return fragment;
   return wrapDocument(fragment, options);
@@ -182,10 +187,24 @@ function renderNodeUse(use: NodeUse): string {
   }
   const mathEl = tryRenderMathElement(use);
   if (mathEl !== null) return mathEl;
+  const diagramEl = tryRenderDiagramElement(use);
+  if (diagramEl !== null) return diagramEl;
   if (use.access !== undefined && use.access.length > 0) {
     return renderUnresolvedAccess(use);
   }
   return renderNodeUseShell(use);
+}
+
+// `@@diagram … diagram@@` carries verbatim diagram source (Mermaid by
+// default). Emit the `<pre class="… mermaid">` container the diagram engine
+// consumes: a headless-browser build step replaces it with inline SVG, and
+// meanwhile it renders live in any Mermaid-enabled page. The `engine`
+// parameter names the diagram language (its own CSS class).
+function tryRenderDiagramElement(use: NodeUse): string | null {
+  if (use.raw !== true && use.frozen !== true) return null;
+  if (use.name !== 'diagram') return null;
+  const engine = (paramValue(use.params, 'engine') ?? 'mermaid').toLowerCase();
+  return `<pre class="wit-diagram ${escapeHtml(engine)}">${escapeHtml(rawBodyText(use))}</pre>`;
 }
 
 // `@@math … math@@` (inline) and `@@mathblock … mathblock@@` (display) carry

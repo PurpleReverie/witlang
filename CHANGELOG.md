@@ -11,6 +11,11 @@ All notable changes to Wit will be documented in this file.
   JS, and consistent in the PDF path (headless Chromium). Uses a built-in,
   zero-dependency converter (common subset), dispatched through an engine
   registry so other input syntaxes can be added later.
+- Diagrams via `@@diagram … diagram@@` (Mermaid by default; `(engine …)`
+  selects the language). HTML emits the `<pre class="… mermaid">` container
+  Mermaid renders, and Markdown a ` ```mermaid ` fence (rendered natively on
+  GitHub). Build-time SVG inlining through the headless browser is the next
+  step, so output becomes self-contained.
 - Literal and frozen raw nodes (`@@name … @@`, `@@@name … @@@`) with
   `{{path}}` interpolation inside raw-node bodies.
 - Styled render target and a Word/Docs-style default theme.

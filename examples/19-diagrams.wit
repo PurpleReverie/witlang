@@ -1,0 +1,27 @@
+~ diagrams are written as code in a raw @@diagram node. the default engine is
+~ mermaid; (engine graphviz) selects another. wit emits the diagram into a
+~ container that a mermaid-enabled page (or GitHub, for Markdown) renders to
+~ SVG; a headless-browser build step can inline the SVG for self-contained
+~ output.
+
+@h2 A flowchart h2@
+
+@@diagram
+graph TD
+  A[Write .wit] --> B[wit build]
+  B --> C{Output?}
+  C -->|html| D[MathML + diagrams]
+  C -->|pdf| E[Paginated print]
+diagram@@
+
+@h2 A sequence diagram h2@
+
+@@diagram
+sequenceDiagram
+  Author->>CLI: wit build report.wit
+  CLI->>Renderer: expand + render
+  Renderer-->>Author: report.html
+diagram@@
+
+~ the engine is selectable per diagram
+@@diagram(engine graphviz) digraph { rankdir=LR; parse -> resolve -> expand -> render } diagram@@

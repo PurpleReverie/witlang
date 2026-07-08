@@ -89,3 +89,15 @@ describe('renderMarkdown — @table', () => {
     expect(out).toContain('*go*');
   });
 });
+
+describe('renderMarkdown — @@diagram', () => {
+  it('emits a ```mermaid fence with verbatim source', () => {
+    const out = render('@@diagram\ngraph TD\n  A-->B\ndiagram@@');
+    expect(out).toContain('```mermaid');
+    expect(out).toContain('A-->B');
+  });
+
+  it('tags the fence with the engine param', () => {
+    expect(render('@@diagram(engine graphviz) digraph{a->b} diagram@@')).toContain('```graphviz');
+  });
+});
