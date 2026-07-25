@@ -41,14 +41,17 @@ help:
 
 # The generator and CLI import the compiled @witlang packages. Build them once
 # if the dist is missing; after editing the parser/renderer, run `make dist`.
-# ensure-tools installs pnpm (via corepack) if it isn't already on PATH.
+# ensure-tools installs pnpm if missing; `pnpm install` links the workspace
+# (@witlang/* symlinks, @types, tsc); `tsc --build packages/cli` compiles the
+# CLI and its project-reference graph (parser, runtime, render-html,
+# render-markdown) — skipping the VS Code extension, skill, and tests.
 $(DIST):
 	@sh ensure-tools.sh pnpm
-	cd .. && pnpm -s build
+	cd .. && pnpm install && pnpm exec tsc --build packages/cli
 
 dist:
 	@sh ensure-tools.sh pnpm
-	cd .. && pnpm -s build
+	cd .. && pnpm install && pnpm exec tsc --build packages/cli
 
 # Whole site into build/: landing at build/index.html, docs under build/docs/.
 build: docs landing
