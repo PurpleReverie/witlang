@@ -26,7 +26,7 @@ function abs(path = '') {
 // meta/OG description; `path` is the site-root-relative URL of this page.
 export function headTags({ title, description, path = '/' }) {
   const url = abs(path);
-  const img = abs('/og.svg');
+  const img = abs('/og.png');
   const t = esc(title), d = esc(description);
   const lines = [
     `<link rel="icon" href="${FAVICON}">`,
@@ -43,21 +43,6 @@ export function headTags({ title, description, path = '/' }) {
     img && `<meta name="twitter:image" content="${esc(img)}">`,
   ].filter(Boolean);
   return lines.join('\n');
-}
-
-// A simple branded 1200x630 Open Graph card (SVG). A raster PNG is the ideal
-// for X/Twitter later, but SVG unfurls on Slack/Discord/LinkedIn and beats a
-// blank preview.
-export function ogSvg() {
-  const title = esc(config.title);
-  const tagline = esc(config.tagline);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#f6f1e7"/>
-  <rect x="0" y="0" width="1200" height="12" fill="#8a2b39"/>
-  <text x="90" y="300" font-family="Georgia,'Times New Roman',serif" font-size="150" font-weight="700" fill="#221f1a">${title}</text>
-  <text x="90" y="380" font-family="Georgia,'Times New Roman',serif" font-size="46" fill="#6d6454">${tagline}</text>
-  <text x="90" y="560" font-family="Inter,system-ui,sans-serif" font-size="30" fill="#8a2b39">witlang.org</text>
-</svg>`;
 }
 
 export { FAVICON };

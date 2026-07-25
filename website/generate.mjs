@@ -11,7 +11,7 @@
 // The chrome is plain HTML/CSS here; a SvelteKit shell (for the live
 // playground / search islands) can wrap this same content + pipeline later.
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, copyFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,7 +20,7 @@ import { resolve, expand } from '../packages/runtime/dist/index.js';
 import { renderHtml } from '../packages/render-html/dist/index.js';
 
 import { site, nav } from './docs.nav.mjs';
-import { headTags, ogSvg } from './site-meta.mjs';
+import { headTags } from './site-meta.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT = path.join(HERE, 'content');
@@ -307,9 +307,9 @@ function main() {
   writeFileSync(path.join(DOCS_OUT, 'index.html'), docsHomePage(), 'utf8');
 
   // Site-root assets (survive the separate landing build, which only writes
-  // index.html). OG card + a friendly 404.
+  // index.html). OG card (committed PNG) + a friendly 404.
   mkdirSync(OUT, { recursive: true });
-  writeFileSync(path.join(OUT, 'og.svg'), ogSvg(), 'utf8');
+  copyFileSync(path.join(HERE, 'assets', 'og.png'), path.join(OUT, 'og.png'));
   writeFileSync(path.join(OUT, '404.html'), notFoundPage(), 'utf8');
 
   console.log(`built ${n} docs pages${failed ? `, ${failed} FAILED` : ''} → website/build/docs/`);
