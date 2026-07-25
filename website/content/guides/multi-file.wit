@@ -20,15 +20,14 @@ The keeper is @keeper.name.
 #keeper: { name - Ada }
 pre@@@
 
-That renders @code The keeper is Ada. code@ (verified). Path forms are
-same-directory @@@code ./one.wit code@@@ (fixture 14-composition/single-reference),
+That renders @code The keeper is Ada. code@. Path forms are
+same-directory @@@code ./one.wit code@@@,
 a child directory @@@code ./sub/x.wit code@@@ (nested-subdir), and a parent
 @@@code ../shared.wit code@@@ (parent-relative).
 
 @h2 One flat namespace, hoisted h2@
 
-Multiple references form @strong one namespace strong@ (fixture
-multiple-references), and visibility is @strong transitive strong@ — a master
+Multiple references form @strong one namespace strong@, and visibility is @strong transitive strong@ — a master
 that references A which references B can see B's definitions
 (transitive-references). Because everything is hoisted, the @strong position of
 the reference line is immaterial strong@: a use that appears @em before em@ the
@@ -41,17 +40,17 @@ The keeper is @keeper.name.
 reference ./one.wit
 pre@@@
 
-Still renders @code The keeper is Ada. code@ (verified).
+Still renders @code The keeper is Ada. code@.
 
 @h2 Shared schemas and diamonds h2@
 
 Two chapters may both reference a shared schema file; the re-convergence (a
-diamond) resolves once (fixture shared-schema). This is the idiom for a common
+diamond) resolves once. This is the idiom for a common
 set of card, citation, and figure templates used across every chapter.
 
 @h2 Self, circular, and missing h2@
 
-A self-reference is a no-op via the already-visited set (fixture self-reference);
+A self-reference is a no-op via the already-visited set;
 a circular pair is handled by cycle detection (circular-references); a missing
 path is a resolver error (missing-file).
 

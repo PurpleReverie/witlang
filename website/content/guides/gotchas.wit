@@ -9,7 +9,7 @@ re-verified against the current build.
 @h2 Prose that safely looks like syntax h2@
 
 These all @strong stay prose strong@ — the parser is careful not to fire by
-accident (fixtures in 16-ambiguity, each verified):
+accident:
 
 @ul
 @li @strong Em-dash is not the parameter separator. strong@ The separator is the
@@ -55,8 +55,7 @@ parameter:
 @thing the variable name:Tauraj is bad thing@
 pre@@@
 
-@code name code@ is lifted even though you meant it as prose (fixture
-24-colon-scatter/false-positive-prose). Fix by escaping the colon
+@code name code@ is lifted even though you meant it as prose. Fix by escaping the colon
 (@code name\: code@) or adding a space (@code name: … code@). The same bites
 URLs, ratios, and clock times written inside a scatter body.
 
@@ -70,7 +69,7 @@ An unquoted comma inside a record value splits the field —
 #cite: { author: "Boud, D.", year: 2024 }    ~ quote to keep the comma
 pre@@@
 
-(fixture 09-records/comma-in-value.)
+
 
 @h2 Glued statements are not recognised h2@
 
@@ -83,7 +82,7 @@ one to a preceding @code ) code@ and it renders literally:
 (each @xs as x) (if @x is a) Y (end) (end)  ~ works
 pre@@@
 
-(verified.) Keep a space or newline between adjacent statements.
+ Keep a space or newline between adjacent statements.
 
 @h2 The greedy-bind and mixing traps h2@
 
@@ -126,8 +125,7 @@ or snake spelling (see @a |href /docs/guides/data/| Data access a@).
 @@@code @list.0 code@@@ and @@@code @rec.0.field code@@@ currently emit
 @@@code <span class="wit-unresolved"> code@@@ rather than the element.
 @strong Fix: strong@ reach into collections with @@@code (each) code@@@ or
-@@@code @table |rows @ref| code@@@ (fixture 11-data-access/index-access.wit
-snapshots the AST only).
+@@@code @table |rows @ref| code@@@.
 
 @h2 The loop variable is a reference not a capture h2@
 
@@ -139,7 +137,7 @@ capture interpolation and stays unresolved in a loop.
 
 A single-line @@@code #def code@@@ that declares @@@code ||captures|| code@@@
 renders the literal capture list. @strong Fix: strong@ use the block form for any
-def with captures (fixture 07-parser-defs/single-line-def-with-captures.wit).
+def with captures.
 
 @h2 Form-fill needs two or more lines h2@
 
@@ -152,7 +150,7 @@ beneath; continuation must be @strong strictly deeper strong@ indented.
 
 @ul
 @li A parens call across a newline breaks — the remainder leaks into the text
-(fixture 05-nodes-parens/multi-line-call). Keep parens calls on one line. li@
+. Keep parens calls on one line. li@
 @li A newline inside a single @@@code |…| code@@@ pipe value does not span lines
 — @code E_UNCLOSED_NODE code@ (06-parameters-pipes/multi-line-value). Use a body
 form for multi-line values. li@

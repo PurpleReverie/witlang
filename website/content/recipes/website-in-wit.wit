@@ -77,8 +77,7 @@ Wit-looking source renders as text, not markup.
 wit build site.wit -o site.html --raw
 pre@@@
 
-@strong Result. strong@ A self-contained page (verified at 31,327 bytes from the
-worked site): your styles from @code theme.wit code@, the assembled sections, and
+@strong Result. strong@ A self-contained page: your styles from @code theme.wit code@, the assembled sections, and
 your script from @code script.wit code@. The theme toggle switches dark and
 light. Open the file straight from disk — there is no server and no build step
 beyond this command.

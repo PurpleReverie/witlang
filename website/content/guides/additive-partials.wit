@@ -29,14 +29,14 @@ toc#
 @toc
 pre@@@
 
-That merges to @code I. The Lamp II. The Watch code@ (verified). And
+That merges to @code I. The Lamp II. The Watch code@. And
 single-line:
 
 @@@pre
 +#bibliography: @weil Simone Weil, Gravity and Grace, 1952 !!
 pre@@@
 
-(fixtures 08-additive-partials/block-additive, single-line-additive.) A lone
+ A lone
 @@@code +#name code@@@ with no sibling is a complete one-entry definition
 (simple-additive-prefix). Additive defs may carry captures with
 @@@code ::name:: code@@@ just like ordinary defs (additive-with-captures).
@@ -44,11 +44,10 @@ pre@@@
 @h2 Order and mixing h2@
 
 Contributions merge in @strong document order strong@, and across files in
-reference (depth-first) order (fixtures multiple-additive-same-file,
-order-preservation, cross-file-merge). A non-additive @strong base strong@ can
+reference (depth-first) order. A non-additive @strong base strong@ can
 seed the node and additives extend it (mix-normal-and-additive).
 
-@aside(class note) 💡 All contributions to one name must agree on @strong body shape strong@ — you cannot mix a block contribution with a single-line one. A mismatch is @code E_PARTIAL_SHAPE_MISMATCH code@ (fixture mixed-body-shape). aside@
+@aside(class note) 💡 All contributions to one name must agree on @strong body shape strong@ — you cannot mix a block contribution with a single-line one. A mismatch is @code E_PARTIAL_SHAPE_MISMATCH code@. aside@
 
 @h2 Across files h2@
 
@@ -68,7 +67,7 @@ reference ./two.wit
 pre@@@
 
 Every referenced file's contributions merge into the one node, in reference
-order (fixture 08-additive-partials/cross-file-merge). The reference graph is
+order. The reference graph is
 the scope.
 
 @h2 Common mistakes h2@

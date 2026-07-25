@@ -116,7 +116,7 @@ through.
 wit build essay.wit -o essay.pdf
 pre@@@
 
-The finished file builds to a three-page, 158,820-byte PDF (verified). For HTML
+The finished file builds to a three-page, 158,820-byte PDF. For HTML
 instead, use @code -o essay.html code@; to inspect the raw markup, add
 @code --fragment code@.
 

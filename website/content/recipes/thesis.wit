@@ -92,8 +92,7 @@ pre@@@
 wit build essay.wit -o essay.pdf
 pre@@@
 
-@strong Result. strong@ A three-page PDF (verified at 158,820 bytes from the
-worked example) with the title, byline, epigraph, five sections, the sleep
+@strong Result. strong@ A three-page PDF with the title, byline, epigraph, five sections, the sleep
 table, the attendance figure, and the four-entry Works Cited list. PDF output
 paginates the default HTML theme through a headless system Chrome — swap
 @code -o essay.html code@ for a styled web page, or add @code --fragment code@ to

@@ -18,7 +18,7 @@ let x = @not_a_node;
 code@@
 pre@@@
 
-That renders the line literally, @@@code @not_a_node code@@@ and all (verified).
+That renders the line literally, @@@code @not_a_node code@@@ and all.
 
 @h2 Block or inline h2@
 
@@ -63,7 +63,7 @@ The flagship use: drive a stylesheet from a data definition.
 style@@
 pre@@@
 
-That renders @@@code .badge { color: green; } code@@@ (verified) — the
+That renders @@@code .badge { color: green; } code@@@ — the
 @@@code {{theme.accent}} code@@@ resolves because @@@code @@style code@@@ is a
 two-marker raw node. Triple it and the hole stays literal:
 

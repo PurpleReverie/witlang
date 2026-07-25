@@ -12,8 +12,7 @@ contents, a list, a set of cards — any repeated view of your data.
 (each @themes as item) The watch returned to @item. (end)
 pre@@@
 
-Inside the body, @@@code @item code@@@ is the whole element (fixture
-13-iteration/each-over-values). When the elements are records, walk into them
+Inside the body, @@@code @item code@@@ is the whole element. When the elements are records, walk into them
 with a dotted access:
 
 @@@pre
@@ -47,7 +46,7 @@ Outside the loop, @item is solitary.
 pre@@@
 
 Outside, @@@code @item code@@@ is the global @code solitary code@; inside, it is
-each element in turn (verified; fixture item-name-shadowing). Resolution
+each element in turn. Resolution
 precedence is: iteration frames (innermost first), then data definitions, then
 node definitions.
 
@@ -80,7 +79,7 @@ iteration frame:
 (end)
 pre@@@
 
-(verified; fixture each-with-if.)
+
 
 @h2 Common mistakes h2@
 

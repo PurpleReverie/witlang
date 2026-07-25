@@ -27,7 +27,7 @@ ul@
 pre@@@
 
 That renders a real list — @code I. The Lamp code@, @code II. The Watch code@
-(verified). Add a chapter or reorder the collection and the list follows.
+. Add a chapter or reorder the collection and the list follows.
 
 @h2 The techniques it stands on h2@
 

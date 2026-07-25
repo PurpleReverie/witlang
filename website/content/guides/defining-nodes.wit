@@ -11,7 +11,7 @@ partials.
 
 @ul
 @li @strong Block strong@ — @@@code #name … name# code@@@ wraps multiple lines
-(fixture 07-definitions/block-definition). li@
+. li@
 @li @strong Single-line strong@ — @@@code #name: value !! code@@@ names a short
 value; the @@@code !! code@@@ closes it (single-line-def,
 single-line-def-with-captures). li@
@@ -40,7 +40,7 @@ A capture list names the parameters a template accepts, written
 cite#
 pre@@@
 
-(fixture 07-definitions/captures-and-interpolation, multi-capture-list.) The
+ The
 list is @strong optional strong@: leave it out and Wit infers the captures by
 scanning the body for @@@code ::ident:: code@@@ in source order.
 
@@ -50,16 +50,14 @@ scanning the body for @@@code ::ident:: code@@@ in source order.
 @tpl |name world|
 pre@@@
 
-That renders @code hello world code@ (fixture
-21-optional-captures/without-captures-inferred; also block-def-inferred, and
-with-explicit-captures when you keep the list). Inference walks into nested
+That renders @code hello world code@. Inference walks into nested
 paragraphs, emphasis, node uses, and @@@code (if) code@@@ / @@@code (each) code@@@
 bodies, so a hole anywhere in the template is found.
 
 @h2 The capture hole and the body slot h2@
 
 @@@code ::name:: code@@@ is recognised @strong only inside a definition body
-strong@ (fixtures interpolation-only, captures-body-slot-interpolation). In
+strong@. In
 ordinary prose it renders literally — to put data into a sentence, use data
 access @@@code @name.field code@@@ instead.
 
@@ -77,13 +75,12 @@ panel@
 pre@@@
 
 That yields @code START code@, then @code middle code@, then @code END code@
-(fixtures body-slot, body-slot-only, captures-body-slot-interpolation).
+.
 
 @h2 Forward references and defs that use defs h2@
 
 Definitions are @strong hoisted strong@, so a use may precede its definition —
-@@@code @x code@@@ before @@@code #x code@@@ resolves fine (fixture
-forward-reference). A definition body may reference another definition:
+@@@code @x code@@@ before @@@code #x code@@@ resolves fine. A definition body may reference another definition:
 
 @@@pre
 #keeper Ada Lovelace keeper#
@@ -91,7 +88,7 @@ forward-reference). A definition body may reference another definition:
 #bio Written by @keeper. bio#
 pre@@@
 
-(fixtures definition-references-definition, 17-combinations/def-of-def.)
+
 
 @h2 Common mistakes h2@
 

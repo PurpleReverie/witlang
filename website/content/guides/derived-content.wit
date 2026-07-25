@@ -59,9 +59,7 @@ and a heading's @code kind code@. Treat these as "verify in your build".
 
 A script that injects @strong rendered content strong@ must supply balanced
 nodes. A half-open node — a bare opener with no matching closer — collides with
-the surrounding body's close and raises @code E_MISMATCHED_CLOSE code@ (fixture
-17-combinations/script-injects-rendered-content; see
-@a |href /docs/guides/composing/| Composing constructs a@).
+the surrounding body's close and raises @code E_MISMATCHED_CLOSE code@.
 
 @h2 Common mistakes h2@
 

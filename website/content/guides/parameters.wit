@@ -88,7 +88,7 @@ for it when the arguments read like structured data.
 pre@@@
 
 Both fields bind to the card's captures and render
-@code Title Alpha / Status draft code@ (verified). The separator can be a spaced
+@code Title Alpha / Status draft code@. The separator can be a spaced
 hyphen or a colon:
 
 @@@pre
@@ -96,8 +96,7 @@ hyphen or a colon:
 pre@@@
 
 The brace binds to explicit captures (template-expansion) and to captures
-inferred from the body (template-implicit-captures) alike (fixture
-22-record-args/inline-single-field, inline-multi-field).
+inferred from the body (template-implicit-captures) alike.
 
 The record grammar is identical inline and across lines, so a many-field call
 can breathe — fields separate on a comma @strong or strong@ a newline, and
@@ -111,7 +110,7 @@ emphasis markers inside a value stay literal:
 }
 pre@@@
 
-(fixture 22-record-args/multi-line-record.)
+
 
 @h3 The comma-in-value trap h3@
 
@@ -123,7 +122,7 @@ with no key:
 @cite { author - Boud, D., year - 2024 }   ~ E_MALFORMED_RECORD
 pre@@@
 
-That is @code E_MALFORMED_RECORD code@ — "record field missing key" (verified).
+That is @code E_MALFORMED_RECORD code@ — "record field missing key".
 Quote the value to protect the comma, which also forces a string type:
 
 @@@pre
@@ -162,7 +161,7 @@ non-backslash character. li@
 ul@
 
 @@@code @thing name:Tauraj thing@ code@@@ lifts @code name code@ to
-@code Tauraj code@ (fixture 24-colon-scatter/body-scatter-single); a quoted value
+@code Tauraj code@; a quoted value
 carries spaces — @@@code @thing mode:"complex value" thing@ code@@@
 (body-scatter-quoted). Multiple tokens lift while residual prose remains
 (body-scatter-multi), and a repeated key is last-one-wins
@@ -179,16 +178,14 @@ its own params (body-scatter-multiple-node-params), a node then a bare token
 @h3 A space breaks the contract h3@
 
 Add a space after the colon and the token is prose again — @@@code @thing key:
-value thing@ code@@@ lifts nothing (fixture
-24-colon-scatter/body-scatter-space-after-colon-is-prose, verified parameter
-source "none"). A real inline node on that line stays a node; only the
+value thing@ code@@@ lifts nothing. A real inline node on that line stays a node; only the
 scatter-lift is suppressed.
 
 To keep a literal @code id:value code@ in prose, escape the colon —
 @code name\:Tauraj code@ suppresses the lift and the backslash is stripped from
 the output (body-scatter-escape).
 
-@aside(class note) 💡 The strict contract has one honest downside — a space-free @code id:value code@ buried in real prose still lifts. @@@code @thing the variable name:Tauraj is bad thing@ code@@@ lifts @code name code@ even though you meant prose (fixture false-positive-prose, verified). Escape the colon or add a space. The same pattern bites URLs, ratios, and times written mid-sentence. aside@
+@aside(class note) 💡 The strict contract has one honest downside — a space-free @code id:value code@ buried in real prose still lifts. @@@code @thing the variable name:Tauraj is bad thing@ code@@@ lifts @code name code@ even though you meant prose. Escape the colon or add a space. The same pattern bites URLs, ratios, and times written mid-sentence. aside@
 
 @h2 Form-fill body h2@
 
@@ -205,8 +202,7 @@ cite@
 pre@@@
 
 This binds @code author code@ and @code year code@; @code year code@ is
-type-probed to the number @code 2024 code@ (fixture
-23-form-fill/template-invocation).
+type-probed to the number @code 2024 code@.
 
 @h3 What triggers form-fill h3@
 
@@ -220,14 +216,13 @@ threshold is the rule most worth remembering.
 
 Each line is @code <id>: <value> code@. One optional leading space after the
 colon is trimmed, trailing whitespace is trimmed, and @code ~ code@ comments and
-blank lines are ignored (fixture 23-form-fill/with-comments). A line that does
+blank lines are ignored. A line that does
 not match the shape is @code E_MALFORMED_FORM_FIELD code@.
 
 A quoted value protects commas and forces a string type. And — one surprise
 worth internalising — emphasis markers in a value stay @strong literal strong@,
 because the inline parser is bypassed: @@@code _title_ code@@@ renders as the
-three characters, not italic (fixtures with-quoted-string,
-with-emphasis-in-value, value-emphasis-renders).
+three characters, not italic.
 
 @h3 Multi-line values h3@
 
@@ -244,7 +239,7 @@ note@
 pre@@@
 
 That binds @code body code@ to @code First line. code@ + newline +
-@code Second line. code@ (fixture 23-form-fill/value-multi-line). Blank lines
+@code Second line. code@. Blank lines
 inside the block are kept (value-multi-paragraph); a @strong dedent ends the
 value strong@ (value-block-end-by-dedent); and — a sharp edge — an indented line
 that @em looks like em@ @code key: code@ is treated as @strong content, not a new
@@ -285,7 +280,7 @@ The keeper logged the lamp at dawn.
 pre@@@
 
 The badge self-closes at @code ) code@; the sentence below is its own paragraph
-(fixture 05-nodes-parens/self-closing). The key/value separator can be a space
+. The key/value separator can be a space
 or a colon interchangeably — @@@code @scene(mood calm, location harbour) code@@@
 and @@@code @scene(mood: calm, location: harbour) code@@@ bind identically
 (multiple-params, colon-separator). A multi-word @strong key strong@ joins with a
@@ -308,8 +303,7 @@ If you follow a parens call with body content and a closer, a @strong core node
 strong@ still attaches the params and renders the body —
 @@@code @aside(tone wry) the keeper said nothing aside@ code@@@ works. But a
 @strong template definition strong@ with no body slot has nowhere to put a
-following body, so it is silently dropped (fixture
-05-nodes-parens/parens-then-body). @strong For a body, use pipes strong@ —
+following body, so it is silently dropped. @strong For a body, use pipes strong@ —
 @@@code @aside |tone wry| the keeper said nothing aside@ code@@@.
 
 A parens call must also stay on @strong one line strong@. Wrapping it across a
@@ -330,8 +324,7 @@ prefer record-arg or colon-scatter.
 pre@@@
 
 That passes a named @code src code@, a @code full width code@ flag, and a
-multi-word @code caption code@ (fixtures 06-parameters-pipes/basic-named,
-flag-with-bang, multi-word-value).
+multi-word @code caption code@.
 
 Pipes may appear on the opening line, or anywhere inside the body. When a key
 repeats, @strong the last one wins strong@ — which makes pipes the form for
@@ -345,8 +338,7 @@ Then the bell rang.
 scene@
 pre@@@
 
-Here @code mood code@ ends up @code tense code@ (fixture last-one-wins; see also
-mid-body-scatter). You can also put several pipes on one line —
+Here @code mood code@ ends up @code tense code@. You can also put several pipes on one line —
 @@@code @x |a one| |b two| |c three| x@ code@@@ (multiple-pipes-per-line).
 
 An empty @@@code || code@@@ inside a body contributes no parameters (empty-pipe),
@@ -356,8 +348,7 @@ signal flag read red | white | red. code@ renders as text (pipe-in-body-text).
 @h3 The multi-line-value bug h3@
 
 A newline @strong inside strong@ a single @@@code |…| code@@@ value does not span
-lines — the pipe never closes and you get @code E_UNCLOSED_NODE code@ (fixture
-multi-line-value). Keep each pipe value on one line; for a genuinely multi-line
+lines — the pipe never closes and you get @code E_UNCLOSED_NODE code@. Keep each pipe value on one line; for a genuinely multi-line
 value, use a form-fill body or a record-arg brace.
 
 @h2 The mixing rule h2@
@@ -390,7 +381,7 @@ separates them:
 @card |title Y| card@
 pre@@@
 
-This is @code E_UNCLOSED_NODE code@ (verified): the first call keeps reading
+This is @code E_UNCLOSED_NODE code@: the first call keeps reading
 until it finds @@@code card@ code@@@, which belongs to the second. The fix is any
 one of: give the call an explicit @@@code card@ code@@@ closer, put a @strong
 blank line strong@ after it, or place a bodyless pipes call @strong last strong@.
@@ -401,7 +392,7 @@ blank line strong@ after it, or place a bodyless pipes call @strong last strong@
 @card |title Y| card@
 pre@@@
 
-With the blank line, each renders on its own (verified). This is why pipes is
+With the blank line, each renders on its own. This is why pipes is
 the noisiest form and why the other forms self-close.
 
 @h2 Common mistakes h2@

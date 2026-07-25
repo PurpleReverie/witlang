@@ -25,7 +25,7 @@ the same name pair @strong last-in-first-out strong@, like brackets:
 pre@@@
 
 The inner @@@code @cite … cite@ code@@@ closes before the outer
-@@@code @quote … quote@ code@@@ (fixture 04-nodes-use/nested-same-name).
+@@@code @quote … quote@ code@@@.
 
 @h2 Block or inline is decided by position h2@
 
@@ -42,8 +42,7 @@ The lamp was @highlight still burning highlight@ at dawn.
 pre@@@
 
 The first is a block aside; the second keeps @@@code @highlight … highlight@
-code@@@ inline in the sentence (fixtures 04-nodes-use/block-name-body,
-inline-name-body).
+code@@@ inline in the sentence.
 
 @h2 The bare reference h2@
 
@@ -56,7 +55,7 @@ Attention, as @weil argued, is a moral act.
 pre@@@
 
 Here @@@code @weil code@@@ stands in for whatever @@@code #weil code@@@ defines
-(fixtures 04-nodes-use/bare-reference, bare-reference-adjacent-prose).
+.
 
 @h2 Where the handle ends h2@
 
@@ -89,7 +88,7 @@ The title is @book.title for this edition.
 pre@@@
 
 The chain follows dots until it hits a byte that is not part of a segment — the
-sentence-final period ends it cleanly (fixture 04-nodes-use/dotted-access). This
+sentence-final period ends it cleanly. This
 is the verified way to put data into prose; @@@code {{book.title}} code@@@ does
 @strong not strong@ interpolate in a paragraph.
 
@@ -97,7 +96,7 @@ is the verified way to put data into prose; @@@code {{book.title}} code@@@ does
 
 An empty pair @@@code @x x@ code@@@ is a real node with an @strong empty
 children array strong@ — not null, and the single space between the markers is
-not counted as a child (fixture 04-nodes-use/empty-body). Nesting has no depth
+not counted as a child. Nesting has no depth
 limit; the pairing is purely lexical.
 
 @h2 Common mistakes h2@

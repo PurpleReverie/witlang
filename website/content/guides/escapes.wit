@@ -28,7 +28,7 @@ literal pipe through the value (@@@code |href a\|b| code@@@ yields
 @@@code a|b code@@@). li@
 @li @strong Colon-scatter strong@ uses @@@code \: code@@@ as the opt-out: it
 suppresses the lift and the backslash is stripped from the output
-(fixture 24-colon-scatter/body-scatter-escape). li@
+. li@
 @li @strong Quoted strings strong@ (in records and parameters) recognise only
 @@@code \" code@@@ and @@@code \\ code@@@. li@
 @li @strong Form-fill values strong@ carry text through as-is. The inline parser
@@ -46,8 +46,7 @@ over escaping each character:
 @thing mode:"complex value" thing@
 pre@@@
 
-The quotes protect the comma and the space and force a string type (fixtures
-09-records/quoted-string-value, 24-colon-scatter/body-scatter-quoted).
+The quotes protect the comma and the space and force a string type.
 
 @h2 The delimiter hole in parens h2@
 
@@ -67,7 +66,7 @@ lifts a parameter you did not intend:
 @thing the variable name:Tauraj is bad thing@
 pre@@@
 
-@code name code@ is lifted (fixture 24-colon-scatter/false-positive-prose). Fix
+@code name code@ is lifted. Fix
 it with the escape — @code name\:Tauraj code@ — or a space —
 @code name: Tauraj code@.
 

@@ -14,9 +14,9 @@ truthiness. Use them for status banners, draft asides, and gated variants.
 (if @book.status is draft) DRAFT WATERMARK (end)
 pre@@@
 
-That renders the watermark (verified). The comparison keyword is @strong is
+That renders the watermark. The comparison keyword is @strong is
 strong@ or @strong equals strong@ — they are @strong exact synonyms strong@
-(fixtures 12-conditionals/is-comparison, equals-comparison). There is @strong no
+. There is @strong no
 strong@ other operator: no @code == code@, @code != code@, @code < code@,
 @code > code@, and no @code not code@, @code and code@, @code or code@, or
 @code contains code@.
@@ -33,7 +33,7 @@ sides. So a number compares equal to its digits:
 pre@@@
 
 That is @strong true strong@ — the number @code 99 code@ stringifies to
-@code 99 code@ (verified; fixture compare-against-number). A record or collection
+@code 99 code@. A record or collection
 stringifies to the empty string, so a container never equals a literal
 (compare-against-string).
 
@@ -47,7 +47,7 @@ Drop the operator to test whether a value is present and truthy:
 (if @book.flag) TRUTHY (end)
 pre@@@
 
-(fixture truthy-bare-reference.) The @strong falsy set strong@ is: missing or
+ The @strong falsy set strong@ is: missing or
 unresolved, the empty string, the string @code false code@, the number
 @code 0 code@, boolean @code false code@, null, an empty record @@@code {} code@@@,
 and an empty collection @code [] code@. Everything else is truthy.
@@ -62,7 +62,7 @@ An @@@code (else) code@@@ branch is optional:
 (if @book.status equals final) FINAL (else) NOT FINAL (end)
 pre@@@
 
-That renders @code NOT FINAL code@ (verified; fixture if-else-end). Empty then
+That renders @code NOT FINAL code@. Empty then
 or else branches are legal no-ops (empty-then-body, empty-else-body), and ifs
 nest with their own @@@code (end) code@@@:
 
@@ -85,7 +85,7 @@ literally:
 (each @xs as x) (if @x is a) Y (end) (end)   ~ works
 pre@@@
 
-(verified.) Always separate adjacent statements with a space or newline.
+ Always separate adjacent statements with a space or newline.
 
 @h2 Common mistakes h2@
 
