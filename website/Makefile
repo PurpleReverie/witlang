@@ -16,6 +16,11 @@ CLI  := ../packages/cli/dist/bin.js
 # One compiled artifact standing in for "the @witlang packages are built".
 DIST := ../packages/parser/dist/index.js
 
+# User-local tool dir (ensure-tools.sh installs pnpm/pm2 here without root).
+# Put it on PATH for every recipe so make's /bin/sh finds them.
+PNPM_HOME ?= $(HOME)/.local/share/pnpm
+export PATH := $(PNPM_HOME):$(PATH)
+
 .DEFAULT_GOAL := help
 .PHONY: help build docs landing serve open clean dist config deploy undeploy logs
 
