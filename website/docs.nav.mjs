@@ -3,10 +3,15 @@
 // here is the sidebar order; the canonical *teaching* order is in
 // docs/content-design/onboarding-sequence.md.
 
+import { config } from './site.config.mjs';
+
+// Deploy-time values (repo URL, brand, tagline) come from website/.env via
+// site.config.mjs, with fallbacks. Edit .env, not this file.
 export const site = {
-  title: 'Wit',
-  tagline: 'Write the paper. Not the preamble.',
-  repo: 'https://github.com/PurpleReverie/witlang',
+  title: config.title,
+  tagline: config.tagline,
+  repo: config.repo,
+  url: config.siteUrl,
 };
 
 export const nav = [
@@ -51,17 +56,10 @@ export const nav = [
     section: 'Guides',
     items: [
       { title: 'Node use & bare reference', slug: 'guides/node-use',              file: 'guides/node-use.wit' },
-      { title: 'Parameters: choosing a form', slug: 'guides/parameters',          file: 'guides/parameters.wit' },
-      { title: 'Pipes',                     slug: 'guides/pipes',                 file: 'guides/pipes.wit' },
-      { title: 'Parens',                    slug: 'guides/parens',                file: 'guides/parens.wit' },
-      { title: 'Record-arg',                slug: 'guides/record-arg',            file: 'guides/record-arg.wit' },
-      { title: 'Form-fill body',            slug: 'guides/form-fill',             file: 'guides/form-fill.wit' },
-      { title: 'Colon-scatter',             slug: 'guides/colon-scatter',         file: 'guides/colon-scatter.wit' },
+      { title: 'Parameters & invocation forms', slug: 'guides/parameters',        file: 'guides/parameters.wit' },
       { title: 'Defining nodes',            slug: 'guides/defining-nodes',        file: 'guides/defining-nodes.wit' },
       { title: 'Interpolation & captures',  slug: 'guides/interpolation-captures', file: 'guides/interpolation-captures.wit' },
-      { title: 'Data: records & collections', slug: 'guides/data',                file: 'guides/data.wit' },
-      { title: 'Data access',               slug: 'guides/data-access',           file: 'guides/data-access.wit' },
-      { title: 'Type-classified scalars',   slug: 'guides/typed-scalars',         file: 'guides/typed-scalars.wit' },
+      { title: 'Data: records, collections & access', slug: 'guides/data',        file: 'guides/data.wit' },
       { title: 'Conditionals',              slug: 'guides/conditionals',          file: 'guides/conditionals.wit' },
       { title: 'Iteration',                 slug: 'guides/iteration',             file: 'guides/iteration.wit' },
       { title: 'Additive partials',         slug: 'guides/additive-partials',     file: 'guides/additive-partials.wit' },
@@ -72,7 +70,6 @@ export const nav = [
       { title: 'Literal & raw nodes; CSS',  slug: 'guides/literal-raw-css',       file: 'guides/literal-raw-css.wit' },
       { title: 'Self-organising documents', slug: 'guides/self-organising',       file: 'guides/self-organising.wit' },
       { title: 'Faceted content',           slug: 'guides/faceted',               file: 'guides/faceted.wit' },
-      { title: 'Glossary & cross-references', slug: 'guides/glossary-xref',       file: 'guides/glossary-xref.wit' },
       { title: 'Derived content',           slug: 'guides/derived-content',       file: 'guides/derived-content.wit' },
     ],
   },
@@ -81,15 +78,13 @@ export const nav = [
     items: [
       { title: 'Syntax',            slug: 'reference/syntax',          file: 'reference/syntax.wit' },
       { title: 'Core vocabulary',   slug: 'reference/core-vocabulary', file: 'reference/core-vocabulary.wit' },
-      { title: 'Tables',            slug: 'reference/tables',          file: 'reference/tables.wit' },
       { title: 'CLI',               slug: 'reference/cli',             file: 'reference/cli.wit' },
       { title: 'Config',            slug: 'reference/config',          file: 'reference/config.wit' },
       { title: 'Data model',        slug: 'reference/data-model',      file: 'reference/data-model.wit' },
       { title: 'Errors',            slug: 'reference/errors',          file: 'reference/errors.wit' },
       { title: 'API',               slug: 'reference/api',             file: 'reference/api.wit' },
-      { title: 'Gotchas',           slug: 'reference/gotchas',         file: 'reference/gotchas.wit' },
       { title: 'Known limitations', slug: 'reference/limitations',     file: 'reference/limitations.wit' },
-      { title: 'Glossary',          slug: 'reference/glossary',        file: 'reference/glossary.wit' },
+      { title: 'Glossary & cross-references', slug: 'reference/glossary', file: 'reference/glossary.wit' },
       { title: 'Cheatsheet',        slug: 'reference/cheatsheet',      file: 'reference/cheatsheet.wit' },
     ],
   },
@@ -113,7 +108,6 @@ export const nav = [
     section: 'Project',
     items: [
       { title: 'Design principles',    slug: 'project/principles',   file: 'project/principles.wit' },
-      { title: 'Architecture',         slug: 'project/architecture', file: 'project/architecture.wit' },
       { title: 'Roadmap',              slug: 'project/roadmap',       file: 'project/roadmap.wit' },
       { title: 'Extending',            slug: 'project/extending',     file: 'project/extending.wit' },
       { title: 'The spec',             slug: 'project/spec',          file: 'project/spec.wit' },

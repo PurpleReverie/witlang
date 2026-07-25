@@ -44,6 +44,6 @@ against the fixtures.
 
 @h2 See also h2@
 
-@a |href /docs/project/architecture/| Architecture a@ describes the pipeline the
+@a |href /docs/build/architecture/| Architecture a@ describes the pipeline the
 fixtures test;
 @a |href /docs/project/changelog/| Changelog a@ tracks released behaviour.

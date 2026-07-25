@@ -1,16 +1,13 @@
-@h1 Parameters: choosing a form h1@
+@h1 Parameters & the invocation forms h1@
 
 A parameter is @strong metadata strong@ that rides alongside a node's content —
-a link's address, a card's status, a figure's caption. Wit gives you several
-syntaxes for passing parameters, and they all bind to the same names. This page
-teaches the shared idea, the two cross-form traps, and how to pick a form; each
-form then has its own detail page.
+a link's address, a card's status, a figure's caption. Wit gives you five
+syntaxes for passing parameters, and they all bind to the same names. The
+guiding principle is @strong the form you open with is the form that closes
+strong@.
 
-@h2 One template, many call syntaxes h2@
-
-The guiding principle is @strong the form you open with is the form that closes
-strong@. A single definition — here a card that names a title and a status —
-can be filled six different ways, and every buildable form renders identically.
+A single definition — here a card that names a title and a status — can be
+filled every way, and every buildable form renders identically.
 
 @@@pre
 #card ||title, status||
@@ -19,36 +16,53 @@ card#
 pre@@@
 
 @@@pre
-@card |title Alpha| |status draft| card@      ~ pipes (carries a body)
-@card(title Alpha, status draft)              ~ parens (self-closing)
-@card(title: Alpha, status: draft)            ~ parens, colon separator
 @card { title - Alpha, status - draft }       ~ record-arg (self-closing)
 @card { title: Alpha, status: draft }         ~ record-arg, colon separator
+@card title:Alpha status:draft card@          ~ colon-scatter (one-line body)
 @card                                          ~ form-fill: the body IS the params
   title: Alpha
   status: draft
 card@
+@card(title Alpha, status draft)              ~ parens (self-closing)
+@card(title: Alpha, status: draft)            ~ parens, colon separator
+@card |title Alpha| |status draft| card@      ~ pipes (carries a body)
 pre@@@
 
-All of these render @code Title Alpha / Status draft code@. The seventh form,
-@strong colon-scatter strong@ — @@@code @card title:Alpha status:draft card@
-code@@@ — lifts inline tokens out of a one-line body. (The fixture folder
-26-all-param-forms collects these; note its combined showcase file intentionally
+All render @code Title Alpha / Status draft code@. (The fixture folder
+26-all-param-forms collects these; its combined showcase file intentionally
 fails to build, so lean on the individual forms.)
+
+@h2 Choosing a form h2@
+
+@ul
+@li @strong Structured, no body? strong@ Prefer @strong record-arg strong@ with
+a colon — @@@code @card { title: X } code@@@. li@
+@li @strong Tag a node mid-sentence? strong@ @strong Colon-scatter strong@ —
+@@@code @figure src:lamp caption:"the lens" figure@ code@@@. li@
+@li @strong Many fields, or a multi-line value? strong@ Use a @strong form-fill
+strong@ body. li@
+@li @strong One or two short params inline? strong@ Reach for @strong parens
+strong@ — @@@code @badge(tone good) code@@@. li@
+@li @strong Need a body, or switching a value mid-body? strong@ Only @strong
+pipes strong@ compose with body content — but they are the noisiest form and the
+one prone to greedy-bind, so avoid them otherwise. li@
+ul@
 
 @h2 The shared slot grammar h2@
 
-Pipes, parens, and record-arg all read each slot with the same grammar:
+Record-arg, colon-scatter, parens, and pipes all read each slot with the same
+grammar:
 
 @ul
-@li @strong Positional strong@ — a single token with no space:
-@@@code |full| code@@@ binds a value with no name. li@
+@li @strong Positional strong@ — a single token with no space: @@@code |full|
+code@@@ binds a value with no name. It is a @em value em@, not a flag. li@
 @li @strong Named strong@ — @code key value code@: the first word is the key,
-the rest is the value. @@@code |mood calm| code@@@ sets @code mood code@ to
-@code calm code@. li@
+the rest is the value, which may be several words. @@@code |mood calm| code@@@
+sets @code mood code@ to @code calm code@. li@
 @li @strong Named, multi-word key strong@ — join words with a spaced hyphen
 @code  -  code@: @@@code |background colour - dark slate| code@@@ has key
-@code background colour code@. li@
+@code background colour code@. An embedded hyphen with no surrounding spaces
+stays in the value — @@@code |well-known| code@@@. li@
 @li @strong Flag strong@ — a trailing @code ! code@ marks a boolean-style flag
 with an empty value: @@@code |full width!| code@@@. A @code ! code@ in the
 middle of a value is just punctuation. li@
@@ -59,7 +73,292 @@ and @code \\ code@ recognised. Every non-flag value is then @strong type-probed
 strong@ — run through the scalar classifier — so a number, record, or
 collection passed through @em any em@ form becomes a real typed value you can
 iterate, compare, or reach into. See
-@a |href /docs/guides/typed-scalars/| Type-classified scalars a@.
+@a |href /docs/guides/data/| Type-classified scalars a@.
+
+@h2 Record-arg h2@
+
+A record literal placed right after a handle — @@@code @name { field - value, … }
+code@@@ — whose fields become named parameters. It is @strong self-closing
+strong@ (the matching @@@code } code@@@ ends the node) and the @strong exclusive
+strong@ form: it will not share a node with any other parameter source. Reach
+for it when the arguments read like structured data.
+
+@@@pre
+@card { title - Alpha, status - draft }
+pre@@@
+
+Both fields bind to the card's captures and render
+@code Title Alpha / Status draft code@ (verified). The separator can be a spaced
+hyphen or a colon:
+
+@@@pre
+@card { title: Epsilon, status: draft }
+pre@@@
+
+The brace binds to explicit captures (template-expansion) and to captures
+inferred from the body (template-implicit-captures) alike (fixture
+22-record-args/inline-single-field, inline-multi-field).
+
+The record grammar is identical inline and across lines, so a many-field call
+can breathe — fields separate on a comma @strong or strong@ a newline, and
+emphasis markers inside a value stay literal:
+
+@@@pre
+@reference_entry {
+  author - Ursula Franklin
+  title - The Real World of Technology
+  year - 1989
+}
+pre@@@
+
+(fixture 22-record-args/multi-line-record.)
+
+@h3 The comma-in-value trap h3@
+
+An @strong unquoted comma splits fields strong@. Because the parser reads a
+comma as a field boundary, a value that contains one is misread as a new field
+with no key:
+
+@@@pre
+@cite { author - Boud, D., year - 2024 }   ~ E_MALFORMED_RECORD
+pre@@@
+
+That is @code E_MALFORMED_RECORD code@ — "record field missing key" (verified).
+Quote the value to protect the comma, which also forces a string type:
+
+@@@pre
+@cite { author: "Boud, D.", year: 2024 }   ~ renders: Boud, D. (2024)
+pre@@@
+
+(Same root cause as fixture 09-records/comma-in-value.)
+
+@h2 Colon-scatter h2@
+
+In a @strong single-line strong@ body, tokens shaped @code id:value code@ with
+@strong zero whitespace strong@ are lifted out as parameters; the rest of the
+line stays prose. It is the lightest way to tag a node mid-sentence:
+
+@@@pre
+@figure src:lamp caption:"Second-order Fresnel" figure@
+pre@@@
+
+@code src code@ and @code caption code@ become params; anything else on the line
+is the figure's body.
+
+@h3 The strict contract h3@
+
+Scatter fires only under an exact contract, and that strictness keeps ordinary
+prose from being mis-read:
+
+@ul
+@li The id is @code [A-Za-z][A-Za-z0-9_-]* code@. li@
+@li The value is a bare word @code [A-Za-z0-9_-]+ code@, a @code "quoted" code@
+string (spaces allowed), an @code _italic_ code@ or @code *bold* code@ run, or
+any @@@code @node code@@@ (bare, parens, or with a closer). li@
+@li There is @strong no whitespace anywhere strong@ — including between the
+@code : code@ and the value. li@
+@li The byte just before the id must be the start of the line or a non-word,
+non-backslash character. li@
+ul@
+
+@@@code @thing name:Tauraj thing@ code@@@ lifts @code name code@ to
+@code Tauraj code@ (fixture 24-colon-scatter/body-scatter-single); a quoted value
+carries spaces — @@@code @thing mode:"complex value" thing@ code@@@
+(body-scatter-quoted). Multiple tokens lift while residual prose remains
+(body-scatter-multi), and a repeated key is last-one-wins
+(body-scatter-override).
+
+Because the value may itself be a node or an emphasis run, scatter lifts them as
+sibling content: italic (body-scatter-italic-value), bold
+(body-scatter-bold-value), a closer-form node (body-scatter-node-value), a
+self-closing parens node (body-scatter-self-closing-node-value), a node carrying
+its own params (body-scatter-multiple-node-params), a node then a bare token
+(body-scatter-node-then-bare), and overriding a value with a node
+(body-scatter-override-with-node).
+
+@h3 A space breaks the contract h3@
+
+Add a space after the colon and the token is prose again — @@@code @thing key:
+value thing@ code@@@ lifts nothing (fixture
+24-colon-scatter/body-scatter-space-after-colon-is-prose, verified parameter
+source "none"). A real inline node on that line stays a node; only the
+scatter-lift is suppressed.
+
+To keep a literal @code id:value code@ in prose, escape the colon —
+@code name\:Tauraj code@ suppresses the lift and the backslash is stripped from
+the output (body-scatter-escape).
+
+@aside(class note) 💡 The strict contract has one honest downside — a space-free @code id:value code@ buried in real prose still lifts. @@@code @thing the variable name:Tauraj is bad thing@ code@@@ lifts @code name code@ even though you meant prose (fixture false-positive-prose, verified). Escape the colon or add a space. The same pattern bites URLs, ratios, and times written mid-sentence. aside@
+
+@h2 Form-fill body h2@
+
+When a node's body reads like a form — every line a @code key: value code@ pair
+— the body @strong becomes strong@ the parameters. It is the most readable form
+for many-field templates (citations, cards, front-matter), and the only call
+form that can carry @strong multi-line strong@ values.
+
+@@@pre
+@cite
+  author: Smith
+  year: 2024
+cite@
+pre@@@
+
+This binds @code author code@ and @code year code@; @code year code@ is
+type-probed to the number @code 2024 code@ (fixture
+23-form-fill/template-invocation).
+
+@h3 What triggers form-fill h3@
+
+A body is read as form-fill when @strong all three strong@ hold: it contains a
+newline; its first non-blank, non-comment line matches @code <id>: code@; and it
+has @strong at least two content lines strong@. A @strong single strong@ content
+line is @em not em@ form-fill — it falls through to colon-scatter. That two-line
+threshold is the rule most worth remembering.
+
+@h3 The line grammar h3@
+
+Each line is @code <id>: <value> code@. One optional leading space after the
+colon is trimmed, trailing whitespace is trimmed, and @code ~ code@ comments and
+blank lines are ignored (fixture 23-form-fill/with-comments). A line that does
+not match the shape is @code E_MALFORMED_FORM_FIELD code@.
+
+A quoted value protects commas and forces a string type. And — one surprise
+worth internalising — emphasis markers in a value stay @strong literal strong@,
+because the inline parser is bypassed: @@@code _title_ code@@@ renders as the
+three characters, not italic (fixtures with-quoted-string,
+with-emphasis-in-value, value-emphasis-renders).
+
+@h3 Multi-line values h3@
+
+Give a key an @strong empty same-line value strong@ and then indent the content
+deeper: the block is consumed, common indentation is stripped, and lines join
+with newlines.
+
+@@@pre
+@note
+  body:
+    First line.
+    Second line.
+note@
+pre@@@
+
+That binds @code body code@ to @code First line. code@ + newline +
+@code Second line. code@ (fixture 23-form-fill/value-multi-line). Blank lines
+inside the block are kept (value-multi-paragraph); a @strong dedent ends the
+value strong@ (value-block-end-by-dedent); and — a sharp edge — an indented line
+that @em looks like em@ @code key: code@ is treated as @strong content, not a new
+field strong@ (value-indented-key-shape-is-content). An empty value with no
+indented block simply moves on to the next field (value-empty-then-next-field).
+
+The identical block grammar appears in @strong definitions strong@ — a block
+record def and a value-block def both collapse to a record:
+
+@@@pre
+#point
+  x: 3
+  y: 7
+point#
+
+#point:
+  x: 3
+  y: 7
+!!
+pre@@@
+
+(fixtures 23-form-fill/block-record-def, value-block-record-def; a realistic
+@@@code +#bibliography code@@@ value-block wrapping a form-fill with quoted
+commas is bibliography-style.)
+
+@h2 Parens h2@
+
+Parens — @@@code @name(p, q) code@@@ — are the compact, @strong self-closing
+strong@ form: the closing @code ) code@ ends the node, so there is no
+@@@code name@ code@@@ closer to write. Params are comma-separated, and colon or
+space separates each key from its value. Use parens for one or two short
+parameters and no body — @@@code @badge(tone good) code@@@,
+@@@code @figure(src lamp.png, caption The lens) code@@@.
+
+@@@pre
+@badge(tone good)
+The keeper logged the lamp at dawn.
+pre@@@
+
+The badge self-closes at @code ) code@; the sentence below is its own paragraph
+(fixture 05-nodes-parens/self-closing). The key/value separator can be a space
+or a colon interchangeably — @@@code @scene(mood calm, location harbour) code@@@
+and @@@code @scene(mood: calm, location: harbour) code@@@ bind identically
+(multiple-params, colon-separator). A multi-word @strong key strong@ joins with a
+spaced hyphen — @@@code @panel(background colour - dark slate) code@@@
+(hyphen-multi-word-key).
+
+@ul
+@li @strong Inner whitespace is trimmed strong@ — @@@code @x( a , b ) code@@@
+binds @code a code@ and @code b code@ (inner-whitespace). li@
+@li @strong A trailing comma is tolerated strong@ — @@@code @x(a,) code@@@
+(trailing-comma). li@
+@li @strong Empty parens are legal strong@ and @em distinct em@ from a bare
+reference — @@@code @x() code@@@ carries a parens source with no slots, while
+@@@code @x code@@@ carries none (empty-parens). li@
+ul@
+
+@h3 Parens carries no body of its own h3@
+
+If you follow a parens call with body content and a closer, a @strong core node
+strong@ still attaches the params and renders the body —
+@@@code @aside(tone wry) the keeper said nothing aside@ code@@@ works. But a
+@strong template definition strong@ with no body slot has nowhere to put a
+following body, so it is silently dropped (fixture
+05-nodes-parens/parens-then-body). @strong For a body, use pipes strong@ —
+@@@code @aside |tone wry| the keeper said nothing aside@ code@@@.
+
+A parens call must also stay on @strong one line strong@. Wrapping it across a
+newline breaks it — the remainder, including the @code ) code@, leaks into the
+surrounding text (multi-line-call). A value long enough to want wrapping is a
+sign to use form-fill or record-arg.
+
+@h2 Pipes h2@
+
+Pipes — @@@code @name |slot| code@@@ — are the @strong only strong@ form that
+composes with a body. A slot can sit on the opening line or scatter through the
+body, and duplicate keys resolve last-one-wins. Reach for pipes when a node has
+both parameters and content, or to switch a value partway through — otherwise
+prefer record-arg or colon-scatter.
+
+@@@pre
+@figure |src lamp.png| |full width!| |caption The second-order lens| figure@
+pre@@@
+
+That passes a named @code src code@, a @code full width code@ flag, and a
+multi-word @code caption code@ (fixtures 06-parameters-pipes/basic-named,
+flag-with-bang, multi-word-value).
+
+Pipes may appear on the opening line, or anywhere inside the body. When a key
+repeats, @strong the last one wins strong@ — which makes pipes the form for
+switching a value mid-body:
+
+@@@pre
+@scene |mood calm|
+The harbour was still.
+|mood tense|
+Then the bell rang.
+scene@
+pre@@@
+
+Here @code mood code@ ends up @code tense code@ (fixture last-one-wins; see also
+mid-body-scatter). You can also put several pipes on one line —
+@@@code @x |a one| |b two| |c three| x@ code@@@ (multiple-pipes-per-line).
+
+An empty @@@code || code@@@ inside a body contributes no parameters (empty-pipe),
+and ordinary prose that merely contains pipe characters stays literal — @code The
+signal flag read red | white | red. code@ renders as text (pipe-in-body-text).
+
+@h3 The multi-line-value bug h3@
+
+A newline @strong inside strong@ a single @@@code |…| code@@@ value does not span
+lines — the pipe never closes and you get @code E_UNCLOSED_NODE code@ (fixture
+multi-line-value). Keep each pipe value on one line; for a genuinely multi-line
+value, use a form-fill body or a record-arg brace.
 
 @h2 The mixing rule h2@
 
@@ -93,8 +392,8 @@ pre@@@
 
 This is @code E_UNCLOSED_NODE code@ (verified): the first call keeps reading
 until it finds @@@code card@ code@@@, which belongs to the second. The fix is any
-one of: give the call an explicit @@@code card@ code@@@ closer, put a @strong blank
-line strong@ after it, or place a bodyless pipes call @strong last strong@.
+one of: give the call an explicit @@@code card@ code@@@ closer, put a @strong
+blank line strong@ after it, or place a bodyless pipes call @strong last strong@.
 
 @@@pre
 @card |title X|
@@ -105,37 +404,29 @@ pre@@@
 With the blank line, each renders on its own (verified). This is why pipes is
 the noisiest form and why the other forms self-close.
 
-@h2 Choosing a form h2@
-
-@ul
-@li @strong Need a body? strong@ Only @a |href /docs/guides/pipes/| pipes a@
-compose with body content. li@
-@li @strong Structured, no body? strong@ Prefer
-@a |href /docs/guides/record-arg/| record-arg a@ with a colon —
-@@@code @card { title: X } code@@@. li@
-@li @strong Many fields, no body? strong@ Use a
-@a |href /docs/guides/form-fill/| form-fill a@ body. li@
-@li @strong One or two short params inline? strong@ Reach for
-@a |href /docs/guides/parens/| parens a@ — @@@code @badge(tone good) code@@@. li@
-@li @strong Tag a node mid-sentence? strong@
-@a |href /docs/guides/colon-scatter/| Colon-scatter a@ — @@@code @figure
-src:lamp caption:"the lens" figure@ code@@@. li@
-ul@
-
 @h2 Common mistakes h2@
 
 @ul
-@li Assuming record-arg merges with pipes (it errors, or drops them). li@
-@li Assuming parens and pipes conflict (they merge). li@
+@li Assuming record-arg merges with pipes — it errors, or drops them. li@
+@li Assuming parens and pipes conflict — they merge. li@
 @li Leaving a bodyless pipes call before another same-named node (greedy-bind). li@
+@li Leaving an unquoted comma inside a record-arg value — quote it. li@
+@li Adding a body when a parens template has no body slot — it is dropped; use pipes. li@
+@li Wrapping a parens call, or a single pipe value, across lines. li@
+@li Expecting a @strong one-line strong@ body to be form-fill — it is
+colon-scatter (needs a space-free @code key:value code@). li@
+@li Forgetting that emphasis markers are literal inside form-fill values. li@
+@li An accidental @code foo:bar code@ mid-prose lifting a stray param — escape or
+space it. li@
+@li Writing @@@code |full| code@@@ expecting a flag — it is a positional value; a
+flag needs the trailing @code ! code@. li@
 ul@
 
 @h2 See also h2@
 
-@a |href /docs/guides/pipes/| Pipes a@ ·
-@a |href /docs/guides/parens/| Parens a@ ·
-@a |href /docs/guides/record-arg/| Record-arg a@ ·
-@a |href /docs/guides/form-fill/| Form-fill a@ ·
-@a |href /docs/guides/colon-scatter/| Colon-scatter a@ ·
+@a |href /docs/guides/node-use/| Node use & the bare reference a@ ·
+@a |href /docs/guides/data/| Type-classified scalars a@ ·
+@a |href /docs/guides/data/| Data: records a@ ·
+@a |href /docs/guides/escapes/| Escapes & quoting a@ ·
 @a |href /docs/guides/defining-nodes/| Defining nodes a@ ·
 @a |href /docs/guides/gotchas/| Gotchas & ambiguity a@

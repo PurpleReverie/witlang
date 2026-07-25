@@ -84,9 +84,9 @@ ul@
 
 @h2 See also h2@
 
-@a |href /docs/guides/colon-scatter/| Colon-scatter a@ ·
-@a |href /docs/guides/form-fill/| Form-fill a@ ·
+@a |href /docs/guides/parameters/| Colon-scatter a@ ·
+@a |href /docs/guides/parameters/| Form-fill a@ ·
 @a |href /docs/guides/data/| Data (quoting) a@ ·
-@a |href /docs/guides/record-arg/| Record-arg a@ ·
-@a |href /docs/guides/typed-scalars/| Type-classified scalars a@ ·
+@a |href /docs/guides/parameters/| Record-arg a@ ·
+@a |href /docs/guides/data/| Type-classified scalars a@ ·
 @a |href /docs/guides/gotchas/| Gotchas a@

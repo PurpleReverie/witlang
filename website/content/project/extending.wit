@@ -69,7 +69,7 @@ ul@
 
 @h2 See also h2@
 
-@a |href /docs/project/architecture/| Architecture a@ maps the stages you hook
+@a |href /docs/build/architecture/| Architecture a@ maps the stages you hook
 into;
 @a |href /docs/recipes/custom-renderer/| Write a custom renderer a@ and
 @a |href /docs/recipes/embed-parser/| Embed the Wit parser a@ are the worked

@@ -1,7 +1,8 @@
-@h1 Glossary h1@
+@h1 Glossary & cross-references h1@
 
-Every Wit term, defined once. Grounded in the AST kinds and source symbols so
-guide and reference prose can link a word to its precise meaning.
+Every Wit term, defined once, grounded in the AST kinds and source symbols so
+guide and reference prose can link a word to its precise meaning. Below the
+terms: how to build a glossary or cross-reference set from your own data.
 
 @h2 Nodes and definitions h2@
 
@@ -168,9 +169,57 @@ pass sits between parse and resolve. dd@
 @code --raw code@ (reset-only page), default (styled document). dd@
 dl@
 
+@h2 Build a glossary from data h2@
+
+Define terms @strong once strong@ as data, then render the list from that source.
+Model the glossary as a collection of records and iterate it into a
+@code <dl> code@:
+
+@@@pre
+#glossary: [
+  { term - Attention, gloss - A moral faculty of focus. },
+  { term - Fresnel, gloss - A stepped lens for lighthouses. }
+]
+
+@dl
+(each @glossary as g) @dt @g.term dt@ @dd @g.gloss dd@ (end)
+dl@
+pre@@@
+
+Read each field with data access — @@@code @g.term code@@@ — not a capture hole.
+Edit the data and every view that reads it updates.
+
+@h2 Cross-references and a shared bibliography h2@
+
+Give each referenced thing a unique @code id code@ field and read it wherever you
+cite it. Keep the citation call shape uniform so every reference reads the same
+way. For a bibliography that assembles across chapter files, combine data with
+@a |href /docs/guides/additive-partials/| additive partials a@: each chapter
+contributes with @@@code +#bibliography code@@@ and the master renders the merged
+node.
+
+@h2 What is not built in h2@
+
+@strong Automatic numbering strong@ ("Figure 3") and @strong back-links strong@
+("see above") are @em not em@ core features. Either carry the numbers in your
+data, or compute them in a @@@code <% %> code@@@ script (see
+@a |href /docs/guides/derived-content/| Derived content a@). The core language
+gives the single source of truth and the views; numbering is a renderer or
+script concern.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Mixing @@@code ::term:: code@@@ and @@@code @g.term code@@@ for the same read
+— use data access @@@code @g.term code@@@ outside a definition body. li@
+@li Assuming numbering and back-links are automatic — they are not. li@
+ul@
+
 @h2 See also h2@
 
 @a |href /docs/reference/syntax/| Syntax a@ ·
 @a |href /docs/reference/core-vocabulary/| Core vocabulary a@ ·
 @a |href /docs/reference/data-model/| Data model a@ ·
-@a |href /docs/reference/cheatsheet/| Cheatsheet a@.
+@a |href /docs/reference/cheatsheet/| Cheatsheet a@ ·
+@a |href /docs/guides/self-organising/| Self-organising documents a@ ·
+@a |href /docs/guides/iteration/| Iteration a@.

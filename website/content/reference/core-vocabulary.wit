@@ -165,7 +165,7 @@ text or source elements. @strong Fixture: strong@
 @h2 Tables — 8 h2@
 
 @code table code@ is dispatched to the complex renderer (see the
-@a |href /docs/reference/tables/| tables reference a@); the core-vocab branch is
+@a |href /docs/write/tables/| tables reference a@); the core-vocab branch is
 only a fallback. The other seven are hand-authored table parts.
 
 @table |rows [[Node, Emits, Context], [table, <table>…</table>, block — special renderer], [thead, <thead>…</thead>, block], [tbody, <tbody>…</tbody>, block], [tfoot, <tfoot>…</tfoot>, block], [tr, <tr>…</tr>, block], [th, <th>…</th>, inline-context], [td, <td>…</td>, inline-context], [caption, <caption>…</caption>, inline-context]]| |caption Table parts| table@
@@ -201,7 +201,7 @@ pre@@@
 @aside(class note)
 Gotcha: a @code ~comment code@ as the @strong first strong@ child of a container
 body collapses following blocks into one paragraph. Put a blank line after it.
-See @a |href /docs/reference/gotchas/| gotchas a@. @strong Fixture: strong@
+See @a |href /docs/guides/gotchas/| gotchas a@. @strong Fixture: strong@
 @code 18-core-vocab/sectioning.wit code@.
 
 aside@
@@ -325,7 +325,7 @@ legacy path.
 @h2 See also h2@
 
 @a |href /docs/reference/syntax/| Syntax a@ ·
-@a |href /docs/reference/tables/| Tables a@ ·
+@a |href /docs/write/tables/| Tables a@ ·
 @a |href /docs/reference/data-model/| Data model a@ ·
 @a |href /docs/reference/errors/| Errors a@ ·
 @a |href /docs/reference/limitations/| Limitations a@.

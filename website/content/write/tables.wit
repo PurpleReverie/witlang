@@ -3,9 +3,15 @@
 A Wit table is one node. Hand it rows and it draws a full
 @@@code <table> code@@@ — caption, header, body — with no grid of pipes to align.
 Rows can come as inline text, as a collection of records, or as @code @row code@ /
-@code @col code@ child nodes when cells need links and emphasis.
+@code @col code@ child nodes when cells need links and emphasis. @code table code@
+is dispatched to a dedicated renderer, so it does not follow the generic id/class
+allowlist — the parameters below are the whole surface.
 
-@h2 A quick table from inline rows h2@
+@h2 Which form? h2@
+
+@table |rows [[You have, Use, Header comes from], [rows typed out as text, inline CSV, row 0 by default], [a collection + column order, schema-as-array, the schema keys], [a collection + custom labels, schema-as-record, the schema labels], [a collection and want auto columns, rows-by-ref, the first record's keys], [cells with links or emphasis, body form (row/col nodes), first row unless header false]]| |caption Pick a form| table@
+
+@h2 Inline rows h2@
 
 Pass a list of rows in the @code rows code@ parameter. Row 0 is the header; every
 later row is a body row. A @code caption code@ rides above the table.
@@ -20,6 +26,15 @@ Emits:
 <table><caption>Output formats</caption><thead><tr><th>Format</th><th>Extension</th></tr></thead><tbody><tr><td>Web page</td><td>.html</td></tr><tr><td>Markdown</td><td>.md</td></tr><tr><td>Print</td><td>.pdf</td></tr></tbody></table>
 pre@@@
 
+Another, with the caption pipe closed before @@@code table@ code@@@:
+
+@@@pre
+@table |rows [[Client, Hours], [One to One, 62.75], [Couple, 0.75]]| |caption Practicum| table@
+→ <table><caption>Practicum</caption><thead><tr><th>Client</th><th>Hours</th></tr></thead><tbody><tr><td>One to One</td><td>62.75</td></tr><tr><td>Couple</td><td>0.75</td></tr></tbody></table>
+pre@@@
+
+@strong Fixture: strong@ @code 19-tables/inline-csv.wit code@.
+
 Drop the header with @@@code |header false| code@@@ — the first row becomes a
 plain body row:
 
@@ -28,14 +43,18 @@ plain body row:
 → <table><tbody><tr><td>Web page</td><td>.html</td></tr><tr><td>Markdown</td><td>.md</td></tr></tbody></table>
 pre@@@
 
-@aside(class note) 💡 Inline cells split on commas, and a comma inside a cell
-can't be escaped — a stray comma makes an extra cell. Keep inline cell text
-comma-free, or use the body form below where each cell is its own node. aside@
+@strong Fixture: strong@ @code 19-tables/no-header.wit code@.
 
-@h2 A table from a data collection h2@
+@aside(class note) 💡 Inline cells split on commas, and a comma inside a cell
+can't be escaped — a stray comma makes an extra cell. Surrounding quotes render
+literally. Keep inline cell text comma-free, or use the body form below where each
+cell is its own node. aside@
+
+@h2 From a data collection h2@
 
 Point @code rows code@ at a collection of records and each record becomes a row.
-With no schema, the columns come from the first record's keys:
+With no schema, columns are auto-derived from the @strong first record's keys strong@.
+The renderer prefers the expander's typed collection over literal text.
 
 @@@pre
 #packages: [ { name - parser, role - reads source }, { name - runtime, role - resolves data } ]
@@ -43,18 +62,63 @@ With no schema, the columns come from the first record's keys:
 @table |rows @packages|
 pre@@@
 
-Emits headings @code name code@ / @code role code@ over the two records. To choose
-and label the columns yourself, add a schema — @@@code |schema [name, role]| code@@@
-for raw keys in order, or @@@code |schema { name - Package, role - Role }| code@@@
-for display headings. Loading the records from a file at build time works the same
-way; see @a |href /docs/guides/data/| Data a@.
+Emits headings @code name code@ / @code role code@ over the two records. A second
+example, with the full emit:
+
+@@@pre
+#sales: [ { region - West, total - 100 }, { region - East, total - 90 } ]
+
+@table |rows @sales| table@
+→ <table><thead><tr><th>region</th><th>total</th></tr></thead><tbody><tr><td>West</td><td>100</td></tr><tr><td>East</td><td>90</td></tr></tbody></table>
+pre@@@
+
+@aside(class note)
+A @strong raw strong@ @@@code @@table code@@@ cannot resolve
+@@@code |rows @sales| code@@@ — a raw body is a verbatim Text node, so
+resolve and expand never run on it and there is no typed collection to derive
+columns from. Use the ordinary @@@code @table code@@@. See
+@a |href /docs/reference/limitations/| limitations a@.
+aside@
+
+To choose and label the columns yourself, add a schema.
+
+@h3 Schema-as-array (positional) h3@
+
+Schema keys pick record fields @strong in order strong@ and become the headings;
+every row is data (no header consumed).
+
+@@@pre
+#sites: [{ name - Dunmore Head, status - operational }, { name - Carrick Point, status - maintenance }] !!
+
+@table |schema [name, status]| |rows @sites|
+pre@@@
+
+Emits headings @code name code@ / @code status code@ over the two records.
+@strong Fixture: strong@ @code 19-tables/schema-array.wit code@.
+
+@h3 Schema-as-record (labelled) h3@
+
+The record @strong key strong@ selects the field; the record @strong value strong@
+is the column heading.
+
+@@@pre
+@table |schema { name - Site, status - Status }| |rows [[Dunmore Head, operational], [Carrick Point, maintenance]]|
+pre@@@
+
+Emits headings @code Site code@ / @code Status code@ (not @code name code@ /
+@code status code@). The same works pointing at a record collection —
+@@@code |schema { name - Package, role - Role }| code@@@ over @@@code @packages code@@@.
+@strong Fixture: strong@ @code 19-tables/schema-record.wit code@.
+
+Loading the records from a file at build time works the same way; see
+@a |href /docs/guides/data/| Data a@.
 
 @h2 Rich cells: the body form h2@
 
-The inline and collection forms hold plain strings. When a cell needs a link,
-emphasis, or a nested node, author the rows as child nodes instead: a
-@@@code @row code@@@ per row, a @@@code @col code@@@ per cell. Leave off the
-@code rows code@ parameter and the renderer reads the body.
+The only form whose cells hold @strong rich content strong@ — links, emphasis,
+nested nodes — rather than plain strings. Leave off the @code rows code@ parameter
+and the renderer reads the body: a @@@code @row code@@@ per row, a
+@@@code @col code@@@ per cell.
 
 @@@pre
 @table |caption Modules|
@@ -76,12 +140,12 @@ HTML-style names @@@code @tr code@@@ / @@@code @td code@@@ / @@@code @th code@@@
 work as aliases for @@@code @row code@@@ / @@@code @col code@@@, and the whole row
 can sit on one line: @@@code @row @col a col@ @col b col@ row@ code@@@.
 
-@@@code @row code@@@ and @@@code @col code@@@ are interchangeable: the outer node
-is the row, the inner one the cell, whichever keyword you use. So
+@@@code @row code@@@ and @@@code @col code@@@ are @strong interchangeable strong@:
+the outer node is the row, the inner one the cell, whichever keyword you use. So
 @@@code @col @row a row@ @row b row@ col@ code@@@ builds the same row as
 @@@code @row @col a col@ @col b col@ row@ code@@@.
 
-@h2 Data-driven rows with rich cells h2@
+@h3 Data-driven rows with rich cells h3@
 
 This is the form the others can't reach: rows generated from data, with cells that
 still hold nodes. Wrap the @@@code @row code@@@ line in
@@ -140,10 +204,39 @@ pre@@@
 
 Keep every data-driven value in the cell body and write parameters as literals.
 
+@h2 Header and caption controls h2@
+
+@table |rows [[Param, Effect], [caption text, prepends a caption element], [header false, no header row], [header N, use row index N as the header], [header [a b c], explicit header cells — all rows become data], [default, row 0 of rows is the header]]| |caption Header controls| table@
+
+@h2 Edge cases and value rules h2@
+
+@table |rows [[Case, Behaviour, Fixture], [empty or missing rows, empty table element, 19 empty], [multi-line cell content, preserved, 19 multiline-cell], [number or boolean cell, String(value), 19 tables], [null cell, empty cell, 19 tables], [comma inside a cell, splits the cell — avoid, verified], [quoting a cell, not supported inline — quotes stay literal, verified]]| |caption Edge cases| table@
+
+@@@pre
+@table table@ → <table></table>
+pre@@@
+
+@aside(class note)
+Two boundaries worth knowing. @strong Inline cells cannot be quoted or
+comma-escaped: strong@ a comma inside a cell splits it, and surrounding quotes
+render literally. @strong CSV/TSV sources have no quoted-field handling
+strong@ (the delimited-source parser), so commas or tabs inside a field break
+rows there too; inline @@@code |rows [...]| code@@@ uses the real collection
+parser and is unaffected by the source path.
+aside@
+
+@h2 Centering is theme, not renderer h2@
+
+The default HTML pathway centres tables via
+@@@code .wit-doc table { border-collapse: collapse; margin: 1em auto } code@@@ in
+the theme. @@@code --raw code@@@ ships a reset-only base, so it does not centre —
+add your own CSS. @strong Fixture: strong@ @code 19-tables/* code@ and the theme.
+
 @h2 See also h2@
 
 @ul
 @li @a |href /docs/guides/logic/| Logic & assembly a@ — @@@code (each …) code@@@ and @@@code (if …) code@@@ in full, the engine behind data-driven rows. li@
 @li @a |href /docs/guides/data/| Data a@ — defining and loading the record collections a table reads. li@
 @li @a |href /docs/reference/syntax/| Syntax reference a@ — every table parameter and the exact HTML it emits. li@
+@li @a |href /docs/reference/data-model/| Data model a@ · @a |href /docs/reference/core-vocabulary/| Core vocabulary a@. li@
 ul@

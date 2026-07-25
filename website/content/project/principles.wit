@@ -70,7 +70,7 @@ ul@
 
 @h2 See also h2@
 
-@a |href /docs/project/architecture/| Architecture a@ shows how these principles
+@a |href /docs/build/architecture/| Architecture a@ shows how these principles
 become a pipeline;
 @a |href /docs/project/extending/| How to add a node or renderer a@ applies them
 in practice.

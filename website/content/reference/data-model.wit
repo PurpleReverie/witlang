@@ -95,6 +95,6 @@ typed captures work — the table renderer reads @code typedValue code@.
 @h2 See also h2@
 
 @a |href /docs/reference/syntax/| Syntax a@ ·
-@a |href /docs/reference/tables/| Tables a@ ·
+@a |href /docs/write/tables/| Tables a@ ·
 @a |href /docs/reference/config/| Config a@ ·
 @a |href /docs/reference/limitations/| Limitations a@.

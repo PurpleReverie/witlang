@@ -103,4 +103,4 @@ copy.
 half of the pipeline;
 @a |href /docs/project/extending/| How to add a node or renderer a@ covers the
 extension seams;
-@a |href /docs/project/architecture/| Architecture a@ maps the AST boundaries.
+@a |href /docs/build/architecture/| Architecture a@ maps the AST boundaries.

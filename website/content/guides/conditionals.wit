@@ -100,7 +100,7 @@ ul@
 @h2 See also h2@
 
 @a |href /docs/guides/iteration/| Iteration a@ ·
-@a |href /docs/guides/data-access/| Data access a@ ·
-@a |href /docs/guides/typed-scalars/| Type-classified scalars a@ ·
+@a |href /docs/guides/data/| Data access a@ ·
+@a |href /docs/guides/data/| Type-classified scalars a@ ·
 @a |href /docs/guides/faceted/| Faceted content a@ ·
 @a |href /docs/guides/gotchas/| Gotchas a@

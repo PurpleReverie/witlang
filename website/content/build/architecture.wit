@@ -34,6 +34,10 @@ step sits @em between em@ parse and resolve. Scripts run at the @strong tail of
 expand strong@ — not as their own stage. Rendering is a pure tree walk: no I/O,
 no configuration beyond @code mode code@ and @code css code@.
 
+Each stage owns one artifact: characters become tokens, tokens become a raw AST,
+the resolver binds every reference, the expander inlines definitions and
+evaluates logic, and a renderer turns the expanded AST into an output string.
+
 @h2 The stages h2@
 
 @table |schema [Stage, Input, Output, Package, May throw]| |rows [[parse, string, Document, parser, WitError], [loadExternalData, Document + source, Document, runtime, E_LOAD_FAILED], [resolve, Document, ResolvedDocument, runtime, ResolverError], [expand, ResolvedDocument, ExpandedDocument, runtime, ExpanderError], [render, ExpandedDocument, string, render-html/-markdown, none]]|
@@ -42,6 +46,23 @@ Order is @strong parse → loadExternalData → resolve → expand → render st
 exactly as the CLI does it. @@@code loadExternalData code@@@ is optional: skip
 it and a document with no @@@code @load code@@@ behaves identically, so call it
 always or never — your choice.
+
+@h2 Which package owns what h2@
+
+@ul
+@li @strong parser strong@ — lexer, parser, AST types, and errors. li@
+@li @strong runtime strong@ — resolver, expander, data loader, and the script bridge. li@
+@li @strong render-html strong@ and @strong render-markdown strong@ — the two reference renderers. li@
+@li @strong cli strong@ — the @code wit code@ command that chains the stages. li@
+@li @strong vscode strong@ — the extension and language server, running the same stages in the editor. li@
+ul@
+
+@h2 Where tools stop early h2@
+
+Renderers consume @strong any strong@ post-expand AST — they never re-parse.
+Tools that only need structure, such as the language server and a formatter, stop
+after parse or resolve; they don't need expansion. This is why the boundary
+between stages is a real interface, not an implementation detail.
 
 @h2 The six-line pipeline h2@
 
@@ -69,9 +90,10 @@ pre@@@
 
 @h2 Watch the tree change shape h2@
 
-Each stage's output is a plain object you can inspect. A pipeline inspector over
-one source makes the passes concrete — log the block kinds, then the definitions
-and bindings the resolver found, then the block kinds that survive expansion:
+Each stage's output is a plain object you can inspect (@code wit tour code@ prints
+it as a readable tree). A pipeline inspector over one source makes the passes
+concrete — log the block kinds, then the definitions and bindings the resolver
+found, then the block kinds that survive expansion:
 
 @@@pre
 const src = '#greeting\nHello from a def.\ngreeting#\n\n@greeting';
@@ -88,6 +110,20 @@ pre@@@
 
 The definition disappears because @code expand code@ inlined its body at the
 use site. That is the whole story of the middle of the pipeline, in four lines.
+
+@h2 Resolution timing h2@
+
+Not everything resolves at the same moment — this three-tier model is worth
+knowing before you build on the runtime.
+
+@ul
+@li @strong Eager. strong@ Pipe values, record right-hand sides, and conditional
+operands outside definition bodies are computed once by the resolver and bound. li@
+@li @strong Expansion-time. strong@ A definition body is re-resolved on every use,
+so its interpolation and captured values reflect that call's arguments. li@
+@li @strong Snapshot. strong@ An iteration freezes its collection at loop entry;
+the body then reads from that frozen sequence. li@
+ul@
 
 @h2 Design notes worth knowing h2@
 
@@ -107,6 +143,13 @@ so renderers never encounter a script node. li@
 @code .size code@ rather than @code JSON.stringify code@ to see inside them. li@
 ul@
 
+@h2 Structural guarantees h2@
+
+Source locations — file, line, column, and length — ride every node through every
+stage, so an error or a highlight always points at an exact place in the source.
+Output is deterministic, and the AST is a serializable, exhaustive union, which is
+what lets tools and renderers attach at any stage boundary.
+
 @h2 Common mistakes h2@
 
 @ul
@@ -114,8 +157,12 @@ ul@
 @@@code (each) code@@@, and @@@code (if) code@@@ are still present; renderers
 expect an @code ExpandedDocument code@. TypeScript catches it — the types are
 distinct on purpose. li@
+@li Assuming a renderer re-parses. It consumes the expanded AST; it never touches
+source. li@
 @li Expecting @@@code loadExternalData code@@@ to be required. It is a no-op for
 documents with no @@@code @load code@@@. li@
+@li Expecting expansion at parse time. Parsing produces a raw tree with references
+and logic intact; expansion is a separate, later stage. li@
 @li Expecting scripts to run at render time. They ran during @code expand code@;
 their effects are already baked into the tree. li@
 ul@

@@ -96,6 +96,6 @@ ul@
 @h2 See also h2@
 
 @a |href /docs/guides/defining-nodes/| Defining nodes a@ ·
-@a |href /docs/guides/data-access/| Data access a@ ·
+@a |href /docs/guides/data/| Data access a@ ·
 @a |href /docs/guides/literal-raw-css/| Literal & raw nodes a@ ·
-@a |href /docs/guides/form-fill/| Form-fill (rich values) a@
+@a |href /docs/guides/parameters/| Form-fill (rich values) a@

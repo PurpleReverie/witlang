@@ -1,14 +1,17 @@
-@h1 Data: records, collections, scalars h1@
+@h1 Data: records, collections & access h1@
 
-Wit lets you declare structured data inline with @@@code #name: value code@@@,
-where the value is a @strong record strong@ @@@code { … } code@@@, a @strong
-collection strong@ @@@code [ … ] code@@@, or a @strong scalar strong@. This is
-the single source of truth that a self-organising document reads from — declare
-it once, render it many ways.
+Wit declares structured data inline with @@@code #name: value code@@@, where the
+value is a @strong record strong@ @@@code { … } code@@@, a @strong collection
+strong@ @@@code [ … ] code@@@, or a @strong scalar strong@. Declare it once; a
+self-organising document reads from it and renders it many ways. Reach into it
+from prose with @@@code @name.field code@@@.
 
 @@@pre
 #world: { location - Bag End, time - night, storm - true }
 pre@@@
+
+For the underlying value system — the six DataValue kinds, JSON mapping,
+conditions, and coercion — see @a |href /docs/reference/data-model/| Data model a@.
 
 @h2 Records h2@
 
@@ -86,38 +89,146 @@ legal (empty-collection).
 
 @h2 Scalars are typed eagerly h2@
 
-A bareword value is classified at parse time: @code true code@ / @code false
-code@ become boolean, @code null code@ becomes null, a plain integer or decimal
-becomes a number, and everything else is a string.
+Every bareword value is @strong classified at parse time strong@ into one of four
+types, and quoting forces a string. The type is not cosmetic — it drives
+conditionals, truthiness, iteration, and how @@@code {{…}} code@@@ coerces a
+value. The rules, in order:
+
+@ul
+@li @code true code@ or @code false code@ → boolean. li@
+@li @code null code@ → null. li@
+@li Matches @@@code -?(?:[0-9]+|[0-9]+.[0-9]+) code@@@ → number. li@
+@li Anything else → string. li@
+ul@
+
+The number pattern is @strong strict strong@: an optional leading minus, then
+digits, optionally a single dot and more digits. There is @strong no strong@
+leading or trailing bare dot, @strong no strong@ exponent, and @strong no strong@
+unary plus. So these all stay @em strings em@: @code .5 code@, @code 5. code@,
+@code 1e3 code@, @code +1 code@, and @code "2024" code@ (quoted).
 
 @@@pre
 #report: { title - Q3 Review, quarter - 2024, final - true }
 pre@@@
 
-Here @code title code@ is a string, @code quarter code@ a number, @code final
-code@ a boolean (scalar-types). This classification drives conditionals,
-iteration, and interpolation — see
-@a |href /docs/guides/typed-scalars/| Type-classified scalars a@.
+@code title code@ is a string, @code quarter code@ a number, @code final code@ a
+boolean (fixture 09-records/scalar-types). The same happens per item in a
+collection:
+
+@@@pre
+#mixed: [ 1, two, true ]
+pre@@@
+
+Number, string, boolean respectively (fixture 10-collections/mixed-types).
+
+Classification is not limited to data definitions. Every non-flag parameter
+value — through pipes, parens, record-arg, form-fill, or colon-scatter — is run
+through the same probe, so a value passed by @em any em@ form can arrive as a
+typed number, record, or collection and be a valid @@@code (each) code@@@ target,
+@@@code @x.field code@@@ target, or @@@code (if) code@@@ operand.
+
+Conditionals compare by stringifying both sides, so a quoted @code "2024" code@
+and a bare @code 2024 code@ @strong do strong@ compare equal — both stringify to
+@code 2024 code@. But @code "2024" code@ is not a @em number em@: the distinction
+matters wherever a real numeric type is expected, not for equality. See
+@a |href /docs/guides/conditionals/| Conditionals a@ for the comparison model.
+
+@h2 Access: fields and indices h2@
+
+Data access reaches into a record or collection from prose:
+@@@code @name.field code@@@, @@@code @collection.0.field code@@@, and deeper
+chains. It is the @strong verified strong@ way to put data into a sentence — not
+@@@code {{…}} code@@@, which does not interpolate in prose. Follow the handle
+with a dot and a field name; the chain reads segments until it hits a byte that
+is not part of one — a sentence-final period ends it cleanly:
+
+@@@pre
+#keeper: { name - Ada }
+
+The keeper was @keeper.name.
+pre@@@
+
+Collections index by @strong zero-based number strong@:
+
+@@@pre
+#findings: [ { claim - A, strength - high }, { claim - B, strength - low } ]
+
+First: @findings.0.claim. Second strength: @findings.1.strength.
+pre@@@
+
+(fixtures 11-data-access/field-access, index-access,
+access-into-collection-of-records.) Chains go as deep as the data:
+@@@code @keeper.history.years code@@@ (access-into-nested-record) and
+@@@code @x.y.z.w code@@@ (deep-chain).
+
+@h2 Fuzzy key matching h2@
+
+Keys match by @strong canonical form strong@: lowercase the key, then keep only
+@code [a-z0-9] code@ — spaces, hyphens, and underscores drop out, and camelCase
+collapses. So a field stored as @code years at post code@ is reachable by any
+space-free spelling:
+
+@@@pre
+#keeper: { years at post - 31 }
+
+camel @keeper.yearsAtPost, snake @keeper.years_at_post
+pre@@@
+
+Both resolve to @code 31 code@ (verified; fixtures fuzzy-match-camel,
+fuzzy-match-snake). If two different keys collapse to the same canonical form,
+the access is @code E_AMBIGUOUS_RECORD_KEY code@.
+
+@h2 A space ends the segment h2@
+
+@strong A space terminates the access segment. strong@ So a multi-word key
+written with spaces does @em not em@ resolve:
+
+@@@pre
+#keeper: { years at post - 31 }
+
+He served @keeper.years at post here.
+pre@@@
+
+Only @@@code @keeper.years code@@@ is read — it is unresolved, and @code at post
+code@ trails as prose (verified; fixture fuzzy-match-spaces). @strong Multi-word
+keys are reachable only through the space-free camel or snake forms above. strong@
+
+@h2 Missing keys degrade, not fail h2@
+
+A missing field is @strong not a parse error strong@ — it is resolved at expand
+time and rendered as an unresolved marker
+(@code <span class="wit-unresolved"> code@), so a typo shows up in the output
+rather than breaking the build (fixture missing-field).
 
 @h2 The value-block form h2@
 
 A complex value that spans lines or contains nodes is wrapped as a value-block
 def: @@@code #name: code@@@ … @@@code !! code@@@. This is why some data
-definitions end in @@@code !! code@@@ — the block form lets the value hold
-markup a single line could not.
+definitions end in @@@code !! code@@@ — the block form lets the value hold markup
+a single line could not.
 
 @h2 Common mistakes h2@
 
 @ul
 @li Leaving an unquoted comma in a value (it splits fields). li@
 @li Expecting @@@code [ a b c ] code@@@ to be three items — it is one. li@
-@li Expecting @code .5 code@ or @code 1e3 code@ to be numbers — they are strings
-(see Typed scalars). li@
+@li Expecting @code .5 code@, @code 1e3 code@, or @code +1 code@ to be numbers —
+the strict pattern leaves them strings. li@
+@li Assuming @code "2024" code@ is a number — it is a string that happens to
+compare equal to @code 2024 code@. li@
+@li Typing spaces into an access, like @@@code @keeper.years at post code@@@ —
+use the camel or snake form. li@
+@li Expecting a missing field to fail the build — it degrades gracefully at
+expand time. li@
+@li Reaching for @@@code {{…}} code@@@ to read data in prose — use
+@@@code @field code@@@. li@
 ul@
 
 @h2 See also h2@
 
-@a |href /docs/guides/data-access/| Data access a@ ·
-@a |href /docs/guides/typed-scalars/| Type-classified scalars a@ ·
-@a |href /docs/guides/record-arg/| Record-arg (same grammar) a@ ·
+@a |href /docs/reference/data-model/| Data model a@ ·
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/guides/parameters/| Record-arg (same grammar) a@ ·
+@a |href /docs/guides/interpolation-captures/| Interpolation & captures a@ ·
 @a |href /docs/guides/escapes/| Escapes & quoting a@

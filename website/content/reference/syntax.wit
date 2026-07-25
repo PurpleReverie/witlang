@@ -75,7 +75,7 @@ pre@@@
 @aside(class note)
 Greedy-bind hazard: a pipes call with no @@@code name@ code@@@ on the same line
 binds to the next matching close below it. Put pipes calls last, or close on
-the same line. See @a |href /docs/reference/gotchas/| gotchas a@.
+the same line. See @a |href /docs/guides/gotchas/| gotchas a@.
 
 aside@
 
@@ -224,7 +224,7 @@ the next close, so ordering is a real constraint, not a parser quirk.
 
 @a |href /docs/reference/core-vocabulary/| Core vocabulary a@ ·
 @a |href /docs/reference/data-model/| Data model a@ ·
-@a |href /docs/reference/tables/| Tables a@ ·
-@a |href /docs/reference/gotchas/| Gotchas a@ ·
+@a |href /docs/write/tables/| Tables a@ ·
+@a |href /docs/guides/gotchas/| Gotchas a@ ·
 @a |href /docs/reference/glossary/| Glossary a@ ·
 @a |href /docs/reference/cheatsheet/| Cheatsheet a@.

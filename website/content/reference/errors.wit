@@ -61,11 +61,11 @@ pre@@@
 
 The greedy-bind trap (a pipes form before a later block use of the same node)
 surfaces as @code E_UNCLOSED_NODE code@ — see
-@a |href /docs/reference/gotchas/| gotchas a@.
+@a |href /docs/guides/gotchas/| gotchas a@.
 
 @h2 See also h2@
 
 @a |href /docs/reference/syntax/| Syntax a@ ·
-@a |href /docs/reference/gotchas/| Gotchas a@ ·
+@a |href /docs/guides/gotchas/| Gotchas a@ ·
 @a |href /docs/reference/cli/| CLI a@ ·
 @a |href /docs/reference/config/| Config a@.

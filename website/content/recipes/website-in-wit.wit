@@ -104,7 +104,7 @@ additive shape as
 
 @h2 See also h2@
 
-@a |href /docs/project/architecture/| Architecture a@ explains the pipeline the
+@a |href /docs/build/architecture/| Architecture a@ explains the pipeline the
 literal nodes ride through;
 @a |href /docs/recipes/custom-renderer/| Write a custom renderer a@ goes further
 down the stack.
