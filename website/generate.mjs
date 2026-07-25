@@ -239,6 +239,7 @@ ${meta}
 </head>
 <body>
 <header class="topbar">
+  <button class="menubtn" type="button" aria-label="Toggle navigation" aria-expanded="false">☰</button>
   <a class="brand" href="${home}">${site.title}</a>
   <nav class="topnav">
     <a href="${relRoot(slug, 'docs/index.html')}">Docs</a>
@@ -247,7 +248,7 @@ ${meta}
   </nav>
 </header>
 <div class="shell">
-  <aside class="sidebar">${sidebar(slug)}</aside>
+  <aside class="sidebar" id="sidebar">${sidebar(slug)}</aside>
   <main class="content">${fragment}</main>
 </div>
 <script>
@@ -258,6 +259,11 @@ ${meta}
     if(b) b.addEventListener('click',function(){
       var t=root.getAttribute('data-theme')==='dark'?'light':'dark';
       root.setAttribute('data-theme',t); localStorage.setItem(k,t);
+    });
+    var m=document.querySelector('.menubtn');
+    if(m) m.addEventListener('click',function(){
+      var open=document.body.classList.toggle('nav-open');
+      m.setAttribute('aria-expanded', open?'true':'false');
     });
   })();
 </script>
@@ -380,6 +386,8 @@ a{color:var(--accent)}
 .topnav a:hover{color:var(--ink)}
 .themebtn{background:var(--surface);border:1px solid var(--border);color:var(--ink);
   border-radius:8px;padding:.3rem .6rem;cursor:pointer;font-size:.9rem}
+.menubtn{display:none;background:none;border:0;color:var(--ink);cursor:pointer;
+  font-size:1.3rem;line-height:1;padding:.2rem .5rem;margin-left:-.3rem}
 .shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:0;max-width:1180px;margin:0 auto}
 .sidebar{position:sticky;top:58px;align-self:start;height:calc(100vh - 58px);overflow-y:auto;
   padding:1.6rem 1rem 3rem;border-right:1px solid var(--border);font-family:var(--sans)}
@@ -450,10 +458,35 @@ a{color:var(--accent)}
 .wit-doc .note,.wit-doc aside{background:var(--surface-2);border-left:3px solid var(--accent);
   padding:.7rem 1rem;border-radius:8px;margin:1.2em 0}
 img,svg{max-width:100%;height:auto}
+/* Wide content never forces the page to scroll sideways — it scrolls itself */
+.wit-doc pre,.wit-doc table{max-width:100%}
+.wit-doc table{display:block;overflow-x:auto}
+
 @media(max-width:820px){
-  .shell{grid-template-columns:1fr}
-  .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}
-  .content{padding:1.6rem 1.3rem 4rem}
+  body{overflow-x:hidden}
+  .menubtn{display:inline-flex}
+  .shell{grid-template-columns:1fr;max-width:100%}
+  .content{padding:1.6rem 1.2rem 4rem}
+  /* Sidebar becomes a full-screen drawer toggled by the ☰ button */
+  .sidebar{position:fixed;top:58px;left:0;right:0;bottom:0;z-index:30;
+    height:auto;border-right:none;background:var(--bg);
+    padding:1.2rem 1.3rem 3rem;display:none}
+  body.nav-open .sidebar{display:block}
+  body.nav-open{overflow:hidden}
+  .wit-doc{max-width:none}
+  .wit-doc h1{font-size:1.9rem}
+  .wit-doc h2{font-size:1.3rem}
+  .wit-doc pre{font-size:.8rem}
+}
+@media(max-width:720px){
+  .wit-doc .example{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  /* Topbar declutters — the ☰ menu covers navigation, ◑ stays */
+  .topnav a{display:none}
+}
+@media(max-width:400px){
+  .content{padding:1.2rem 1rem 3rem}
 }
 `;
 
