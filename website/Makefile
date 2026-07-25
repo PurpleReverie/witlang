@@ -21,8 +21,14 @@ DIST := ../packages/parser/dist/index.js
 PNPM_HOME ?= $(HOME)/.local/share/pnpm
 export PATH := $(PNPM_HOME):$(PATH)
 
+# `make ship` — build here (where the toolchain works), then rsync just the
+# static output to the server. The server needs nothing: no pnpm, no @witlang
+# install, no build. Override on the CLI if the host/path change.
+SSH_HOST   ?= Per-Wit-Lang
+REMOTE_DIR ?= /home/witlang/webapps/witlang/website/build
+
 .DEFAULT_GOAL := help
-.PHONY: help build docs landing serve open clean dist config deploy undeploy logs
+.PHONY: help build docs landing serve open clean dist config deploy undeploy logs ship ship-dry
 
 help:
 	@echo 'Wit website targets:'
@@ -32,6 +38,7 @@ help:
 	@echo '  make clean   remove build/ and site.html'
 	@echo '  make dist    force-rebuild the @witlang packages'
 	@echo '  make config  regenerate parts/config.wit from .env (repo/brand)'
+	@echo '  make ship    build here, rsync static build/ to the server (no server build)'
 	@echo '  make deploy  build, then serve build/ under pm2 (port/host from .env)'
 	@echo '  make undeploy  stop and remove the pm2 process'
 	@echo '  make logs    tail the pm2 process logs'
@@ -95,6 +102,16 @@ logs:
 
 open:
 	@open 'http://localhost:$(PORT)/'
+
+# Build locally, then push ONLY the static output to the server. The server
+# serves build/ with nginx (or the zero-dep server.mjs) — no toolchain there.
+# --delete makes the remote mirror local exactly. Preview first with ship-dry.
+ship: build
+	rsync -avz --delete build/ $(SSH_HOST):$(REMOTE_DIR)/
+	@echo "Shipped build/ -> $(SSH_HOST):$(REMOTE_DIR)"
+
+ship-dry: build
+	rsync -avzn --delete build/ $(SSH_HOST):$(REMOTE_DIR)/
 
 clean:
 	rm -rf build site.html
