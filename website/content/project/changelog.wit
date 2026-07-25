@@ -4,6 +4,28 @@ Release history for Wit. The format follows Keep a Changelog and is driven by
 Changesets; pre-1.0, the version stays in the 0.x range and breaking changes are
 allowed with notes.
 
+@h2 0.2.1 h2@
+
+A bug-fix release. @code wit --version code@ reports @code 0.2.1 code@.
+
+@h3 Fixed h3@
+
+@ul
+@li @strong Collection index access now resolves. strong@ Reaching into a
+collection by number — @@@code @findings.0.claim code@@@, @@@code @list.1 code@@@,
+and nested @@@code @r.items.1 code@@@ — previously rendered as an unresolved
+marker. Numeric indexing now works in prose, conditionals, and iteration access;
+an out-of-range or non-numeric index degrades gracefully instead of throwing. li@
+ul@
+
+@h3 Changed h3@
+
+@ul
+@li Package @code repository code@ / @code homepage code@ / @code bugs code@ URLs
+now point at @code github.com/PurpleReverie/witlang code@ (repo renamed; the
+@@@code @witlang/* code@@@ npm names are unchanged). li@
+ul@
+
 @h2 0.2.0 h2@
 
 @code wit --version code@ reports @code 0.2.0 code@, matching the published

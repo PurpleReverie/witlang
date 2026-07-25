@@ -1,6 +1,6 @@
 {
   "name": "@witlang/runtime",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Resolver + expander runtime for the Wit markup language",
   "keywords": [
     "wit",
