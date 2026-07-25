@@ -120,3 +120,47 @@ describe('expander — fuzzy record field access end-to-end', () => {
     expect(flat(expanded.children)).toContain('MISS');
   });
 });
+
+describe('expander — collection index access end-to-end', () => {
+  const build = (src: string) => flat(expand(resolve(parse(src, '<inline>'))).children);
+
+  it('indexes a collection of records in prose (@findings.0.claim)', () => {
+    const src =
+      '#findings: [ { claim - A, strength - high }, { claim - B, strength - low } ]\n\n' +
+      'First: @findings.0.claim. Strength: @findings.1.strength.\n';
+    const out = build(src);
+    expect(out).toContain('A');
+    expect(out).toContain('low');
+    expect(out).not.toContain('wit-unresolved');
+  });
+
+  it('indexes a scalar collection (@list.1)', () => {
+    expect(build('#list: [ a, b, c ]\n\n@list.1\n')).toContain('b');
+  });
+
+  it('indexes a collection nested in a record (@r.items.1)', () => {
+    expect(build('#r: { items [ x, y ] }\n\n@r.items.1\n')).toContain('y');
+  });
+
+  it('resolves index access inside a conditional', () => {
+    const src =
+      '#findings: [ { claim - A } ]\n\n' +
+      '(if @findings.0.claim is A)\nOK\n(end)\n';
+    expect(build(src)).toContain('OK');
+  });
+
+  // An unresolved access stays an unexpanded nodeUse at the expand layer
+  // (renderHtml is what later paints it as a `wit-unresolved` span). Assert the
+  // access survived rather than resolving to a wrong value — and never crashes.
+  it('an out-of-range index degrades to unresolved, not a crash', () => {
+    const out = build('#list: [ a, b ]\n\n@list.9\n');
+    expect(out).toContain('"kind":"nodeUse"');
+    expect(out).toContain('"access":["9"]');
+  });
+
+  it('a non-numeric segment on a collection degrades to unresolved', () => {
+    const out = build('#list: [ a, b ]\n\n@list.foo\n');
+    expect(out).toContain('"kind":"nodeUse"');
+    expect(out).toContain('"access":["foo"]');
+  });
+});

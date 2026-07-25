@@ -71,3 +71,30 @@ export function lookupRecordField(
   const index = getRecordIndex(record);
   return index.get(canonicalizeKey(accessSegment));
 }
+
+// Walk an access path (`findings.0.claim`) into a DataValue. Records match a
+// field by canonical key; collections match a zero-based numeric index. Any
+// non-numeric segment on a collection, an out-of-range index, a missing field,
+// or a scalar reached before the path ends resolves to null (rendered as an
+// unresolved marker). Shared by prose access (expander-inline) and condition /
+// iteration access (expander-conditions) so both behave identically.
+export function walkAccess(
+  value: DataValue,
+  segments: readonly string[],
+): DataValue | null {
+  let current: DataValue = value;
+  for (const seg of segments) {
+    if (current.kind === 'collection') {
+      if (!/^\d+$/.test(seg)) return null;
+      const i = Number(seg);
+      if (i < 0 || i >= current.items.length) return null;
+      current = current.items[i]!;
+      continue;
+    }
+    if (current.kind !== 'record') return null;
+    const found = lookupRecordField(current, seg);
+    if (found === undefined) return null;
+    current = found;
+  }
+  return current;
+}
