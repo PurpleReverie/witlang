@@ -42,6 +42,20 @@ describe('renderHtml — core vocab', () => {
     expect(out).toContain('text-align:center'); // figure aligns its contents
   });
 
+  it('does not wrap a @figcaption in a stray <p> inside a @figure', () => {
+    const out = render(
+      '@figure\n@img |src a.png| |alt A|\n@figcaption A caption. figcaption@\nfigure@',
+    );
+    expect(out).toContain('<figcaption>A caption.</figcaption>');
+    expect(out).not.toContain('<p><figcaption>');
+  });
+
+  it('does not double-wrap @p in a nested <p>', () => {
+    const out = render('@p A single paragraph. p@');
+    expect(out).toContain('<p>A single paragraph.</p>');
+    expect(out).not.toContain('<p><p>');
+  });
+
   it('emits self-closing img with src + alt', () => {
     const out = render('@img |src ./x.png| |alt A picture|');
     expect(out).toContain('<img src="./x.png" alt="A picture">');

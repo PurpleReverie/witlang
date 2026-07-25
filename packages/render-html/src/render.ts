@@ -30,8 +30,9 @@ import type {
 import type { ExpandedDocument } from '@witlang/runtime';
 import { escapeHtml } from './escape.js';
 import { defaultThemeCss } from './theme.js';
-import { tryRenderCore } from './render-core-vocab.js';
+import { tryRenderCore, paramValue } from './render-core-vocab.js';
 import { tryRenderTable } from './render-table.js';
+import { renderMath } from './render-math.js';
 
 export interface RenderHtmlOptions {
   /**
@@ -55,7 +56,12 @@ export interface RenderHtmlOptions {
 }
 
 export function renderHtml(doc: ExpandedDocument, options?: RenderHtmlOptions): string {
-  const inner = renderBlocks(doc.children);
+  // A single-line `@@diagram` parses inline and is grouped into a paragraph,
+  // so it arrives wrapped in `<p>`. The diagram `<pre>` is block-level and
+  // must not sit inside a `<p>` — unwrap a paragraph that holds only it.
+  const inner = renderBlocks(doc.children).replace(
+    /<p>(<pre class="wit-diagram[\s\S]*?<\/pre>)<\/p>/g, '$1',
+  );
   const fragment = `<article class="wit-doc">${inner}</article>`;
   if (options?.mode !== 'document') return fragment;
   return wrapDocument(fragment, options);
@@ -179,10 +185,39 @@ function renderNodeUse(use: NodeUse): string {
     const rawEl = tryRenderRawTextElement(use);
     if (rawEl !== null) return rawEl;
   }
+  const mathEl = tryRenderMathElement(use);
+  if (mathEl !== null) return mathEl;
+  const diagramEl = tryRenderDiagramElement(use);
+  if (diagramEl !== null) return diagramEl;
   if (use.access !== undefined && use.access.length > 0) {
     return renderUnresolvedAccess(use);
   }
   return renderNodeUseShell(use);
+}
+
+// `@@diagram … diagram@@` carries verbatim diagram source (Mermaid by
+// default). Emit the `<pre class="… mermaid">` container the diagram engine
+// consumes: a headless-browser build step replaces it with inline SVG, and
+// meanwhile it renders live in any Mermaid-enabled page. The `engine`
+// parameter names the diagram language (its own CSS class).
+function tryRenderDiagramElement(use: NodeUse): string | null {
+  if (use.raw !== true && use.frozen !== true) return null;
+  if (use.name !== 'diagram') return null;
+  const engine = (paramValue(use.params, 'engine') ?? 'mermaid').toLowerCase();
+  return `<pre class="wit-diagram ${escapeHtml(engine)}">${escapeHtml(rawBodyText(use))}</pre>`;
+}
+
+// `@@math … math@@` (inline) and `@@mathblock … mathblock@@` (display) carry
+// verbatim math source in a raw/frozen body; render it to MathML. The
+// `engine` parameter selects the input syntax (default AsciiMath) once the
+// lexer captures params on raw nodes.
+function tryRenderMathElement(use: NodeUse): string | null {
+  if (use.raw !== true && use.frozen !== true) return null;
+  if (use.name !== 'math' && use.name !== 'mathblock') return null;
+  return renderMath(rawBodyText(use), {
+    display: use.name === 'mathblock',
+    engine: paramValue(use.params, 'engine'),
+  });
 }
 
 // Raw-text HTML elements (`<style>`, `<script>`) whose content must NOT be
@@ -217,8 +252,9 @@ function renderUnresolvedAccess(use: NodeUse): string {
 }
 
 function renderNodeUseShell(use: NodeUse): string {
-  // `@table` has its own complex renderer (schema + rows + caption).
-  const tableHtml = tryRenderTable(use, renderInlines, renderBlocks);
+  // `@table` has its own complex renderer (schema + rows + caption, plus
+  // the `@row`/`@col` body form whose cells render via renderUseBody).
+  const tableHtml = tryRenderTable(use, renderUseBody);
   if (tableHtml !== null) return tableHtml;
   // `@bibliography` emits each contributed entry as its own paragraph
   // so APA citations don't run together. Predates core-vocab because

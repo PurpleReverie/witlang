@@ -1,0 +1,71 @@
+@h1 Error codes h1@
+
+Every stable diagnostic Wit can raise: 12 parser codes plus 14 runtime codes,
+and the one non-coded @code wit build code@ message. Paste a code here to find
+its cause and fix.
+
+@aside(class note)
+@strong Format everywhere: strong@ @@@code file:line:col: E_CODE: message code@@@.
+@strong Exit codes: strong@ @code 0 code@ ok · @code 1 code@ stage or IO error ·
+@code 2 code@ usage error. @strong Class hierarchy: strong@ @code WitError code@
+(parser); @code RuntimeError code@ → @code ResolverError code@ /
+@code ExpanderError code@ (runtime).
+
+aside@
+
+@h2 Parser codes — 12 h2@
+
+Raised during lex and parse, before any name is resolved. Source:
+@code packages/parser/src/errors.ts code@.
+
+@table |rows [[Code, Cause, Fix], [E_UNCLOSED_NODE, a block opener with no matching close, add the close or use a self-closing form], [E_UNCLOSED_COMMENT, a block comment never terminated, close the comment], [E_UNCLOSED_DEFINITION, a def with no close or double-bang, add the close or the double-bang], [E_UNCLOSED_PAREN, a parens call never closed, add the closing paren], [E_MISMATCHED_CLOSE, close name differs from open name, make the close name match the open], [E_MALFORMED_RECORD, a bad record literal, use the hyphen delimiter in data-defs], [E_UNCLOSED_COLLECTION, a collection never closed, add the closing bracket], [E_UNCLOSED_SCRIPT, a script with no percent-close, close the script], [E_UNCLOSED_RAW_NODE, a raw node with no double-at close, add the matching close], [E_MIXED_PARAM_SOURCE, opened one param form then added another, the form you open with is the form that closes], [E_MALFORMED_FORM_FIELD, a malformed form-fill field line, fix the key colon value shape], [E_UNTERMINATED_STRING, a quoted string not closed, add the closing quote]]| |caption Parser codes| table@
+
+@h2 Runtime codes — 14 h2@
+
+Raised during resolve and expand. Source:
+@code packages/runtime/src/errors.ts code@.
+
+@table |rows [[Code, Cause, Fix], [E_UNRESOLVED_REFERENCE, a name binds to no definition, define it or fix the spelling], [E_CIRCULAR_REFERENCE, a reference or def cycle, break the cycle], [E_MISSING_REFERENCE_FILE, a reference path does not exist, correct the path], [E_MISSING_FIELD, dotted access to an absent field, check the field name — access is fuzzy], [E_PARTIAL_SHAPE_MISMATCH, an additive partial conflicts with the base, match the base shape], [E_TYPE_MISMATCH, a value-type mismatch in a comparison or use, compare like with like], [E_DUPLICATE_DEFINITION, two non-additive defs share a name, rename or make it additive], [E_EXPANSION_DEPTH_LIMIT, expansion recursion cap hit, remove the runaway self-reference], [E_NOT_ITERABLE, each over a non-collection, iterate a collection def], [E_AMBIGUOUS_RECORD_KEY, a fuzzy key match tie, disambiguate the key], [E_SCRIPT_ERROR, a script threw, fix the script body], [E_MISSING_RECORD_FIELD, a record-arg omits a required capture, supply the missing field], [E_EXTRA_RECORD_FIELD, a record-arg supplies an unexpected field, drop the extra field], [E_LOAD_FAILED, load has no alias or exec is disabled or the program errored, configure the source and pass --allow-exec]]| |caption Runtime codes| table@
+
+@h2 Non-coded message h2@
+
+@code E_UNKNOWN_OUTPUT_FORMAT code@ — a @code wit build code@ message (not a
+@code WitError code@) when the @code -o code@ extension is unrecognised and no
+@code --format code@ is given. Exit 1.
+
+@h2 Verified repros h2@
+
+Each snippet below produced exactly the diagnostic shown.
+
+@@@pre
+@blockquote
+hi
+                 → E_UNCLOSED_NODE: unclosed @blockquote
+
+@blockquote
+hi
+quote@           → E_MISMATCHED_CLOSE: expected blockquote@ but got quote@
+
+@@pre
+hi
+                 → E_UNCLOSED_RAW_NODE: unclosed @@pre (expected pre@@)
+
+<% a = 1         → E_UNCLOSED_SCRIPT: unclosed <% script block
+
+@undefined       → E_UNRESOLVED_REFERENCE: Unresolved reference @undefined
+
+#x: 1
+#x: 2
+@x               → E_DUPLICATE_DEFINITION: Duplicate definition #x
+pre@@@
+
+The greedy-bind trap (a pipes form before a later block use of the same node)
+surfaces as @code E_UNCLOSED_NODE code@ — see
+@a |href /docs/guides/gotchas/| gotchas a@.
+
+@h2 See also h2@
+
+@a |href /docs/reference/syntax/| Syntax a@ ·
+@a |href /docs/guides/gotchas/| Gotchas a@ ·
+@a |href /docs/reference/cli/| CLI a@ ·
+@a |href /docs/reference/config/| Config a@.

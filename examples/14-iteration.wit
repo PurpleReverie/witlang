@@ -1,31 +1,57 @@
 ~ (each @collection as item) ... (end)
 ~ the loop walks static data — no iteration state, no mutation, no surprises.
+~ note: a data def and the loop that follows it are separated by a blank line.
 
 #findings: [
-  { claim - Attention precedes perception, strength - strong   }
-  { claim - Looking is never neutral,       strength - moderate }
-  { claim - Attention is a form of labour,  strength - strong   }
+  { claim - Attention precedes perception, strength - strong }
+  { claim - Looking is never neutral, strength - moderate }
+  { claim - Attention is a form of labour, strength - strong }
 ]
 
+@ul
 (each @findings as finding)
-@finding
-|claim @finding.claim|
-|strength @finding.strength|
-finding@
+@li @finding.claim — @em @finding.strength em@ li@
 (end)
+ul@
 
 ~ iteration is what makes a Wit document self-organising —
-~ define the chapters as data, and both the table of contents
-~ and the chapter bodies render from the same source.
+~ define the chapters as data, and the table of contents and the
+~ chapter headings both render from that one source.
 
 #chapters: [
-  { number - I,   title - The Lamp,     file - one.wit   }
-  { number - II,  title - The Voice,    file - two.wit   }
-  { number - III, title - The Stranger, file - three.wit }
+  { number - I, title - The Lamp }
+  { number - II, title - The Voice }
+  { number - III, title - The Stranger }
 ]
 
-@toc
+~ the table of contents —
+
+@nav
+@ul
 (each @chapters as ch)
-@tocrow |number @ch.number| |title @ch.title| tocrow@
+@li @ch.number — @ch.title li@
 (end)
-toc@
+ul@
+nav@
+
+~ — and the chapter headings, from the same list.
+
+(each @chapters as ch)
+@h3 @ch.number — @ch.title h3@
+(end)
+
+~ iteration also builds tables. (each) generates the @row nodes; every @col
+~ cell can hold rich content — data, emphasis, a link — which the
+~ |rows [[...]]| form cannot. the first @row is the header row.
+
+#stations: [
+  { name - Dunmore Head, status - operational, keeper - A. Vane }
+  { name - Carrick Point, status - maintenance, keeper - M. Reyes }
+]
+
+@table |caption Stations|
+  @row @col Site col@ @col Status col@ @col Keeper col@ row@
+  (each @stations as s)
+  @row @col @s.name col@ @col @em @s.status em@ col@ @col @s.keeper col@ row@
+  (end)
+table@

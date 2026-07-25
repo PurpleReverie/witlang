@@ -1,0 +1,90 @@
+@h1 Config reference h1@
+
+The @code wit.sources.json code@ schema, the built-in @code env code@ source, the
+format catalogue, and the security model behind @code --allow-exec code@. Source:
+@code packages/cli/src/data-sources.ts code@,
+@code packages/runtime/src/data-loader.ts code@.
+
+@h2 wit.sources.json h2@
+
+@@@pre
+{
+  "sources": {
+    "<alias>": {
+      "run": ["program", "arg", "{{capture}}"],
+      "format": "json",
+      "timeoutMs": 30000
+    }
+  }
+}
+pre@@@
+
+@table |rows [[Field, Required, Meaning, Default], [sources, yes, top-level object of aliases, —], [alias.run, yes, non-empty argv array; first element is the program, —], [alias.format, no, one of the seven formats, json], [alias.timeoutMs, no, spawn timeout in ms, 30000]]| |caption Schema fields| table@
+
+A missing or non-object @code sources code@ →
+@@@code expected a top-level "sources" object code@@@. An empty or non-array
+@code run code@ → @@@code source "run" must be a non-empty argv array code@@@.
+Any @@@code {{name}} code@@@ token in @code run code@ is replaced by the matching
+capture value (missing → empty string). Output cap: 16 MB.
+
+@h2 Formats — 7 h2@
+
+The value that crosses the seam from a program's stdout.
+
+@table |rows [[Format, stdout becomes], [json, parsed JSON — empty is null], [csv, array of records; first row is the header], [tsv, same but tab-delimited], [lines, array of non-empty lines], [text, the raw string], [svg, the raw string], [html, the raw string]]| |caption Formats| table@
+
+@aside(class note)
+@strong CSV/TSV have no quoted-field handling: strong@ a comma or tab inside a
+field breaks the row. Pre-clean the data or emit JSON. See
+@a |href /docs/reference/limitations/| limitations a@.
+
+aside@
+
+@h2 The built-in env source h2@
+
+No config needed. @@@code @load env load@ code@@@ returns
+@code process.env code@ merged with the @code --env code@ dotenv file, as a
+record; access it with dotted paths.
+
+@@@pre
+@load env load@
+
+User is @env.USER
+pre@@@
+
+The dotenv parser reads @@@code KEY=value code@@@ lines, treats @code # code@ as
+a comment, strips optional surrounding quotes, and skips blank or key-less lines.
+The @code env code@ source needs @strong no strong@ @code --allow-exec code@.
+
+@h2 Binding forms for load h2@
+
+@table |rows [[Form, Effect], [body prose alias, names the source to load], [from alias pipe, names the source explicitly], [as name pipe, renames the resulting data def], [any other named pipe, becomes a capture passed to the program]]| |caption Binding forms| table@
+
+@@@pre
+@load results load@
+@load sales |from warehouse| |as rows| |region West| load@
+pre@@@
+
+A @@@code @load code@@@ with no resolvable alias → @code E_LOAD_FAILED code@
+(@@@code @load needs an alias code@@@). The def is named for the alias unless
+@code as code@ renames it.
+
+@h2 Security and capture-passing h2@
+
+@table |rows [[Rule, Behaviour], [--allow-exec required, without it any non-env load throws], [unknown alias, no source configured for that alias], [child cwd, the document's directory], [child env, the merged environment], [captures via argv, name tokens substituted into run], [captures via stdin, the full args object as JSON], [non-zero exit or spawn error, surfaces as E_LOAD_FAILED at the load site]]| |caption Security model| table@
+
+@aside(class note)
+Programs run @strong only strong@ with @code --allow-exec code@; without it any
+non-env @@@code @load code@@@ throws
+(@@@code running programs is disabled; pass --allow-exec code@@@). The
+@code env code@ source is exempt. Config is JSON-only for now; TOML is a possible
+future swap.
+
+aside@
+
+@h2 See also h2@
+
+@a |href /docs/reference/cli/| CLI a@ ·
+@a |href /docs/reference/data-model/| Data model a@ ·
+@a |href /docs/write/tables/| Tables a@ ·
+@a |href /docs/reference/errors/| Errors a@.

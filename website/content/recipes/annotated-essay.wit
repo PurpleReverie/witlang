@@ -1,0 +1,135 @@
+@h1 The annotated essay h1@
+
+Read one complete, verified document end to end and understand every construct in
+it. This is the payoff page that ties the thesis, table, and creative-writing
+recipes together — a real 53-line essay that builds to a three-page PDF, walked
+block by block.
+
+@aside(class note) 💡 The whole file is core vocabulary. Nothing here needs a
+definition, because every construct — headings, emphasis, a table, a figure, a
+list — is a built-in node. This is the smallest realistic document that exercises
+a writer's whole toolkit. aside@
+
+@h2 The title h2@
+
+@@@pre
+@h1 Let Them Sleep: The Case for Later School Start Times h1@
+pre@@@
+
+The opening @strong h1 strong@ becomes the document title. The colon and the rest
+of the line are ordinary text inside it.
+
+@h2 The byline h2@
+
+Three source lines, each ending in the void break node:
+
+@@@pre
+Jordan Ellis @br br@
+Ms. Rivera — English 11 @br br@
+5 July 2026
+pre@@@
+
+These collapse into @strong one strong@ paragraph joined by line breaks.
+Consecutive non-blank lines are a single paragraph; the break node is how you
+force a visible line break inside one. It is a void element — it has no body.
+
+@h2 The epigraph h2@
+
+@@@pre
+@blockquote "Sleep is the golden chain that ties health…" — Thomas Dekker blockquote@
+pre@@@
+
+A @strong blockquote strong@ sets the quotation apart. The straight quotes and the
+em dash pass through exactly as typed.
+
+@h2 The thesis statement h2@
+
+A plain paragraph — no wrapping node, no indentation. This is the core Wit move:
+prose is prose. It closes with the argument's three-part roadmap in ordinary
+sentences.
+
+@h2 A section heading h2@
+
+@@@pre
+@h2 The Teenage Clock Runs Late h2@
+pre@@@
+
+Every section uses the same shape. Body paragraphs follow, and one of them ends
+with an inline emphasis:
+
+@@@pre
+… the rest their developing brain requires @em every single night em@.
+pre@@@
+
+The @strong em strong@ node and the @code _…_ code@ mark are interchangeable;
+this file uses the node form here and a @strong strong strong@ node a few lines
+later.
+
+@h2 The data table h2@
+
+@@@pre
+@table |caption Recommended versus actual sleep for adolescents| |rows [[Group, Recommended sleep, Typical school night], [Teens 13 to 18, 8 to 10 hours, 6.5 to 7 hours]]|
+pre@@@
+
+The @strong first strong@ inner array is the header row and becomes @code th code@
+cells; each later array is a table row of @code td code@. Caption and rows ride in
+parameters; cells are comma-separated @em within a row array em@ — which is safe.
+The comma restriction applies only to record fields inside braces, never to table
+rows.
+
+@h2 The captioned figure h2@
+
+@@@pre
+@figure
+  @img |src assets/attendance.svg| |alt Bar chart showing attendance rising from 82 to 94 percent| |size medium|
+  @figcaption Figure 1. On-time attendance before and after a later start. figcaption@
+figure@
+pre@@@
+
+@strong figure strong@ centres its contents by default. @code size medium code@
+maps to a 380-pixel maximum width (the presets are @code small code@,
+@code medium code@, @code large code@, and @code full code@, or a number or
+percentage). The @code alt code@ text is required, and the @code src code@ path is
+relative to the essay file.
+
+@h2 The conclusion h2@
+
+Another @strong h2 strong@ and a single closing paragraph. No new construct — a
+reminder that most of a document is just prose under headings.
+
+@h2 The Works Cited list h2@
+
+@@@pre
+@ol
+  @li American Academy of Pediatrics. "School Start Times…" @em Pediatrics em@, vol. 134, no. 3, 2014. li@
+  @li Dekker, Thomas. @em The Pleasant Comedy of Patient Grissell em@. 1603. li@
+ol@
+pre@@@
+
+Each @strong li strong@ is one entry; @strong em strong@ italicises the source
+title inside it. Straight quotes render as entities and the en dash passes
+through.
+
+@h2 Build and open h2@
+
+@@@pre
+wit build essay.wit -o essay.pdf
+pre@@@
+
+The finished file builds to a three-page, 158,820-byte PDF. For HTML
+instead, use @code -o essay.html code@; to inspect the raw markup, add
+@code --fragment code@.
+
+@h2 What the whole file teaches h2@
+
+Flat prose is the default. Headings, emphasis, a table, a figure, and a list are
+each @strong one node strong@. Nothing needs a definition because every construct
+is core vocabulary — and that is the whole point.
+
+@h2 See also h2@
+
+@a |href /docs/recipes/thesis/| A thesis to a print-ready PDF a@ is the how-to
+version of this walk;
+@a |href /docs/recipes/csv-table/| Load a CSV into a table a@ deepens the table;
+@a |href /docs/recipes/creative-writing/| Creative writing a@ deepens the flat
+prose.

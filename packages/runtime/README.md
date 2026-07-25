@@ -19,4 +19,4 @@ const resolved = resolve(doc);
 const expanded = expand(resolved);
 ```
 
-See [github.com/PurpleReverie/prototype_language_wit](https://github.com/PurpleReverie/prototype_language_wit) for the language reference.
+See [github.com/PurpleReverie/witlang](https://github.com/PurpleReverie/witlang) for the language reference.

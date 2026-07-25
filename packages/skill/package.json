@@ -7,11 +7,11 @@
   "author": "Tauraj Greig",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PurpleReverie/prototype_language_wit.git",
+    "url": "https://github.com/PurpleReverie/witlang.git",
     "directory": "packages/skill"
   },
-  "homepage": "https://github.com/PurpleReverie/prototype_language_wit#readme",
-  "bugs": "https://github.com/PurpleReverie/prototype_language_wit/issues",
+  "homepage": "https://github.com/PurpleReverie/witlang#readme",
+  "bugs": "https://github.com/PurpleReverie/witlang/issues",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

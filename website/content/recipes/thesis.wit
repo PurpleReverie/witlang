@@ -1,0 +1,130 @@
+@h1 A thesis to a print-ready PDF h1@
+
+Turn one @code .wit code@ file into a print-ready PDF essay — title, byline,
+epigraph, numbered sections, a data table, a captioned figure, and a Works Cited
+list — with no LaTeX preamble and no toolchain to set up. It is the whole
+academic spine in plain text, and every piece of it is core vocabulary, so
+nothing here needs a definition.
+
+@h2 Step 1 — Title and byline h2@
+
+Give the paper an @strong h1 strong@ title, then a byline whose lines are joined
+by the void @code br code@ node so they stack inside one paragraph.
+
+@@@pre
+@h1 Let Them Sleep: The Case for Later School Start Times h1@
+
+Jordan Ellis @br br@
+Ms. Rivera — English 11 @br br@
+5 July 2026
+pre@@@
+
+The three byline lines collapse into a single
+@@@code <p>Jordan Ellis <br>Ms. Rivera …</p> code@@@ — consecutive non-blank
+lines are one paragraph, and @@@code @br br@ code@@@ forces the visible break.
+
+@h2 Step 2 — Epigraph h2@
+
+A @strong blockquote strong@ holds the quotation and its attribution.
+
+@@@pre
+@blockquote "Sleep is the golden chain that ties health and our bodies together." — Thomas Dekker blockquote@
+pre@@@
+
+@h2 Step 3 — Thesis and sections h2@
+
+Body text is just prose — no indentation, a blank line between paragraphs. Open
+each section with an @strong h2 strong@ and mark emphasis with @code _italics_ code@
+or @code *bold* code@ (or the @strong em strong@ and @strong strong strong@ nodes).
+
+@@@pre
+@h2 The Teenage Clock Runs Late h2@
+
+The heart of the problem is not attitude but chemistry — teenagers lose an hour
+or more of the rest their developing brain requires @em every single night em@.
+pre@@@
+
+@h2 Step 4 — A data table h2@
+
+Pass the rows inline. The @strong first strong@ inner array is the header row and
+becomes @code th code@ cells; every later array is a @code tr code@ of @code td code@.
+
+@@@pre
+@table |caption Recommended versus actual sleep for adolescents| |rows [[Group, Recommended sleep, Typical school night], [Teens 13 to 18, 8 to 10 hours, 6.5 to 7 hours]]|
+pre@@@
+
+Cells are comma-separated @em within a row array em@ — that is safe. The comma
+restriction is on record fields inside @@@code { } code@@@, not on table rows.
+
+@h2 Step 5 — A captioned figure h2@
+
+@strong figure strong@ wraps an @strong img strong@ and a @strong figcaption strong@.
+Figures centre by default; @code size code@ is a preset — @code small code@ (220px),
+@code medium code@ (380px), @code large code@ (600px), @code full code@ (100%) — or a
+number or percentage.
+
+@@@pre
+@figure
+  @img |src assets/attendance.svg| |alt Bar chart: attendance rising from 82 to 94 percent after a later start| |size medium|
+  @figcaption Figure 1. On-time attendance before and after a district shifted its start from 7:30 to 8:35. figcaption@
+figure@
+pre@@@
+
+The @code src code@ path is relative to the @code .wit code@ file, and
+@code alt code@ text is required for accessibility.
+
+@h2 Step 6 — Works Cited h2@
+
+An ordered list of entries; italicise source titles with @strong em strong@.
+
+@@@pre
+@h2 Works Cited h2@
+
+@ol
+  @li American Academy of Pediatrics. "School Start Times for Adolescents." @em Pediatrics em@, vol. 134, no. 3, 2014, pp. 642–649. li@
+  @li Dekker, Thomas. @em The Pleasant Comedy of Patient Grissell em@. 1603. li@
+ol@
+pre@@@
+
+@h2 Step 7 — Render to PDF h2@
+
+@@@pre
+wit build essay.wit -o essay.pdf
+pre@@@
+
+@strong Result. strong@ A three-page PDF with the title, byline, epigraph, five sections, the sleep
+table, the attendance figure, and the four-entry Works Cited list. PDF output
+paginates the default HTML theme through a headless system Chrome — swap
+@code -o essay.html code@ for a styled web page, or add @code --fragment code@ to
+inspect the raw markup.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong Use real headings. strong@ Don't reach for the older thesis example's
+@code ## code@-style templates — those emit literal text in HTML, not headings.
+Write @@@code @h2 … h2@ code@@@ directly, as this recipe does. li@
+@li @strong Nest emphasis outer-italic. strong@ @@@code _*x*_ code@@@ leaves the
+inner @code * code@ literal; write @@@code *_x_* code@@@ instead. li@
+@li @strong No commas inside a record. strong@ A value like
+@code Attention, Perception code@ inside @@@code { } code@@@ splits into two
+fields. Inline table rows are fine — the comma there is a cell separator. li@
+ul@
+
+@h2 Variations h2@
+
+@ul
+@li @strong In-text citations. strong@ Define a short cite template and named-idea
+definitions once, then cite by idea in prose — see
+@a |href /docs/recipes/bibliography/| A bibliography across files a@. li@
+@li @strong Web instead of print. strong@ @code -o essay.html code@ gives the
+styled document; @code --raw code@ gives a reset-only page you style yourself. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/recipes/annotated-essay/| The annotated essay a@ walks this exact
+file line by line;
+@a |href /docs/recipes/creative-writing/| Creative writing a@ covers flat prose;
+the @a |href /docs/reference/core-vocabulary/| core vocabulary reference a@ lists
+every built-in node used here.

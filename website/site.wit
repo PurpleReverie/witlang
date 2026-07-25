@@ -5,6 +5,7 @@
 ~ Build:  wit build site.wit -o site.html --raw
 ~ Then open site.html in a browser (the ◐ toggle switches dark/light).
 
+reference ./parts/config.wit
 reference ./theme.wit
 reference ./script.wit
 reference ./parts/nav.wit

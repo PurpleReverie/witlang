@@ -1,0 +1,80 @@
+@h1 What is Wit? h1@
+
+Wit is a plain-text markup language for documents. Ordinary sentences render as
+ordinary paragraphs. When you need a heading, a list, a table, a figure, or a
+citation, you add a node for that one thing, and the rest of the text stays as
+it was. One source file compiles to HTML, Markdown, or print-ready PDF.
+
+@h2 A first look h2@
+
+This is a complete document. The only markup is the part that isn't prose:
+
+@@@pre
+@h1 Field notes — week three h1@
+
+The tide gauge read *2.4 metres* at dawn, higher than any
+figure in the log.
+
+@figure
+  @img |src ./gauge.png| |alt The tide gauge at dawn|
+  @figcaption Thursday's reading, before the wind turned. figcaption@
+figure@
+pre@@@
+
+Compile it to HTML and you get an @@@code <h1> code@@@, a paragraph carrying a
+@@@code <strong> code@@@, and a real @@@code <figure> code@@@ with its
+@@@code <figcaption> code@@@. Compile the same source to Markdown and the heading
+becomes @code # Field notes code@ and the emphasis becomes @code **2.4 metres** code@.
+
+@h2 Nodes: structure where you ask for it h2@
+
+A @strong node strong@ is a named structure, written @@@code @name … name@ code@@@.
+Headings, lists, tables, figures, asides, and sectioning are built in — you use
+them with no setup, and the renderer decides whether each is a block or an inline
+span. Everything outside a node stays prose. The full set is in
+@a |href /docs/start/nodes/| Nodes and core vocabulary a@.
+
+@h2 Data, when a document repeats itself h2@
+
+A fact can live as data instead of being retyped. A @strong record strong@ is
+@@@code { key - value } code@@@; pull a field into a sentence with
+@@@code @name.field code@@@:
+
+@@@pre
+#station: { name - Ledbury Point, keeper - A. Vane }
+
+Readings this week come from @station.name, logged by @station.keeper.
+pre@@@
+
+That renders @strong Readings this week come from Ledbury Point, logged by
+A. Vane. strong@ Write the fact once and reference it wherever it belongs. When a
+document has to assemble itself from a list of records — a table of readings, a
+bibliography, a cast of characters — collections and iteration handle that too;
+@a |href /docs/start/mental-model/| the mental model a@ shows how prose, nodes,
+data, and logic stack up.
+
+@h2 What ships h2@
+
+Wit is five zero-dependency TypeScript packages — the parser, the runtime, an
+HTML renderer, a Markdown renderer, and the @code wit code@ command-line tool —
+plus a VS Code extension. A clean install pulls in nothing else. Write with the
+@code wit code@ command and you need never see the packages; embed the packages
+in your own program and you need never touch the command line.
+
+@h2 What Wit is not h2@
+
+Wit is a file format, not a content-management system, an editor, or a general
+templating engine. It is deliberately @strong not Turing-complete strong@: there
+are conditionals and loops for shaping a document from its data, and one scripting
+block as the explicit escape hatch for anything more. It is also young — the
+syntax is stable enough to write a book in, but the ecosystem is small. For fine
+typesetting control over kerning and page floats, reach for LaTeX; to write in
+plain text and add structure only where you need it, reach for Wit.
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/start/install/| Install & your first document a@ — set up @code wit code@ and build a document from scratch. li@
+@li @a |href /docs/start/mental-model/| Nodes & the mental model a@ — the one shape behind every structure, and the five layers it stacks into. li@
+@li @a |href /docs/write/prose/| Writing prose a@ — where the Writing walkthrough begins. li@
+ul@

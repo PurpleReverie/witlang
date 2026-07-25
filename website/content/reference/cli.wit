@@ -1,0 +1,99 @@
+@h1 CLI reference h1@
+
+The complete command-line contract: five subcommands, every flag, exit codes,
+diagnostics, and environment variables. Source:
+@code packages/cli/src/*.ts code@.
+
+@h2 Synopsis h2@
+
+@@@pre
+wit parse <file>
+wit check <file>
+wit fmt <file> [-w|--write]
+wit build <file> [-o out.html|out.md|out.pdf] [--format html|md|pdf] [--raw | --fragment]
+                  [--sources wit.sources.json --allow-exec] [--env .env]
+wit tour <file>
+wit --version | --help
+pre@@@
+
+@h2 Global h2@
+
+@table |rows [[Invocation, Result, Exit], [wit --help or -h, usage text, 0], [wit --version or -v, prints 0.2.0, 0], [unknown command, help on stderr, 2]]| |caption Global flags| table@
+
+@h2 wit parse h2@
+
+Parse a file and print its AST as pretty JSON. @strong No flags. strong@
+
+@table |rows [[Outcome, Exit], [prints AST JSON, 0], [parse error — diagnostic on stderr, 1], [missing file argument, 2]]| |caption parse| table@
+
+@h2 wit check h2@
+
+Parse @strong and strong@ resolve — a fast validity check. @strong No flags.
+strong@ Does @strong not strong@ expand or render; catches resolve-stage errors
+only.
+
+@table |rows [[Outcome, Exit], [clean — prints ok and the path, 0], [any stage error, 1], [missing file argument, 2]]| |caption check| table@
+
+@h2 wit fmt h2@
+
+Structural re-indent. Prints to stdout by default.
+
+@table |rows [[Flag, Meaning, Default], [-w or --write, write in place; prints formatted or unchanged, stdout], [parse error, nothing written; exit 1, —]]| |caption fmt| table@
+
+Preserves prose exactly and leaves raw double-at bodies, scripts, record and
+data values, and form-fill bodies verbatim. Missing file argument → exit 2.
+
+@h2 wit build h2@
+
+The full pipeline: parse → load → resolve → expand → render.
+
+@table |rows [[Flag, Argument, Meaning, Default], [-o or --out, a path, output file; format inferred from extension, stdout], [--format, html or md or pdf, explicit format overriding inference, html], [--fragment, none, bare wit-doc article only, off], [--raw, none, full document with reset-only CSS, off], [--sources, a json file, external-data source config, none], [--env, a dotenv file, merged into the env source and child env, none], [--allow-exec, none, permit running configured source programs, off]]| |caption build flags| table@
+
+@h3 Format inference h3@
+
+@table |rows [[Extension, Format], [.html or .htm, html], [.md or .markdown, md], [.pdf, pdf], [anything else, E_UNKNOWN_OUTPUT_FORMAT — exit 1]]| |caption Output format from extension| table@
+
+@h3 --raw versus --fragment h3@
+
+If both are given, @code --fragment code@ wins: the HTML options return early on
+@code fragment code@ before checking @code raw code@. @code --fragment code@
+emits @@@code <article class="wit-doc"> code@@@ only; @code --raw code@ emits a
+full document with a reset-only base for author-supplied styling; the default is
+a self-contained styled document (a Word-like house style).
+
+@h3 PDF specifics h3@
+
+Requires @code -o <file.pdf> code@ (else an error, exit 1). Drives a headless
+system Chrome or Chromium (candidate list in the source, or a
+@code WIT_CHROME code@ override — the override wins with no fallback). Injects a
+@code base href code@ (the document directory) so relative assets resolve; runs
+with a 60-second timeout; writes a temporary HTML then unlinks it. No Chrome →
+a helpful error, exit 1. Success → prints the written path.
+
+@h2 wit tour h2@
+
+An indented AST tree plus an AST-coverage report.
+
+@table |rows [[Flag, Meaning], [--report, force report mode even on a non-TTY], [--no-report, tree only — for piping], [default, report on a TTY]]| |caption tour| table@
+
+The footer reports @code AST kinds seen: X/Y code@ against the 24 known kinds,
+plus the @code paramsSource code@ variants and @code NodeDef code@ shapes seen.
+Overridable by @code WIT_TOUR_REPORT=1 code@ / @code WIT_TOUR_NO_REPORT=1 code@.
+Unknown flag → exit 2. Checked output lives in
+@code tests/integration/feature-tour.tour.txt code@.
+
+@h2 Cross-cutting h2@
+
+@table |rows [[Exit code, Meaning], [0, success], [1, stage or IO error], [2, usage error]]| |caption Exit codes| table@
+
+@table |rows [[Env var, Effect], [WIT_CHROME, PDF browser override — no fallback], [WIT_DEBUG_COMMENTS=1, keep comments in the HTML render], [WIT_TOUR_REPORT / WIT_TOUR_NO_REPORT, force tour report mode]]| |caption Environment variables| table@
+
+All diagnostics use @@@code file:line:col: E_CODE: message code@@@. See the
+@a |href /docs/reference/errors/| error catalogue a@.
+
+@h2 See also h2@
+
+@a |href /docs/reference/config/| Config a@ ·
+@a |href /docs/reference/errors/| Errors a@ ·
+@a |href /docs/reference/api/| API a@ ·
+@a |href /docs/build/cli/| CLI guide a@.

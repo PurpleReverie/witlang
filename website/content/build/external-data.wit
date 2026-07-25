@@ -1,0 +1,120 @@
+@h1 External data — the DataLoader seam h1@
+
+@@@code @load code@@@ is the @strong one strong@ seam between a Wit document and
+the outside world. Whether the data comes from a CLI subprocess or an in-process
+object, the rest of the pipeline never knows the difference — by the time
+@code resolve code@ runs, loaded data is indistinguishable from a hand-written
+@@@code #name: code@@@.
+
+@h2 Concept h2@
+
+@@@code @load <alias> load@ code@@@ names data by alias only; a host supplies the
+value. @code loadExternalData(doc, source) code@ runs @strong after parse,
+before resolve strong@ and rewrites every @@@code @load code@@@ into an ordinary
+@code DataDef code@.
+
+@h2 Signatures h2@
+
+@ul
+@li @code loadExternalData(doc: Document, source: DataSource) → Document code@. li@
+@li @@@code type DataSource = DataLoader | Record<string, unknown> code@@@ — a
+loader function @strong or strong@ a plain dict @@@code { alias: value } code@@@
+(the simplest embedded case). li@
+@li @code type DataLoader = (req: DataLoadRequest) => unknown code@. li@
+@li @@@code interface DataLoadRequest = { alias: string; args: Record<string, string>; loc: Loc } code@@@.
+@code args code@ are the named captures —
+@@@code @load cite |key devlin2019| load@ code@@@ gives
+@@@code { key: 'devlin2019' } code@@@. @@@code |as name| code@@@ rebinds the
+resulting @code DataDef code@ name; @@@code |from alias| code@@@ supplies the
+alias when there is no body prose. li@
+@li @code toDataValue(value: unknown, loc: Loc) → DataValue code@ — normalises
+plain JSON into the Wit value model. It is the @strong only strong@ shape that
+crosses the seam. li@
+ul@
+
+@h2 Basic — the dict form h2@
+
+The simplest source is a plain object keyed by alias:
+
+@@@pre
+import { parse } from '@witlang/parser';
+import { loadExternalData, resolve, expand } from '@witlang/runtime';
+
+const doc = loadExternalData(
+  parse('@load meta load@\n\n@meta.version', 'report.wit'),
+  { meta: { version: '0.4.0' } });
+
+// the first child is now dataDef{ name: 'meta', value: record{ version: '0.4.0' } }
+renderHtml(expand(resolve(doc)));   // → <article class="wit-doc"><p>0.4.0</p></article>
+pre@@@
+
+@h2 Realistic — the function form h2@
+
+For dynamic data, pass a loader. It is called once per @@@code @load code@@@,
+lazily, per alias:
+
+@@@pre
+const loaded = loadExternalData(doc, (req) => {
+  // req = { alias, args: { …captures }, loc }
+  return fetchSync(req.alias, req.args);   // your synchronous I/O
+});
+pre@@@
+
+@aside(class note) ⚠️ The loader is called @strong synchronously. strong@ There
+is no @code await code@ in the pipeline. If your data source is async, fetch it
+into a map first and have the loader return from that map. aside@
+
+@h2 Edge — toDataValue h2@
+
+@code toDataValue code@ is how plain JSON becomes a @code DataValue code@: an
+object becomes an ordered @code Record code@, an array a @code Collection code@,
+primitives become scalars, and @code null code@ or @code undefined code@ become
+@code NullValue code@.
+
+@@@pre
+import { toDataValue } from '@witlang/runtime';
+
+toDataValue({ a: 1, b: [2, 3] }, loc);
+// → record{ fields: [ { a: numberValue 1 },
+//                      { b: collection[ numberValue 2, numberValue 3 ] } ] }
+pre@@@
+
+@h2 Every option / edge h2@
+
+@ul
+@li @strong Dict source, missing alias. strong@ A dict with no entry for an alias
+throws @code no data provided for alias "x" code@, which surfaces as
+@code E_LOAD_FAILED code@ at the load site. li@
+@li @strong Throwing loader. strong@ Any error your loader throws becomes
+@code E_LOAD_FAILED code@, carrying the message and the load @code loc code@. li@
+@li @strong Downstream, loaded data is ordinary data. strong@ It flows through
+@@@code @meta.version code@@@, @@@code (each @team as p) code@@@,
+@@@code @table |rows @downloads| code@@@, and interpolation with no special
+casing. li@
+@li @strong Raw load is skipped. strong@ A @@@code @@load code@@@ raw node is not
+treated as a load (the guard checks @code raw !== true code@). li@
+@li @strong The CLI is one implementation of this seam. strong@ Its
+@code makeDataLoader code@ reads @code wit.sources.json code@, runs the aliased
+program (gated by @code --allow-exec code@), and parses stdout by declared
+format; @code env code@ is a built-in source returning the process environment.
+See @a |href /docs/build/cli-reference/| CLI reference a@. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting @code loadExternalData code@ to @em fetch. em@ It only calls your
+loader or reads your dict — you own the I/O. li@
+@li Returning a class instance instead of plain JSON. Only object, array, and
+scalar values cross via @code toDataValue code@. li@
+@li Forgetting it must run @strong before strong@ @code resolve code@. Order is
+parse → load → resolve → expand → render. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/resolve-expand/| Resolve & expand a@ ·
+@a |href /docs/build/embed/| Embed Wit in an app a@ ·
+@a |href /docs/build/cli-reference/| CLI reference a@ (the
+@code wit.sources.json code@ schema) ·
+@a |href /docs/build/ast-reference/| AST reference a@ (@code DataValue code@).

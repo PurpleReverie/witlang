@@ -7,8 +7,8 @@ though life sometimes intervenes.
 ## Setup
 
 ```
-git clone https://github.com/PurpleReverie/prototype_language_wit
-cd prototype_language_wit
+git clone https://github.com/PurpleReverie/witlang
+cd witlang
 pnpm install
 pnpm build
 pnpm test

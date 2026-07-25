@@ -1,0 +1,124 @@
+@h1 An interactive script h1@
+
+Author a branching game or gamebook page where character stats, a wounded-check,
+and an inventory are @strong data and logic in the document strong@ — not
+hand-edited for every state. This whole file builds green.
+
+@h2 Step 1 — Character state as data h2@
+
+A comma-free single-line record holds the scalars; a separate collection holds
+the inventory, because list items can't live inside a record field (the commas
+would split them).
+
+@@@pre
+#hero: { name - Vera, gold - 12, status - wounded } !!
+#pack: [torch, rope, a letter you should have burned] !!
+pre@@@
+
+@h2 Step 2 — Scene vocabulary as definitions h2@
+
+Block-form definitions with captures. Pass display text as a @strong capture strong@,
+not as a body splice — a splice wraps inline content in stray paragraphs inside
+your list items.
+
+@@@pre
+#scene ||title||
+@h2 ::title:: h2@
+scene#
+
+#warn ||text||
+@aside ⚔ ::text:: aside@
+warn#
+
+#choice ||goto, text||
+@li → ::text:: (to ::goto::) li@
+choice#
+pre@@@
+
+@h2 Step 3 — Scene heading and prose h2@
+
+Splice a stat into a sentence with dotted access.
+
+@@@pre
+@scene |title The Crossroads|
+
+@hero.name, the road forks beneath a broken signpost. You are carrying @hero.gold gold.
+pre@@@
+
+@h2 Step 4 — A conditional beat h2@
+
+Compare a @strong string strong@ field to a literal with @code is code@.
+
+@@@pre
+(if @hero.status is wounded)
+@warn |text You are wounded — the dark path may kill you.|
+(end)
+pre@@@
+
+@h2 Step 5 — Choices and inventory h2@
+
+Build the choices from the @code choice code@ definition, then iterate the pack.
+
+@@@pre
+@strong Choose: strong@
+@ul
+  @choice |goto village| |text Take the lit path|
+  @choice |goto tower| |text Take the dark path|
+ul@
+
+@strong Pack: strong@
+@ul
+(each @pack as item)
+@li @item li@
+(end)
+ul@
+pre@@@
+
+@h2 Build h2@
+
+@@@pre
+wit build scene.wit --fragment
+pre@@@
+
+@strong Result. strong@ The heading and prose splice @code Vera code@ and
+@code 12 code@ into place; the wounded-check fires and prints the warning aside;
+the two choices render as list items; and the pack iterates to three items — all
+verified.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong Conditionals compare strings only. strong@ The operators are
+@code is code@ and @code equals code@ (synonyms) — there is no less-than,
+greater-than, @code not code@, @code and code@, @code or code@, or
+@code contains code@. li@
+@li @strong Model status as a string, not a number. strong@ A check for
+@code low code@ compares against the literal text @code low code@; it will not
+match the number @code 8 code@. Use a status string like @code wounded code@, or
+an existence flag that fires when a field is present. li@
+@li @strong Prose interpolation is a mirage. strong@ A capture hole written in
+ordinary prose renders literally. Use dotted access
+(@@@code @hero.name code@@@) in prose; a capture hole is live only inside a
+definition body. li@
+@li @strong Pass display text as a capture. strong@ Feeding it through a body
+splice fragments it into paragraphs inside your list items — a
+@@@code |text …| code@@@ capture stays clean. li@
+ul@
+
+@h2 Variations h2@
+
+Use an existence-flag conditional; emit several scenes from a master file, as in
+@a |href /docs/recipes/manuscript-chapters/| A manuscript in chapters a@; group
+the choices in a wrapper definition.
+
+@aside(class note) 💡 The shipped conditional and iteration examples are the
+intended canonical grounding but currently fail to build, so treat them as
+concept illustrations until repaired. Everything on this page was built from
+first principles and is green. aside@
+
+@h2 See also h2@
+
+@a |href /docs/recipes/creative-writing/| Creative writing a@ covers flat scenes
+without logic;
+@a |href /docs/reference/core-vocabulary/| Core vocabulary a@ lists the nodes
+used here.

@@ -1,0 +1,79 @@
+@h1 A bibliography across files h1@
+
+Let each chapter declare its own sources and have one bibliography assemble
+itself at the end. Add a chapter and the list grows on its own — no central
+index to maintain.
+
+@h2 Step 1 — Register an entry per chapter h2@
+
+An @strong additive partial strong@ — a definition whose name begins with a
+leading plus — merges instead of overwriting when the same name is declared more
+than once.
+
+@@@pre
+~ in chapters/01-introduction.wit
+
++#bibliography: @entry Berger, John (1972). Ways of Seeing. Penguin. entry@
+pre@@@
+
+@h2 Step 2 — Wrap each entry h2@
+
+Give each entry a tiny value definition so one partial renders as one clean
+block. Without the wrapper, inline runs fragment into stray paragraphs.
+
+@@@pre
+~ in shared/schema.wit
+
+#entry: ... !!
+pre@@@
+
+@h2 Step 3 — Emit the merged list once h2@
+
+Place the assembled list wherever you want it — usually a References section in
+the final chapter.
+
+@@@pre
+~ in chapters/04-conclusion.wit
+
+@section |title References|
+@bibliography bibliography@
+pre@@@
+
+@h2 Step 4 — Build the master h2@
+
+@@@pre
+wit build master.wit --fragment
+pre@@@
+
+@strong Result. strong@ Every additive declaration across the chapters merges,
+and the single emit in the conclusion renders the combined list. The worked
+@code examples/thesis code@ does exactly this and builds green.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong Keep entry titles plain. strong@ Inline emphasis inside an
+additive-partial body fragments the entry into one paragraph per run — the
+working example uses plain-text titles for exactly this reason. li@
+@li @strong An additive list isn't a collection. strong@ You can't iterate a
+merged bibliography with a loop — it is a node definition, not data. To iterate a
+list of sources, keep a separate collection literal alongside it. li@
+ul@
+
+@h2 Variations h2@
+
+The @strong shared-anchor strong@ pattern: define full citations once in
+@code shared/sources.wit code@, reference it from every chapter, cite short by
+idea in prose, and list the full entries at the end. This gives you in-text
+citations and a bibliography from one source of truth.
+
+@aside(class note) 💡 The self-registering additive-partial example shipped in
+the repo is the aspirational shape but currently fails to build. Ground your work
+on @code examples/thesis code@, which merges and renders green. aside@
+
+@h2 See also h2@
+
+@a |href /docs/recipes/manuscript-chapters/| A manuscript in chapters a@ is the
+multi-file spine this builds on;
+@a |href /docs/recipes/thesis/| A thesis to a print-ready PDF a@ covers a
+single-file Works Cited list.

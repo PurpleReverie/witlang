@@ -1,0 +1,77 @@
+@h1 Derived content h1@
+
+Some content is computed from the document itself — a word count, a reading
+time, findings sorted by strength, a "3 of 7 done" badge. Wit's script bridge,
+@@@code <% %> code@@@, post-processes a rendered document through an @code lh
+code@ object. This page is a cookbook; the full @code lh code@ API lives in the
+Build track.
+
+@aside(class note) 💡 Reach for a script last. If @@@code (each) code@@@ over a data collection can produce the view, prefer that — it is declarative, verifiable, and needs no renderer support. Scripts are for genuinely @strong derived strong@ values. aside@
+
+@h2 The surface to rely on h2@
+
+These members are stable enough to build on:
+
+@ul
+@li @code lh.data code@ — the document's data definitions. li@
+@li @code lh.query(name) code@ — nodes of a given kind. li@
+@li @code lh.sort(name, fn) code@ — reorder a collection. li@
+@li @code lh.inject(id, src) code@ — insert rendered content at a marker. li@
+@li @code lh.prose().wordCount() code@ — a word count of the prose. li@
+@li A node exposes @code params code@ and @code content code@. li@
+ul@
+
+@h2 Recipes h2@
+
+@strong Word count and reading time: strong@
+
+@@@pre
+<%
+  const words = lh.prose().wordCount();
+  lh.inject('stats', `${words} words · ${Math.ceil(words / 200)} min read`);
+%>
+pre@@@
+
+@strong Sort findings by strength, then a "X of Y" badge: strong@
+
+@@@pre
+<%
+  lh.sort('findings', (a, b) => b.strength - a.strength);
+  const done = lh.data.findings.filter(f => f.supported === 'true').length;
+  lh.inject('badge', `${done} of ${lh.data.findings.length} supported`);
+%>
+pre@@@
+
+Note the @strong boolean-as-string quirk strong@: a value typed as a boolean
+compares as the string @code 'true' code@ here, so write
+@code f.supported === 'true' code@. Other recipes follow the same shape —
+group items by an owner field, or build a table of contents from
+@code lh.query('h2') code@.
+
+@h2 Honesty about the surface h2@
+
+Some members are @strong renderer-specific or unverified strong@ — check them
+against your renderer before relying on them: @code lh.target code@ (per-target
+dispatch), @code node.params.injectId code@ and @code backrefsInjectId code@,
+and a heading's @code kind code@. Treat these as "verify in your build".
+
+@h2 The injection seam that errors h2@
+
+A script that injects @strong rendered content strong@ must supply balanced
+nodes. A half-open node — a bare opener with no matching closer — collides with
+the surrounding body's close and raises @code E_MISMATCHED_CLOSE code@.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Reaching for a script when @@@code (each) code@@@ over data would do. li@
+@li Relying on unverified @code lh code@ members without checking your renderer. li@
+@li Injecting a half-open node (balance the open and close). li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/composing/| Composing constructs a@ ·
+@a |href /docs/guides/literal-raw-css/| Literal & raw nodes a@ ·
+@a |href /docs/guides/self-organising/| Self-organising documents a@ ·
+@a |href /docs/guides/faceted/| Faceted content a@

@@ -1,0 +1,108 @@
+@h1 Install the packages h1@
+
+Wit ships as five small ESM packages with a strict dependency direction.
+Installing the wrong subset — or reaching for CommonJS @code require code@ — is
+the first thing that goes wrong. This page gets the packages into a project and
+confirms they import.
+
+@h2 Prerequisites h2@
+
+@ul
+@li @strong Node ≥ 20. strong@ Verified on v22. li@
+@li @strong ESM only. strong@ Every package is @code "type": "module" code@.
+There is no CommonJS build; a @@@code require('@witlang/parser') code@@@ throws.
+Use @code import code@, or dynamic @code import() code@ from a CommonJS file. li@
+ul@
+
+@h2 The package map h2@
+
+Renderers and the CLI depend on the runtime; the runtime depends on the parser.
+The arrows point from dependent to dependency:
+
+@@@pre
+@witlang/render-html  ─┐
+@witlang/render-markdown ┼─▶ @witlang/runtime ─▶ @witlang/parser
+@witlang/cli          ─┘
+pre@@@
+
+Import @strong only from each package's entry point. strong@ Everything under
+@code dist/ code@ beyond the package root is package-private and may move
+between releases.
+
+@h2 Minimal install h2@
+
+The common case is the parser, the runtime, and one renderer:
+
+@@@pre
+npm i @witlang/parser @witlang/runtime @witlang/render-html
+pre@@@
+
+Add @@@code @witlang/render-markdown code@@@ if you also want Markdown output.
+You rarely install the parser or runtime alone — a renderer pulls the runtime,
+which pulls the parser.
+
+@h2 The CLI h2@
+
+Install @@@code @witlang/cli code@@@ for the @code wit code@ binary. It is the
+only package with a @code bin code@, and it bundles its own copies of the
+pipeline, so it works standalone — you do not need the library packages
+installed to run @code wit code@.
+
+@@@pre
+npm i -g @witlang/cli     # global `wit` on your PATH
+npm i -D @witlang/cli     # or per-project, run via npx wit
+pre@@@
+
+@aside(class note) 💡 @code wit --version code@ prints @code 0.2.0 code@, the
+@code VERSION code@ constant in the CLI, matching the published packages. aside@
+
+@h2 Smoke test h2@
+
+Four lines that parse and render prose confirm the whole chain imports:
+
+@@@pre
+import { parse } from '@witlang/parser';
+import { resolve, expand } from '@witlang/runtime';
+import { renderHtml } from '@witlang/render-html';
+
+console.log(renderHtml(expand(resolve(parse('Hello *there*.')))));
+// → <article class="wit-doc"><p>Hello <strong>there</strong>.</p></article>
+pre@@@
+
+From the CLI, the equivalent is a one-liner against a file:
+
+@@@pre
+wit build hello.wit        # styled HTML document on stdout
+pre@@@
+
+@h2 TypeScript h2@
+
+Types ship with every package; there is nothing to install separately. Import
+type-only symbols from the entry point, never from an internal path:
+
+@@@pre
+import type { Document, NodeUse } from '@witlang/parser';
+import type { ExpandedDocument, ResolveOptions } from '@witlang/runtime';
+import type { RenderHtmlOptions } from '@witlang/render-html';
+pre@@@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Deep-importing a private module such as
+@@@code @witlang/runtime/dist/expander.js code@@@. It is package-private and
+may move — import @@@code resolve code@@@, @@@code expand code@@@ from the
+package root instead. li@
+@li Expecting CommonJS. Mixing a CommonJS build tool without ESM interop breaks
+the import; the packages are ESM-only. li@
+@li Installing @@@code @witlang/render-html code@@@ but calling @code resolve code@
+without having @@@code @witlang/runtime code@@@ resolvable — the renderer
+depends on it, so npm will pull it, but a hand-managed @code node_modules code@
+can miss it. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/architecture/| Architecture a@ ·
+@a |href /docs/build/embed/| Embed Wit in an app a@ ·
+@a |href /docs/build/cli-reference/| CLI reference a@.

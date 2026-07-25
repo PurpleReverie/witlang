@@ -6,23 +6,25 @@ aside@
 
 ~ inline usage works the same way
 
-She crossed the @highlight last threshold highlight@ alone.
+She crossed the @mark last threshold mark@ alone.
 
-~ whether @aside renders as a block and @highlight renders inline
+~ whether @aside renders as a block and @mark renders inline
 ~ is a renderer decision, never a writer decision.
 
 ~ nodes nest
 
-@chapter
-@scene
+@section
+@p
 The bell began to ring.
-scene@
+p@
 @aside Keepers do not flinch. aside@
-@scene
+@p
 He turned the lamp by hand.
-scene@
-chapter@
+p@
+section@
 
 ~ using a reference with no body — just the bare handle
+
+#weil: Simone Weil !!
 
 The keeper, @weil, the stranger.

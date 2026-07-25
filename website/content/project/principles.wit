@@ -1,0 +1,76 @@
+@h1 Design principles h1@
+
+These are the ideas that shape every decision in Wit. Read them before proposing
+a change or building on the AST — most questions about why Wit is the way it is
+are answered here.
+
+@h2 Prose comes first h2@
+
+Structure is opt-in. The constraint that governs the whole language is that the
+source stays readable as prose: plain sentences render as plain paragraphs, and a
+writer never has to leave the writing to satisfy the format.
+
+@h2 Content in bodies, parameters are metadata h2@
+
+A node's content goes in its @strong body strong@; anything that merely describes
+the node — a link's address, an image's size — rides in @strong parameters strong@.
+This one rule keeps documents clean as they grow, and it is elevated from an
+authoring tip to a project value.
+
+@h2 A small reserved core h2@
+
+Wit ships a small core vocabulary that mirrors HTML's semantic shapes — headings,
+lists, links, images, tables, sections. Renderers commit to handling these
+faithfully. Everything beyond the core is either a writer's own definition
+(written @@@code #name code@@@) or the opaque pass-through
+(@@@code @node code@@@), which carries parameters straight to the renderer so it
+can dispatch on a @code type code@ convention.
+
+@@@pre
+#highlight ||content||
+@node(type highlight) ::content:: node@
+highlight#
+
+@highlight Some text highlight@
+pre@@@
+
+The core stays small on purpose. If a definition can express something, it does
+not become a core node.
+
+@h2 Not Turing-complete h2@
+
+Wit is not a programming language. The script bridge, @code <% %> code@, is the
+single explicit escape hatch for general computation — everything else is
+declarative. That boundary is deliberate: it keeps documents analysable and
+their output deterministic.
+
+@h2 A file format, not a system h2@
+
+Wit is not a CMS, an editor, or a general templating engine. It is a
+@strong file format strong@ — a way to write a document that many different
+programs can then consume. It is not an inline rich-text editor language, and it
+does not do arbitrary string interpolation in prose.
+
+@h2 Engineering constraints as principles h2@
+
+The implementation constraints are principles too: zero runtime dependencies,
+deterministic output, source locations that survive every stage, small files and
+functions, and a corpus of fixtures that acts as the executable specification.
+Tests come first — a behaviour is not real until a fixture pins it.
+
+@h2 Common contributor mistakes h2@
+
+@ul
+@li @strong Reaching for a new core node. strong@ If a definition would do, add a
+definition, not a reserved name. li@
+@li @strong Adding interpolation to prose. strong@ String interpolation in ordinary
+prose is a non-goal — data reaches prose through dotted access, not template
+holes. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/architecture/| Architecture a@ shows how these principles
+become a pipeline;
+@a |href /docs/project/extending/| How to add a node or renderer a@ applies them
+in practice.

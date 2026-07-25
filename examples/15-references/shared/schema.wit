@@ -1,18 +1,25 @@
 ~ shared/schema.wit — vocabulary definitions, available to every file
 ~ that references this one.
 
-#cite: ||author, title, year, publisher|| ::author:: (::year::). _::title::_. ::publisher::. !!
+~ a chapter wrapper: the header renders from captures, the prose
+~ flows through the ... body slot.
 
 #chapter ||number, title||
-@chapterheader
-::number:: — ::title::
-chapterheader@
+@h2 ::number:: — ::title:: h2@
 ...
 chapter#
 
+~ an epigraph: body flows through ..., the source is attributed below.
+
 #epigraph ||source||
-@epigraphbody
+@blockquote
 ...
 — ::source::
-epigraphbody@
+blockquote@
 epigraph#
+
+~ a citation template, so every source renders in one consistent style.
+
+#cite ||author, title, year, publisher||
+::author:: (::year::). _::title::_. ::publisher::.
+cite#

@@ -1,0 +1,91 @@
+@h1 Escapes & special characters h1@
+
+A backslash keeps a literal character where Wit would otherwise read syntax —
+a colon that should not lift a parameter, a brace that should not open a record,
+a comma inside a value. And quoting is the companion tool: it is how you carry
+spaces, commas, and newlines through a value untouched. The recognised set
+depends on context, so this page is organised by where you are writing.
+
+@h2 Why escapes exist h2@
+
+Wit reads certain punctuation as structure — @code : code@ lifts a
+colon-scatter parameter, @@@code { code@@@ opens a record, @code , code@ separates
+fields. When you want the character itself, escape it; when a value carries
+whitespace, quote it.
+
+@h2 The escape set by context h2@
+
+@ul
+@li @strong Prose text strong@ recognises @@@code \@ code@@@, @@@code \# code@@@,
+@@@code \* code@@@, @@@code \_ code@@@, @@@code \~ code@@@, and @@@code \| code@@@
+— the six characters that lead a structural reader (a node or definition opener,
+an emphasis mark, a line comment, a parameter pipe). The backslash is dropped and
+the character stays literal, so @@@code \@handle code@@@ renders a plain
+@@@code @handle code@@@ and @@@code \*star\* code@@@ keeps its asterisks. Any
+other character is already literal in prose, so it needs no escape. li@
+@li @strong Pipe values strong@ recognise @@@code \| code@@@, which carries a
+literal pipe through the value (@@@code |href a\|b| code@@@ yields
+@@@code a|b code@@@). li@
+@li @strong Colon-scatter strong@ uses @@@code \: code@@@ as the opt-out: it
+suppresses the lift and the backslash is stripped from the output
+. li@
+@li @strong Quoted strings strong@ (in records and parameters) recognise only
+@@@code \" code@@@ and @@@code \\ code@@@. li@
+@li @strong Form-fill values strong@ carry text through as-is. The inline parser
+does not run on them, so emphasis markers like @@@code _ code@@@ and
+@@@code * code@@@ are already literal — no escape needed or consumed. li@
+ul@
+
+@h2 Quoting is the whitespace tool h2@
+
+For a value that contains spaces, commas, or newlines, prefer a quoted string
+over escaping each character:
+
+@@@pre
+#cite: { author: "Boud, D.", year: 2024 }
+@thing mode:"complex value" thing@
+pre@@@
+
+The quotes protect the comma and the space and force a string type.
+
+@h2 The delimiter hole in parens h2@
+
+There is one honest gap: @strong parens have no escape for their own
+delimiters strong@. A literal @@@code , code@@@ or @@@code ) code@@@ inside a
+parens value cannot be escaped away. Pipes do not share this gap — a pipe value
+escapes its own delimiter with @@@code \| code@@@ — so when you need a comma or a
+close-paren in a value, switch to a pipe, or to a body form (form-fill or
+record-arg) that supports quoting.
+
+@h2 The colon-scatter sharp edge h2@
+
+Because the scatter contract is strict, a stray @code id:value code@ in prose
+lifts a parameter you did not intend:
+
+@@@pre
+@thing the variable name:Tauraj is bad thing@
+pre@@@
+
+@code name code@ is lifted. Fix
+it with the escape — @code name\:Tauraj code@ — or a space —
+@code name: Tauraj code@.
+
+@h2 Common mistakes h2@
+
+@ul
+@li Reaching for @@@code \_ code@@@ or @@@code \* code@@@ in a form-fill value —
+the marker is already literal there, so the backslash just adds a stray
+character. (In prose those escapes are real and do strip.) li@
+@li Expecting a paren delimiter to be escapable — rephrase, switch to a pipe, or
+use a body form. li@
+@li Forgetting that quotes force a string type. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/parameters/| Colon-scatter a@ ·
+@a |href /docs/guides/parameters/| Form-fill a@ ·
+@a |href /docs/guides/data/| Data (quoting) a@ ·
+@a |href /docs/guides/parameters/| Record-arg a@ ·
+@a |href /docs/guides/data/| Type-classified scalars a@ ·
+@a |href /docs/guides/gotchas/| Gotchas a@

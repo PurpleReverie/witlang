@@ -1,0 +1,96 @@
+@h1 Changelog h1@
+
+Release history for Wit. The format follows Keep a Changelog and is driven by
+Changesets; pre-1.0, the version stays in the 0.x range and breaking changes are
+allowed with notes.
+
+@h2 0.2.1 h2@
+
+A bug-fix release. @code wit --version code@ reports @code 0.2.1 code@.
+
+@h3 Fixed h3@
+
+@ul
+@li @strong Collection index access now resolves. strong@ Reaching into a
+collection by number — @@@code @findings.0.claim code@@@, @@@code @list.1 code@@@,
+and nested @@@code @r.items.1 code@@@ — previously rendered as an unresolved
+marker. Numeric indexing now works in prose, conditionals, and iteration access;
+an out-of-range or non-numeric index degrades gracefully instead of throwing. li@
+ul@
+
+@h3 Changed h3@
+
+@ul
+@li Package @code repository code@ / @code homepage code@ / @code bugs code@ URLs
+now point at @code github.com/PurpleReverie/witlang code@ (repo renamed; the
+@@@code @witlang/* code@@@ npm names are unchanged). li@
+ul@
+
+@h2 0.2.0 h2@
+
+@code wit --version code@ reports @code 0.2.0 code@, matching the published
+packages.
+
+@h3 Language features h3@
+
+@ul
+@li Literal and frozen raw nodes (@@@code @@name … @@ code@@@,
+@@@code @@@name … @@@ code@@@) with @@@code {{path}} code@@@ interpolation inside
+raw-node bodies. li@
+@li A styled render target and a Word/Docs-style default theme. li@
+@li External data: the @@@code @load code@@@ node pulls a
+JSON/CSV/TSV/lines/text result from a configured program
+(@code wit.sources.json code@) into a def. li@
+@li @@@code @table |rows @data| code@@@ — build a table from a referenced data
+collection. li@
+@li Image sizing and placement (@code |size| code@, @code |align| code@) plus
+invisible @@@code @row code@@@ / @@@code @col code@@@ layout containers. li@
+@li Core vocabulary grew to 52 names (adds @code div code@, @code span code@,
+@code cite code@, @code row code@, @code col code@). li@
+@li Typed parameters and iterable captures; emphasis and escape fixes — a
+backslash now escapes @@@code @ code@@@, @@@code # code@@@, @@@code | code@@@, and
+the emphasis marks in prose. li@
+ul@
+
+@h3 Tooling h3@
+
+@ul
+@li @code wit fmt code@ — re-indents a document to match its nesting without
+changing structure. li@
+@li HTML-like indentation and PDF output (with a @code <base href> code@ so
+relative assets resolve). li@
+ul@
+
+@h2 0.1.0 — initial public release h2@
+
+The first public release, which reported @code 0.1.0 code@.
+
+@h3 Packages h3@
+
+@ul
+@li @strong parser strong@ — lexer and parser producing a typed AST. li@
+@li @strong runtime strong@ — resolver and expander. li@
+@li @strong render-html strong@ — the HTML renderer. li@
+@li @strong render-markdown strong@ — the Markdown renderer. li@
+@li @strong cli strong@ — the @code wit code@ command: parse, check, fmt, build,
+and tour. li@
+ul@
+
+@h3 Language features h3@
+
+@ul
+@li Nodes, definitions, additive partials, records, and collections. li@
+@li Data access, conditionals, iteration, and the script bridge. li@
+@li The reserved core vocabulary — headings, inline marks, lists, links and media,
+tables, blocks, and sectioning; see the
+@a |href /docs/reference/core-vocabulary/| core vocabulary reference a@ for the
+full list. li@
+@li Tables in inline, schema-array, and schema-record forms. li@
+@li The opaque @@@code @node code@@@ pass-through. li@
+@li The form-fill body shape and record-argument invocation. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/project/roadmap/| Roadmap a@ covers what is planned next;
+@a |href /docs/start/install/| Install a@ includes the version smoke test.

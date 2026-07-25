@@ -1,11 +1,11 @@
 ~ this chapter registers itself into the shared @toc and @bibliography.
 ~ the master file never lists the chapter; the chapter announces itself.
+~ each +# contributes one core-vocab @li row that merges across files.
 
-+#toc: @tocrow |number I| |title The Lamp| tocrow@
-+#bibliography: @weil Simone Weil, Gravity and Grace, 1952, Routledge !!
++#toc: @li I — The Lamp li@
++#bibliography: @li Simone Weil. _Gravity and Grace_. Routledge, 1952. li@
 
 #chapter_one
-@chapter |number I| |title The Lamp|
+@h2 I — The Lamp h2@
 For eleven days the lamp had burned untended.
-chapter@
 chapter_one#

@@ -34,7 +34,7 @@ import type {
   Text,
 } from '@witlang/parser';
 import { parse } from '@witlang/parser';
-import { lookupRecordField } from './canonical-key.js';
+import { walkAccess } from './canonical-key.js';
 import { ExpanderError, RuntimeErrorCode } from './errors.js';
 
 export type Splice = (Block | Inline)[];
@@ -355,19 +355,9 @@ export function scalarToString(value: DataValue): string | null {
   return null;
 }
 
-export function walkAccess(
-  value: DataValue,
-  segments: readonly string[],
-): DataValue | null {
-  let current: DataValue = value;
-  for (const seg of segments) {
-    if (current.kind !== 'record') return null;
-    const found = lookupRecordField(current, seg);
-    if (found === undefined) return null;
-    current = found;
-  }
-  return current;
-}
+// walkAccess now lives in canonical-key.ts (collection-aware, shared with
+// expander-conditions). Re-exported here so existing importers keep working.
+export { walkAccess };
 
 function renderTerminal(value: DataValue, loc: Loc): Text | null {
   if (value.kind === 'stringValue') return textNode(value.value, loc);

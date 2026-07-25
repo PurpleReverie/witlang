@@ -3,22 +3,22 @@
 
 ~ flat
 
-@chapter
+@section
 @aside Keepers do. aside@
 He read the letter twice.
-chapter@
+section@
 
 ~ indented — parses identically to the above
 
-@chapter
+@section
     @aside Keepers do. aside@
     He read the letter twice.
-chapter@
+section@
 
 ~ mixed — also fine
 
-@chapter
-  @scene
+@section
+  @p
 The bell began to ring.
-  scene@
-chapter@
+  p@
+section@

@@ -34,7 +34,7 @@ export {
 } from './errors.js';
 export type { RuntimeErrorCodeName } from './errors.js';
 
-// Core vocabulary — the 47 reserved node names + the @node opaque
+// Core vocabulary — the 52 reserved node names + the @node opaque
 // container. Renderers and tooling use these to recognise built-ins.
 export {
   CORE_VOCAB_NAMES,

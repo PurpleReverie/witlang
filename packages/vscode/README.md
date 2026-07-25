@@ -5,9 +5,30 @@ VS Code extension for the Wit language (`.wit` files).
 This package provides:
 
 - Language registration for `.wit` files.
-- TextMate grammar (syntax highlighting) — filled in by M5.tmlanguage.
-- Language configuration (brackets, comments) — filled in by M5.language-config.
-- LSP client + server — filled in by M5.client and M5.lsp-server.
+- TextMate grammar (syntax highlighting), including embedded highlighting
+  for foreign syntax in raw `@@` nodes (see below).
+- Language configuration (brackets, comments).
+- LSP client + server.
+
+## Embedded-language highlighting
+
+Raw `@@` nodes carry foreign syntax, and the grammar highlights it inline:
+
+| Node | Body highlighted as | Scope |
+|------|--------------------|-------|
+| `@@style … style@@` | CSS | `source.css` (built in) |
+| `@@script … script@@`, `<% … %>` | JavaScript | `source.js` (built in) |
+| `@@math … math@@`, `@@mathblock … mathblock@@` | LaTeX | `text.tex.latex` |
+| `@@diagram … diagram@@` | Mermaid | `source.mermaid` |
+| `@@diagram(engine graphviz) … diagram@@` | Graphviz DOT | `source.dot` |
+
+CSS and JS work out of the box (those grammars ship with VS Code). For
+**math** and **diagrams**, install a companion extension that provides the
+grammar and highlighting activates automatically — e.g. *LaTeX Workshop*
+(LaTeX), a *Mermaid* syntax extension, or a *Graphviz (DOT)* extension.
+Without one, the body is still scoped as an embedded block (so it reads as a
+distinct region) but is not tokenized. `{{…}}` interpolation stays highlighted
+inside `@@` bodies regardless.
 
 ## Status
 

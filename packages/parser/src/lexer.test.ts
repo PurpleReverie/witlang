@@ -339,3 +339,47 @@ describe('lex — emphasis recognizers', () => {
   });
 });
 
+describe('lex — prose backslash escapes', () => {
+  it('\\@ keeps a literal @ and suppresses the reference recognizer', () => {
+    const toks = lex('email me \\@handle now');
+    expect(kinds(toks)).toEqual(['textRun', 'eof']);
+    expect((toks[0] as TextRun).value).toBe('email me @handle now');
+  });
+
+  it('\\* and \\_ stay literal instead of opening emphasis', () => {
+    const toks = lex('the \\*star\\* and \\_under\\_ stay');
+    expect(kinds(toks)).toEqual(['textRun', 'eof']);
+    expect((toks[0] as TextRun).value).toBe('the *star* and _under_ stay');
+  });
+
+  it('\\# and \\~ stay literal (C\\# and \\~tilde)', () => {
+    const toks = lex('C\\# and \\~tilde');
+    expect(kinds(toks)).toEqual(['textRun', 'eof']);
+    expect((toks[0] as TextRun).value).toBe('C# and ~tilde');
+  });
+
+  it('\\| in prose keeps the surrounding run intact', () => {
+    const toks = lex('a \\| b');
+    expect(kinds(toks)).toEqual(['textRun', 'eof']);
+    expect((toks[0] as TextRun).value).toBe('a | b');
+  });
+
+  it('unescaped syntax still fires (real emphasis, real node)', () => {
+    expect(kinds(lex('real *bold*'))).toEqual([
+      'textRun', 'emphasisOpen', 'textRun', 'emphasisClose', 'eof',
+    ]);
+  });
+
+  it('a lone trailing backslash stays literal', () => {
+    const toks = lex('ends with \\');
+    expect(kinds(toks)).toEqual(['textRun', 'eof']);
+    expect((toks[0] as TextRun).value).toBe('ends with \\');
+  });
+
+  it('backslash before a non-special char is left untouched (\\:)', () => {
+    const toks = lex('price \\: cost');
+    expect(kinds(toks)).toEqual(['textRun', 'eof']);
+    expect((toks[0] as TextRun).value).toBe('price \\: cost');
+  });
+});
+

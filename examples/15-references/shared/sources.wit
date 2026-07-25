@@ -1,6 +1,11 @@
 ~ shared/sources.wit — bibliography sources, defined once,
-~ cited from any file that references this one.
+~ cited from any file that references this one. Each source composes
+~ the @cite template pulled in from schema.wit.
 
-#weil:   Simone Weil, Gravity and Grace, 1952, Routledge !!
-#berger: John Berger, Ways of Seeing, 1972, Penguin !!
-#arendt: Hannah Arendt, The Human Condition, 1958, Chicago !!
+reference ./schema.wit
+
+#weil: @cite |author Simone Weil| |title Gravity and Grace| |year 1952| |publisher Routledge| !!
+
+#berger: @cite |author John Berger| |title Ways of Seeing| |year 1972| |publisher Penguin| !!
+
+#arendt: @cite |author Hannah Arendt| |title The Human Condition| |year 1958| |publisher Chicago| !!

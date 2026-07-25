@@ -2,6 +2,52 @@
 
 All notable changes to Wit will be documented in this file.
 
+## 0.2.0
+
+### Language features
+
+- Math via AsciiMath: `@@math … math@@` (inline) and `@@mathblock …
+  mathblock@@` (display) render verbatim AsciiMath to MathML — no runtime
+  JS, and consistent in the PDF path (headless Chromium). Uses a built-in,
+  zero-dependency converter (common subset), dispatched through an engine
+  registry so other input syntaxes can be added later.
+- Diagrams via `@@diagram … diagram@@` (Mermaid by default; `(engine …)`
+  selects the language). HTML emits the `<pre class="… mermaid">` container
+  Mermaid renders, and Markdown a ` ```mermaid ` fence (rendered natively on
+  GitHub). Build-time SVG inlining through the headless browser is the next
+  step, so output becomes self-contained.
+- Literal and frozen raw nodes (`@@name … @@`, `@@@name … @@@`) with
+  `{{path}}` interpolation inside raw-node bodies.
+- Styled render target and a Word/Docs-style default theme.
+- External data seam: the `@load` node pulls a JSON/CSV/TSV/lines/text
+  result from a configured program (`wit.sources.json`) into a def.
+- `@table |rows @data|` — build a table from a referenced data collection.
+- `@table` body form — author a table from `@row`/`@col` (or `@tr`/`@td`/
+  `@th`) child nodes. Unlike the string-only `|rows|` forms, its cells may
+  hold rich content (links, emphasis, nested nodes); the first row is the
+  header unless `|header false|`, and a `@th` cell is always a header cell.
+  `@row` and `@col` are interchangeable — the outer node is the row, the inner
+  the cell. Wrap the row lines in `(each …)` to build the table from a
+  collection, with `(if …)` to filter rows.
+- Image sizing and placement (`|size|`, `|align|`) plus invisible
+  `@row`/`@col` layout containers.
+- Core vocabulary grows to 52 names (adds `div`, `span`, `cite`,
+  `row`, `col`).
+- Typed parameters and iterable captures; emphasis and escape fixes.
+
+### Tooling
+
+- VS Code: embedded syntax highlighting inside raw nodes — LaTeX in
+  `@@math`/`@@mathblock`, Mermaid in `@@diagram` (Graphviz DOT with
+  `(engine graphviz)`), alongside the existing CSS (`@@style`) and JS
+  (`@@script`) embedding. Activates when a matching grammar extension is
+  installed; the body is scoped as an embedded block regardless.
+- `wit fmt` — re-indents a document to match its nesting without changing
+  structure.
+- HTML-like indentation (whitespace is for the author; scope comes only
+  from open/close pairs).
+- PDF output from the CLI, with a `<base href>` so relative assets resolve.
+
 ## 0.1.0 — 2026-06-14
 
 Initial public release.

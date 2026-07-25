@@ -1,0 +1,102 @@
+@h1 Rendering & styling h1@
+
+One @code .wit code@ source builds to four outputs. The @code -o code@ extension
+picks the format; two flags shape the HTML; three levels of styling take you from
+zero effort to full art direction.
+
+@h2 Pick a format with -o h2@
+
+The extension on @code -o code@ decides what you get:
+
+@@@pre
+wit build doc.wit -o doc.html    ~ complete self-contained styled page
+wit build doc.wit -o doc.md      ~ GitHub-flavoured Markdown
+wit build doc.wit -o doc.pdf     ~ paginated print-ready PDF
+pre@@@
+
+With no @code -o code@, the HTML prints to stdout — handy for piping:
+
+@@@pre
+wit build doc.wit | grep '<h1>'
+pre@@@
+
+"Self-contained" means the theme's CSS is inlined into the page head: one file
+you can open in any browser or email with no stylesheet shipped alongside. An
+unrecognised extension is an error, not a guess.
+
+@h2 HTML variants: --fragment and --raw h2@
+
+To drop the content into a page you already have — a blog template, a CMS — ask
+for a fragment. You get just the bare @@@code <article> code@@@, no page head and
+no theme:
+
+@@@pre
+wit build doc.wit --fragment
+pre@@@
+
+To keep the full page shell but drop the built-in theme, use @code --raw code@.
+It leaves a minimal reset instead, so you bring your own CSS:
+
+@@@pre
+wit build doc.wit --raw -o doc.html
+pre@@@
+
+@h2 Styling, three levels h2@
+
+@strong Level 1 — the default theme, no work. strong@ Out of the box a built
+document looks like a clean word-processor page: a sans-serif body, a comfortable
+reading measure, an inch of margin on a soft grey canvas. It follows dark-mode
+preference and carries print rules so PDFs paginate sensibly — headings, figures,
+and tables kept from breaking across pages. You write no CSS.
+
+@strong Level 2 — small overrides with a style block. strong@ To change one
+thing, drop a @@@code @@style … style@@ code@@@ literal into the document. Its CSS
+cascades _over_ the theme, touching only what you name. The theme scopes its rules
+to the document's own @code .wit-doc code@ class, so scope your overrides there
+too:
+
+@@@pre
+@@style
+.wit-doc { --wit-accent: #2b6a4f; }
+style@@
+pre@@@
+
+@strong Level 3 — full control with --raw. strong@ Build with @code --raw code@
+for a blank canvas, then style everything with your own style blocks and wrapping
+nodes. The same CSS drives HTML and PDF, so your print rules carry straight into
+the PDF.
+
+Inside a raw @code @@ code@@ node body you can inject a value with
+@@@code {{path}} code@@@ interpolation — useful when a colour or size lives in your
+data:
+
+@@@pre
+@@style
+.wit-doc { --wit-accent: {{theme.accent}}; }
+style@@
+pre@@@
+
+@aside(class note) 💡 @@@code {{path}} code@@@ is live _only_ inside a raw
+@code @@ code@@ block's body or string — never in ordinary prose, where it stays
+literal. To put a value into running text, define it and reference it by name. aside@
+
+@h2 Markdown, briefly h2@
+
+Markdown output is GitHub-flavoured: headings, bold and italic, lists, pipe
+tables, blockquotes. Right for a README, an issue, or any portable plain text.
+A few HTML-only features degrade — a hard line break becomes a space, and embedded
+audio or video has no Markdown equivalent.
+
+@h2 PDF needs a browser h2@
+
+PDF paginates the HTML through a headless Chrome, so a system Chrome or Chromium
+must be installed (or point @code WIT_CHROME code@ at a browser executable).
+Without one, the build stops and names the fix. HTML and Markdown need no browser.
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/start/install/| Install a@ — set up @code wit code@ and build your first document. li@
+@li @a |href /docs/reference/cli/| CLI reference a@ — every @code build code@ flag in full. li@
+@li @a |href /docs/write/components/| Components a@ — the wrapping nodes you hang classes on. li@
+ul@

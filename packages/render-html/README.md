@@ -18,4 +18,4 @@ import { renderHtml } from '@witlang/render-html';
 const html = renderHtml(expand(resolve(parse(source, 'inline'))));
 ```
 
-See [github.com/PurpleReverie/prototype_language_wit](https://github.com/PurpleReverie/prototype_language_wit) for the language reference.
+See [github.com/PurpleReverie/witlang](https://github.com/PurpleReverie/witlang) for the language reference.

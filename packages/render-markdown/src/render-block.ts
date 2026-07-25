@@ -10,7 +10,9 @@
 
 import type { Block, Inline, NodeUse, Param } from '@witlang/parser';
 import { isCoreVocabName, RESERVED_OPAQUE } from '@witlang/runtime';
-import { renderInline, renderInlines, renderUnresolvedAccess } from './render-inline.js';
+import {
+  renderInline, renderInlines, renderInlineChildren, renderUnresolvedAccess,
+} from './render-inline.js';
 import { renderTableMarkdown } from './render-table.js';
 
 type BlockRecursor = (block: Block) => string;
@@ -28,7 +30,7 @@ const BLOCK_VOCAB_NAMES = new Set<string>([
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'chapter', 'section', 'subsection',
   'p', 'blockquote', 'pre', 'hr',
-  'ul', 'ol', 'dl', 'figure', 'table',
+  'ul', 'ol', 'dl', 'figure', 'table', 'diagram',
   'callout', 'aside', 'pullquote', 'bibliography',
   'article', 'header', 'footer', 'nav', 'main',
 ]);
@@ -42,7 +44,8 @@ export function renderNodeUseBlock(use: NodeUse): string {
   if (use.access !== undefined && use.access.length > 0) {
     return renderUnresolvedAccess(use);
   }
-  if (use.name === 'table') return renderTableMarkdown(use, renderInline);
+  if (use.name === 'table') return renderTableMarkdown(use, renderCellInline);
+  if (use.name === 'diagram') return renderDiagramMarkdown(use);
   if (use.name === RESERVED_OPAQUE) return renderOpaqueBlock(use);
   const handler = HANDLERS.get(use.name);
   if (handler !== undefined) return handler(use);
@@ -244,6 +247,30 @@ const HANDLERS = new Map<string, (use: NodeUse) => string>([
 // ---------------------------------------------------------------------------
 // Body rendering helpers.
 // ---------------------------------------------------------------------------
+
+// A table cell's body rendered as inline Markdown. Unlike renderInlineBody,
+// this keeps nested inline node uses (links, code) — a cell may hold rich
+// content — via renderInlineChildren, whose inline set includes `nodeUse`.
+function renderCellInline(cell: NodeUse): string {
+  return cell.body === null ? '' : renderInlineChildren(cell.body);
+}
+
+// `@@diagram(engine mermaid) … diagram@@` → a fenced code block tagged with the
+// engine name; GitHub (and others) render a ```mermaid fence as a diagram. The
+// body is verbatim (raw node), so it is emitted unescaped inside the fence.
+function renderDiagramMarkdown(use: NodeUse): string {
+  const engine = (paramValue(use.params, 'engine') ?? 'mermaid').toLowerCase();
+  return '```' + engine + '\n' + rawNodeText(use) + '\n```';
+}
+
+function rawNodeText(use: NodeUse): string {
+  if (use.body === null) return '';
+  let out = '';
+  for (const child of use.body) {
+    if ((child as { kind: string }).kind === 'text') out += (child as { value: string }).value;
+  }
+  return out;
+}
 
 function renderInlineBody(use: NodeUse): string {
   const title = paramValue(use.params, 'title');

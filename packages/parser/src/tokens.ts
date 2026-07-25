@@ -184,6 +184,10 @@ export interface RawNode extends HasLoc {
   text: string;
   inline: boolean;
   frozen: boolean;
+  // Verbatim source of parameter group(s) glued to the name, e.g.
+  // `(engine asciimath)` in `@@math(engine asciimath) … math@@`. Undefined
+  // when no `(` immediately follows the name. Parsed into params downstream.
+  params?: string;
 }
 
 export interface HashOpen extends HasLoc {

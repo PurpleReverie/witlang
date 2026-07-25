@@ -1,4 +1,8 @@
-~ chapters/two.wit
+~ chapters/two.wit — cites @weil, pulled in transitively through
+~ ../shared/sources.wit.
+
+reference ../shared/schema.wit
+reference ../shared/sources.wit
 
 #chapter_two
 @chapter |number II| |title The Voice|

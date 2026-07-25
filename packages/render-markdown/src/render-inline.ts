@@ -103,7 +103,7 @@ function readParam(use: NodeUse, name: string): string | undefined {
   return undefined;
 }
 
-function renderInlineChildren(body: readonly (object & { kind: string })[]): string {
+export function renderInlineChildren(body: readonly (object & { kind: string })[]): string {
   let out = '';
   for (const child of body) {
     if (child.kind === 'paragraph') {

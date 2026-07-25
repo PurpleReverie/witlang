@@ -1,0 +1,121 @@
+@h1 Images & media h1@
+
+Drop in a picture, caption it, size it, align it, and embed audio or video —
+all with writer-friendly parameters, no CSS. Sizing and alignment compile to
+inline styles, so they travel intact into HTML, raw output, and PDF.
+
+@h2 A plain image h2@
+
+An image needs a source and, for anyone who can't see it, alternative text:
+
+@@@pre
+@img |src ./harbour.jpg| |alt The harbour's east jetty|
+pre@@@
+
+The @code src code@ is a path or URL; @code alt code@ describes the image. Keep
+the whole description on one parameter — an apostrophe inside it is fine.
+
+@h2 A captioned figure h2@
+
+Wrap the image in a figure and add a caption to pair a picture with its label:
+
+@@@pre
+@figure
+@img |src ./chart.svg| |alt Downloads by platform| |size large|
+@figcaption Figure 1. Downloads by platform, this cycle. figcaption@
+figure@
+pre@@@
+
+You get a semantic @@@code <figure> code@@@ around the @@@code <img> code@@@ and
+its @@@code <figcaption> code@@@. A figure centres itself and its caption by
+default, so it drops into a column and looks right with no further fuss.
+
+@h2 Sizing h2@
+
+The @code size code@ parameter takes a named preset, a raw pixel number, or a
+percentage. Presets and pixel values _cap_ the width and never enlarge a small
+source; @code full code@ or a percentage _fills_ the available width:
+
+@table |rows [[You write, Emitted style, Behaviour], [size small, max-width 220px, caps the width], [size medium, max-width 380px, caps the width], [size large, max-width 600px, caps the width], [size full, width 100%, fills the column], [size 240, max-width 240px, caps at that many pixels], [size 50%, width 50%, fills that fraction]]|
+
+So a preset guarantees an image never balloons past a comfortable width, while
+@code full code@ or a percentage lets a chart stretch to the column. A source
+smaller than the cap keeps its natural size — presets only shrink.
+
+@h2 Alignment h2@
+
+The @code align code@ parameter takes @code left code@, @code center code@, or
+@code right code@ — with a small difference between an image and a figure:
+
+@ul
+@li _On an image_, it block-positions the image itself: centred, pushed right,
+or pushed left within its line. li@
+@li _On a figure_, it sets the alignment of the figure's _contents_ — the image
+and caption together. li@
+ul@
+
+Size and alignment compose. Asking for medium and centred emits both the width
+cap and the centring margins in one style attribute:
+
+@@@pre
+@img |src ./map.png| |alt Coast survey| |size medium| |align center|
+pre@@@
+
+@h2 Links h2@
+
+The link text is the body; the address rides in a parameter:
+
+@@@pre
+Visit @a |href https://example.org| the Example archive a@ for the back issues.
+pre@@@
+
+That renders "Visit" followed by a link reading "the Example archive", then the
+rest of the sentence. Omit the address and the link falls back to a harmless
+placeholder, so a half-written link never breaks the build — but fill it in
+before you publish.
+
+To open a link in a new tab, add a @code target code@ parameter:
+
+@@@pre
+@a |href https://example.org| |target _blank| the archive, in a new tab a@
+pre@@@
+
+@h2 Audio and video h2@
+
+Embed a media file with the audio or video node. Give it a source and turn on
+the player controls:
+
+@@@pre
+@audio |src ./bell.mp3| |controls true| audio@
+
+@video |src ./tour.mp4| |controls true| video@
+pre@@@
+
+Each renders the matching HTML media element with controls shown — a play
+button, a scrubber, a volume control in the browser.
+
+@aside(class note) 💡 The controls flag needs a value. A bare @@@code |controls| code@@@
+is read as a positional parameter and emits _no_ controls; write
+@@@code |controls true| code@@@ (any value works) to get the player. aside@
+
+@h2 Where media degrades h2@
+
+Links survive every output format. Audio and video are HTML-only: Markdown has
+no media element, and a PDF can't play a video. Treat embedded media as an
+HTML enhancement and make sure the surrounding prose stands without it.
+
+@h2 Paths h2@
+
+Keep @code src code@ paths relative to your document. HTML resolves them
+against wherever the finished file sits. For PDF, the build renders through a
+headless browser and injects a base URL pointing back at your document's
+directory, so a relative path like @code ./assets/chart.svg code@ still
+resolves. Either way, relative paths are the safe habit.
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/structure/| Structure a@ — an image beside text with rows and columns. li@
+@li @a |href /docs/write/tables/| Tables a@ — the other construct that carries data in a parameter. li@
+@li @a |href /docs/write/rendering/| Rendering a@ — how each output format handles media. li@
+ul@

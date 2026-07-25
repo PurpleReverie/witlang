@@ -1,0 +1,122 @@
+@h1 Node use & the bare reference h1@
+
+Every structure in Wit is a @strong node strong@ — a name that wraps content.
+This page is the atom the rest of the language builds on: how a node opens and
+closes, where its name ends, and how the same handle reaches into data. Read it
+before parameters, before definitions.
+
+@h2 Opening, closing, and the body h2@
+
+An opening handle is @@@code @name code@@@; the matching close is
+@@@code name@ code@@@; the @strong body strong@ is everything between them.
+
+@@@pre
+@aside
+A note set apart from the main text.
+aside@
+pre@@@
+
+Scope comes from the open/close pair, never from indentation — you may indent
+for your eye, but the parser only counts handles. Nodes nest, and two uses of
+the same name pair @strong last-in-first-out strong@, like brackets:
+
+@@@pre
+@quote @cite Weil cite@ wrote of attention. quote@
+pre@@@
+
+The inner @@@code @cite … cite@ code@@@ closes before the outer
+@@@code @quote … quote@ code@@@.
+
+@h2 Block or inline is decided by position h2@
+
+Whether a node renders as a block or inline is a @strong renderer decision from
+position strong@, never something you mark. A node that stands alone on its
+own line becomes a block; a node sitting inside a run of prose stays inline.
+
+@@@pre
+@aside
+This is a block — it sits on its own line.
+aside@
+
+The lamp was @highlight still burning highlight@ at dawn.
+pre@@@
+
+The first is a block aside; the second keeps @@@code @highlight … highlight@
+code@@@ inline in the sentence.
+
+@h2 The bare reference h2@
+
+A handle with no body and no closer is a @strong bare reference strong@ — a
+pointer to a defined entity, resolved when the document expands. It is how you
+cite named content mid-sentence.
+
+@@@pre
+Attention, as @weil argued, is a moral act.
+pre@@@
+
+Here @@@code @weil code@@@ stands in for whatever @@@code #weil code@@@ defines
+.
+
+@h2 Where the handle ends h2@
+
+The handle name is the character class @code [A-Za-z0-9_-] code@ — letters,
+digits, underscore, and hyphen. The @strong first byte that is not in that
+class ends the handle strong@. A leading dot instead opens a data-access path
+(see below); anything else — a space, comma, or period — closes the name.
+
+@@@pre
+@paper-stats      ~ hyphen is part of the name
+@chapter_one      ~ underscore is part of the name
+@h2               ~ a trailing digit is fine
+@weil, the writer ~ the comma ends the handle
+pre@@@
+
+These are fixtures 04-nodes-use/hyphenated-name, underscored-name,
+numeric-suffix, and bare-reference. A following space or comma simply ends the
+name and returns to prose (bare-reference-adjacent-prose).
+
+@aside(class note) 💡 Handles are matched @strong exactly and case-sensitively strong@. @@@code @Weil code@@@ does not resolve @@@code #weil code@@@. Only data-access segments fuzzy-match — see the Data access guide. aside@
+
+@h2 Access paths in prose h2@
+
+Wherever a bare reference is legal, so is a @strong data-access path strong@:
+@@@code @name.field code@@@ reaches into a record or collection and drops the
+value straight into your sentence.
+
+@@@pre
+The title is @book.title for this edition.
+pre@@@
+
+The chain follows dots until it hits a byte that is not part of a segment — the
+sentence-final period ends it cleanly. This
+is the verified way to put data into prose; @@@code {{book.title}} code@@@ does
+@strong not strong@ interpolate in a paragraph.
+
+@h2 Empty bodies and nesting h2@
+
+An empty pair @@@code @x x@ code@@@ is a real node with an @strong empty
+children array strong@ — not null, and the single space between the markers is
+not counted as a child. Nesting has no depth
+limit; the pairing is purely lexical.
+
+@h2 Common mistakes h2@
+
+@ul
+@li @strong Expecting a period to stay in the name. strong@ @@@code @weil.
+code@@@ ends the handle at the period; the sentence keeps its full stop. Only a
+dot @em followed by em@ an identifier opens an access path. li@
+@li @strong Assuming the name is case-insensitive. strong@ @@@code @Weil
+code@@@ and @@@code @weil code@@@ are different handles. li@
+@li @strong Writing an email address in prose. strong@ A word immediately
+followed by @@@code @ code@@@ — as in @@@code keeper@host code@@@ — reads as a
+@em close em@ token and splits your paragraph. To show one literally, wrap it in
+frozen code. See the Gotchas guide. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/parameters/| Parameters: choosing a form a@ ·
+@a |href /docs/guides/defining-nodes/| Defining nodes a@ ·
+@a |href /docs/guides/data/| Data access a@ ·
+@a |href /docs/guides/gotchas/| Gotchas & ambiguity a@ ·
+@a |href /docs/reference/core-vocabulary/| Core vocabulary a@

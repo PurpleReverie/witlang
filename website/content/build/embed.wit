@@ -1,0 +1,105 @@
+@h1 Embed Wit in an app h1@
+
+Embedding Wit is the five-stage pipeline plus your own @code DataSource code@ —
+no CLI, no config file, no subprocess. This page is the copy-paste starting
+point: wrap the stages in one function, catch the two error families, and choose
+fragment or document output.
+
+@h2 The worked helper h2@
+
+Verified end to end. Drop it into a server, a build step, or a static-site
+generator:
+
+@@@pre
+import { parse, WitError } from '@witlang/parser';
+import { loadExternalData, resolve, expand, RuntimeError } from '@witlang/runtime';
+import { renderHtml } from '@witlang/render-html';
+
+export function compileWit(
+  src: string,
+  file: string,
+  data: Record<string, unknown> = {},
+): string {
+  try {
+    const parsed   = parse(src, file);
+    const loaded   = loadExternalData(parsed, data);        // dict DataSource
+    const resolved = resolve(loaded, { rootPath: file });   // rootPath for `reference`
+    const expanded = expand(resolved);
+    return renderHtml(expanded, { mode: 'fragment' });
+  } catch (err) {
+    if (err instanceof WitError || err instanceof RuntimeError) {
+      const { line, col } = err.loc;
+      throw new Error(`${file}:${line}:${col}: ${err.code}: ${err.message}`);
+    }
+    throw err;
+  }
+}
+pre@@@
+
+@code WitError code@ covers parse; @code RuntimeError code@ (and its subclasses
+@code ResolverError code@ and @code ExpanderError code@) covers resolve and
+expand. Both carry @code .code code@ and @code .loc code@, so one branch formats
+them all.
+
+@h2 The embedded data path h2@
+
+The @code data code@ argument is a @code DataSource code@: a plain dict for
+static data, or a function for dynamic. No config file, no subprocess:
+
+@@@pre
+compileWit(src, 'report.wit', {
+  meta:  { version: '0.4.0' },
+  sales: [ { site: 'Dunmore', lit: 'yes' } ],
+});
+pre@@@
+
+Inside the document, @@@code @meta.version code@@@ and
+@@@code (each @sales as s) code@@@ then read that data exactly as if it had been
+written inline.
+
+@h2 Cross-file documents h2@
+
+If your documents use @code reference code@, pass @code rootPath code@ and a
+synchronous @code fileReader code@ so the referenced files resolve against your
+real or virtual filesystem:
+
+@@@pre
+resolve(loaded, {
+  rootPath: '/content/main.wit',
+  fileReader: (abs) => readFileFromCacheSync(abs),   // must be synchronous
+});
+pre@@@
+
+@aside(class note) 💡 @strong Build-time beats request-time. strong@ Prefer
+compiling each @code .wit code@ once at build and shipping static HTML — the docs
+site does exactly this. Request-time compilation is fine too, but cache the
+result; the pipeline is pure, so the output is stable for a given input. aside@
+
+@h2 Output choice h2@
+
+@ul
+@li @@@code renderHtml(expanded, { mode: 'fragment' }) code@@@ — an
+@code <article> code@ to inject into a page you already own. li@
+@li @@@code renderHtml(expanded, { mode: 'document' }) code@@@ — a standalone
+@code <!doctype html> code@ file. li@
+@li @code renderMarkdown(expanded) code@ — for a text or Markdown pipeline. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Forgetting @code rootPath code@ — a document with a @code reference code@
+throws @code E_MISSING_REFERENCE_FILE code@ without it. li@
+@li Using an @code async code@ @code fileReader code@ — it must be synchronous. li@
+@li Catching only one error family — parse throws @code WitError code@, the
+runtime throws @code RuntimeError code@; catch both. li@
+@li Rendering per request without caching. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/external-data/| External data a@ ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@ ·
+@a |href /docs/build/rendering/| Rendering a@ ·
+@a |href /docs/build/cli-reference/| CLI reference a@ (the host wiring to
+contrast).

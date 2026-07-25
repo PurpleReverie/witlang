@@ -1,0 +1,331 @@
+@h1 Core vocabulary h1@
+
+The 52 reserved node names that need no definition — the resolver skips binding
+lookup for them and every renderer ships a handler. Grouped below by category,
+one entry per node, each with the HTML it emits, the parameters it honours, and
+its context. Also here: the @code node code@ opaque container and the two
+special-cased renderers (@code table code@, @code bibliography code@).
+
+@aside(class note)
+@strong Two rules cover every generic node. strong@ (1) @strong Attribute
+allowlist: strong@ generic core elements accept only @code id code@ and
+@code class code@; other params are ignored. The typed renderers below
+(@code a code@, @code img code@, @code figure code@, @code audio code@,
+@code video code@, @code row code@, @code col code@, @code table code@) accept
+their own params instead. (2) @strong Inline-context unwrap: strong@ certain
+tags strip a single leading paragraph from their body so
+@@@code @h1 Title h1@ code@@@ emits @@@code <h1>Title</h1> code@@@, not
+@@@code <h1><p>Title</p></h1> code@@@.
+
+aside@
+
+@h2 Unresolved fallbacks h2@
+
+When a name binds to nothing, the renderer emits a marker span rather than
+failing silently.
+
+@table |rows [[Input, Emits], [@name binds nothing, <span class="wit-unresolved">@name</span>], [dotted @a.b unresolved, <span class="wit-unresolved">@a.b</span>], [stray capture, <span class="wit-unresolved">::name::</span>], [bare data-def reference, <span class="wit-node" data-wit-name="name"></span>]]| |caption Unresolved and placeholder output| table@
+
+@aside(class note)
+A data def is for @strong access strong@ (@@@code @author.name code@@@) or
+@strong iteration strong@, not bare rendering: writing @@@code @author code@@@
+where @code author code@ is a record emits an empty
+@@@code <span class="wit-node"> code@@@ placeholder, not a table.
+
+aside@
+
+@h2 Headings — 6 h2@
+
+@table |rows [[Node, Emits, Context, Params], [h1, <h1>…</h1>, inline-context, id / class], [h2, <h2>…</h2>, inline-context, id / class], [h3, <h3>…</h3>, inline-context, id / class], [h4, <h4>…</h4>, inline-context, id / class], [h5, <h5>…</h5>, inline-context, id / class], [h6, <h6>…</h6>, inline-context, id / class]]| |caption Headings| table@
+
+@@@pre
+@h1 Title h1@            → <h1>Title</h1>
+@h2(id sec) A h2@        → <h2 id="sec">A</h2>
+pre@@@
+
+Any level is legal at any nesting depth; the theme styles h1 through h6.
+@strong Fixture: strong@ @code 18-core-vocab/headings.wit code@.
+
+@h2 Inline marks — 10 h2@
+
+Each wraps its body in the same-named tag. All are inline-context and take
+@code id code@ / @code class code@ only — except @code br code@, which is void
+(no body, no params).
+
+@table |rows [[Node, Emits, Context], [em, <em>…</em>, inline-context], [strong, <strong>…</strong>, inline-context], [code, <code>…</code>, inline-context], [u, <u>…</u>, inline-context], [s, <s>…</s>, inline-context], [sub, <sub>…</sub>, inline-context], [sup, <sup>…</sup>, inline-context], [mark, <mark>…</mark>, inline-context], [small, <small>…</small>, inline-context], [br, <br>, void]]| |caption Inline marks| table@
+
+@@@pre
+@strong Bold strong@       → <strong>Bold</strong>
+@code x < y code@          → <code>x &lt; y</code>
+Line one@br break          → Line one<br>break
+pre@@@
+
+@code em code@ and @code strong code@ are the explicit form of
+@@@code _italic_ code@@@ and @@@code *bold* code@@@ — identical HTML, useful when
+the token-wrap rule of the marks gets in the way. @code code code@
+@strong escapes strong@ its body; it is @strong not strong@ a raw node — for
+verbatim text use @@@code @@code … code@@ code@@@. @strong Fixture: strong@
+@code 18-core-vocab/inline-marks.wit code@.
+
+@h2 Lists — 6 h2@
+
+@table |rows [[Node, Emits, Context], [ul, <ul>…</ul>, block], [ol, <ol>…</ol>, block], [li, <li>…</li>, inline-context], [dl, <dl>…</dl>, block], [dt, <dt>…</dt>, inline-context], [dd, <dd>…</dd>, inline-context]]| |caption Lists| table@
+
+@@@pre
+@ul
+@li First li@
+@li Second li@
+ul@
+
+@dl
+@dt Term dt@
+@dd Definition dd@
+dl@
+pre@@@
+
+These are hand-authored lists. For data-driven lists prefer a collection def
+plus @@@code (each) code@@@ — see @a |href /docs/reference/data-model/| data
+model a@. @strong Fixture: strong@ @code 18-core-vocab/lists.wit code@.
+
+@h2 Links and media — 6 h2@
+
+Typed renderers: each has its own param set, @strong not strong@ the id/class
+allowlist.
+
+@h3 a h3@
+
+@@@pre
+@a |href /x| Go a@              → <a href="/x">Go</a>
+@a |href /x| |target _blank| Go a@ → <a href="/x" target="_blank">Go</a>
+pre@@@
+
+@table |rows [[Param, Meaning, Default], [href, link address, #], [target, browsing context, none]]| |caption a params| table@
+
+Only @code href code@ and @code target code@ survive; @code id code@ /
+@code class code@ are @strong not strong@ emitted for anchors. Inline-context.
+
+@h3 img h3@
+
+Void. @code src code@ / @code alt code@ / @code width code@ /
+@code height code@ are raw attributes; @code size code@ and @code align code@
+compile to an inline @code style code@.
+
+@table |rows [[Param, Effect], [src, image URL — escaped], [alt, alt text — escaped], [width, width attribute], [height, height attribute], [size, sizing style — see below], [align, block alignment — center / left / right]]| |caption img params| table@
+
+@table |rows [[size value, Compiles to], [full, width:100%], [a percent, width:N%], [small, max-width:220px], [medium, max-width:380px], [large, max-width:600px], [a bare number, max-width:Npx], [Npx, max-width:Npx]]| |caption img size (caps — never upscales)| table@
+
+@@@pre
+@img |src p.jpg| |alt A| |size medium| |align center|
+pre@@@
+
+Emits:
+
+@@@pre
+<img src="p.jpg" alt="A" style="max-width:380px;height:auto;display:block;margin-left:auto;margin-right:auto">
+pre@@@
+
+@code align center code@ → block-centred; @code right code@ / @code left code@
+→ block with the opposite auto-margin. Presets and pixel values
+@strong cap strong@ (max-width); @code full code@ and percents
+@strong fill strong@ (width). @strong Fixture: strong@
+@code 18-core-vocab/links-and-media.wit code@.
+
+@h3 figure h3@
+
+Block. @code align code@ sets @code text-align code@ on the figure's
+@strong contents strong@ (image and caption together); a capped @code size code@
+centres the figure @strong box strong@.
+
+@@@pre
+@figure |align center|
+@img |src p.jpg| |alt A|
+@figcaption Cap figcaption@
+figure@
+pre@@@
+
+Emits:
+
+@@@pre
+<figure style="text-align:center"><img src="p.jpg" alt="A"><figcaption>Cap</figcaption></figure>
+pre@@@
+
+@h3 figcaption / audio / video h3@
+
+@table |rows [[Node, Emits, Context, Params], [figcaption, <figcaption>…</figcaption>, inline-context, id / class], [audio, <audio>…</audio>, block, src / controls flag], [video, <video>…</video>, block, src / controls flag]]| |caption Caption and media| table@
+
+@@@pre
+@audio |src clip.mp3| |controls!| audio@
+→ <audio src="clip.mp3" controls></audio>
+pre@@@
+
+The body of @code audio code@ / @code video code@ renders inside for fallback
+text or source elements. @strong Fixture: strong@
+@code 18-core-vocab/links-and-media.wit code@.
+
+@h2 Tables — 8 h2@
+
+@code table code@ is dispatched to the complex renderer (see the
+@a |href /docs/write/tables/| tables reference a@); the core-vocab branch is
+only a fallback. The other seven are hand-authored table parts.
+
+@table |rows [[Node, Emits, Context], [table, <table>…</table>, block — special renderer], [thead, <thead>…</thead>, block], [tbody, <tbody>…</tbody>, block], [tfoot, <tfoot>…</tfoot>, block], [tr, <tr>…</tr>, block], [th, <th>…</th>, inline-context], [td, <td>…</td>, inline-context], [caption, <caption>…</caption>, inline-context]]| |caption Table parts| table@
+
+Most authors use @@@code @table |rows …| code@@@ rather than assembling parts by
+hand. @strong Fixture: strong@ @code 19-tables/* code@.
+
+@h2 Blocks — 4 h2@
+
+@table |rows [[Node, Emits, Context, Params], [p, <p>…</p>, block, id / class], [blockquote, <blockquote>…</blockquote>, block, id / class], [pre, <pre>…</pre>, block, id / class], [hr, <hr>, void, none]]| |caption Blocks| table@
+
+@@@pre
+@blockquote A quote blockquote@ → <blockquote><p>A quote</p></blockquote>
+@hr                             → <hr>
+pre@@@
+
+@code pre code@ @strong escapes strong@ its body (whitespace preserved by the
+theme); for unescaped raw text use @@@code @@pre … pre@@ code@@@.
+@strong Fixture: strong@ @code 18-core-vocab/blocks.wit code@.
+
+@h2 Sectioning — 7 h2@
+
+Each emits its same-named HTML element (block; @code id code@ / @code class code@).
+Pure semantic containers — the theme adds no styling beyond block flow. Good
+targets for @@@code @@style code@@@.
+
+@table |rows [[Node, Emits], [section, <section>…</section>], [article, <article>…</article>], [aside, <aside>…</aside>], [header, <header>…</header>], [footer, <footer>…</footer>], [nav, <nav>…</nav>], [main, <main>…</main>]]| |caption Sectioning| table@
+
+@@@pre
+@nav(class toc) … nav@ → <nav class="toc">…</nav>
+pre@@@
+
+@aside(class note)
+Gotcha: a @code ~comment code@ as the @strong first strong@ child of a container
+body collapses following blocks into one paragraph. Put a blank line after it.
+See @a |href /docs/guides/gotchas/| gotchas a@. @strong Fixture: strong@
+@code 18-core-vocab/sectioning.wit code@.
+
+aside@
+
+@h2 Generic containers — 2 h2@
+
+@table |rows [[Node, Emits, Context, Params], [div, <div>…</div>, block, id / class], [span, <span>…</span>, inline, id / class]]| |caption Generic| table@
+
+@@@pre
+@div(class card) Body div@ → <div class="card"><p>Body</p></div>
+@span note span@           → <span>note</span>
+pre@@@
+
+The building blocks for author-defined layout. @strong Fixture: strong@ seeded
+from a built snippet (not in fixture 18).
+
+@h2 Layout — 2 h2@
+
+An invisible flex band and its columns — side-by-side content without floats.
+
+@h3 row h3@
+
+Emits a fixed-style flex container; no params honoured beyond the body.
+
+@@@pre
+<div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;margin:1.2em 0">…</div>
+pre@@@
+
+@h3 col h3@
+
+A flex child. @code size code@ sets its width; no @code size code@ fills the
+remaining space.
+
+@table |rows [[size value, Basis], [small, flex:0 0 220px], [medium, flex:0 0 380px], [large, flex:0 0 600px], [a bare number, flex:0 0 Npx], [Npx, flex:0 0 Npx], [a percent, flex:0 0 N%], [no size, flex:1 1 0 — fills]]| |caption col size| table@
+
+@@@pre
+@row
+@col |size 220| Left col@
+@col Right col@
+row@
+pre@@@
+
+Emits:
+
+@@@pre
+<div style="display:flex;…"><div style="flex:0 0 220px;min-width:0"><p>Left</p></div><div style="flex:1 1 0;min-width:0"><p>Right</p></div></div>
+pre@@@
+
+Columns wrap (stack) when the row is too narrow. Put an image in one column and
+prose in another for a side-by-side. @strong Fixture: strong@ built snippet.
+
+@h2 Other — 1 h2@
+
+@table |rows [[Node, Emits, Context, Params], [cite, <cite>…</cite>, inline-context, id / class]]| |caption cite| table@
+
+@@@pre
+@cite The Book cite@ → <cite>The Book</cite>
+pre@@@
+
+@h2 Cross-cutting entries h2@
+
+@h3 node — opaque dispatch h3@
+
+If @code type code@ names a core-vocab node, render as that element; otherwise
+emit a @code div code@ carrying @strong every strong@ named param as a
+@code data-* code@ attribute (the key is sanitised).
+
+@@@pre
+@node(type h2) T node@         → <h2>T</h2>
+@node(type box, role note) Hi node@
+  → <div data-type="box" data-role="note"><p>Hi</p></div>
+pre@@@
+
+@strong Fixture: strong@ @code 20-opaque-node/* code@.
+
+@h3 bibliography — special renderer h3@
+
+Not core vocab and has no HTML element of its own. Entries are contributed with
+additive @@@code +#bibliography: code@@@ value-blocks; a bare
+@@@code @bibliography code@@@ then expands them, each contribution on its own
+line. The dedicated renderer wraps a literal @code bibliography code@ body in
+@@@code <div class="wit-bibliography"> code@@@ and gives each entry its own
+paragraph (stripping one wrapping paragraph so APA runs do not collide).
+
+@@@pre
+#reference_entry ||author, year, title||
+::author:: (::year::). ::title::.
+reference_entry#
+
++#bibliography:
+@reference_entry
+author: Boud, D.
+year: 2001
+title: Using journal writing
+reference_entry@
+!!
+
+@bibliography
+pre@@@
+
+@strong Fixture: strong@ @code 23-form-fill/bibliography-style.wit code@.
+
+@h3 Raw-text elements h3@
+
+@@@code @@style … style@@ code@@@ and @@@code @@script … script@@ code@@@ emit
+their body @strong verbatim strong@ (unescaped; guarded against a nested closing
+tag). Every other @code @@ code@@ raw node @strong escapes strong@ its Text body.
+
+@@@pre
+@@style .lead { color: red } style@@ → <style>.lead { color: red }</style>
+pre@@@
+
+@h3 Standalone record / collection h3@
+
+A node use whose body is @strong exactly strong@ one record or collection
+literal renders as @@@code <table class="wit-record"> code@@@ /
+@@@code <ul class="wit-collection"> code@@@. Ordinary record-arg syntax attaches
+records as @strong params strong@, so normal authoring rarely reaches this
+legacy path.
+
+@h2 See also h2@
+
+@a |href /docs/reference/syntax/| Syntax a@ ·
+@a |href /docs/write/tables/| Tables a@ ·
+@a |href /docs/reference/data-model/| Data model a@ ·
+@a |href /docs/reference/errors/| Errors a@ ·
+@a |href /docs/reference/limitations/| Limitations a@.

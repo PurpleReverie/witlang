@@ -81,11 +81,14 @@ function renderGeneric(
 
 // Inline-context core elements unwrap a single leading `<p>...</p>` so
 // `@h1 Title h1@` (whose body is a Paragraph) renders as `<h1>Title</h1>`
-// instead of `<h1><p>Title</p></h1>`.
+// instead of `<h1><p>Title</p></h1>`. `p` itself is included: a `@p …` body
+// is already a Paragraph, so without the unwrap `@p x p@` would nest an
+// invalid `<p><p>x</p></p>`.
 const INLINE_CONTEXT_TAGS = new Set<string>([
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'em', 'strong', 'code', 'u', 's', 'sub', 'sup', 'mark', 'small',
   'a', 'figcaption', 'caption', 'th', 'td', 'li', 'dt', 'dd', 'cite',
+  'p',
 ]);
 
 function flattenIfInline(tag: string, body: string): string {
@@ -118,7 +121,13 @@ function renderImg(use: NodeUse): string {
 function renderFigure(use: NodeUse, renderBody: BodyRenderer): string {
   const style = layoutStyle(use.params, 'figure');
   const styleAttr = style !== '' ? ` style="${escapeHtml(style)}"` : '';
-  return `<figure${styleAttr}>${renderBody(use)}</figure>`;
+  // A single-line `@figcaption` parses inline and is grouped into a Paragraph,
+  // so it arrives wrapped in `<p>`. `<figcaption>` is block-level and must not
+  // sit inside a `<p>` — unwrap a paragraph that holds only the caption.
+  const body = renderBody(use).replace(
+    /<p>(\s*<figcaption[\s\S]*?<\/figcaption>\s*)<\/p>/g, '$1',
+  );
+  return `<figure${styleAttr}>${body}</figure>`;
 }
 
 // Invisible layout: `@row` is a flex band, each `@col` a side-by-side block.

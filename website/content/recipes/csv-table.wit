@@ -1,0 +1,88 @@
+@h1 Load a CSV into a table h1@
+
+Render a real @code .csv code@ file as a table without hand-typing a single
+row — the header line becomes the columns automatically. This is a focused
+excerpt of
+@a |href /docs/recipes/report-live-data/| A report with live data a@.
+
+@h2 Step 1 — Point a source at the file h2@
+
+Any program that emits CSV to standard output works; @code cat code@ is the
+simplest. Wire it in @code wit.sources.json code@.
+
+@@@pre
+{
+  "sources": {
+    "downloads": { "run": ["cat", "data/downloads.csv"], "format": "csv" }
+  }
+}
+pre@@@
+
+@h2 Step 2 — Load and render it h2@
+
+@@@pre
+@load downloads load@
+
+@table |rows @downloads|
+pre@@@
+
+@h2 Step 3 — Build h2@
+
+@@@pre
+wit build report.wit --sources wit.sources.json --allow-exec --fragment
+pre@@@
+
+@strong Result. strong@ The header row — say @code platform,downloads,change code@
+— becomes three @code th code@ columns, and each remaining line becomes one
+@code tr code@. The verified output starts:
+@@@code <thead><tr><th>platform</th>… code@@@.
+
+@h2 When you don't have a file h2@
+
+Two forms cover the tables you type by hand, and both build green.
+
+@h3 Inline rows h3@
+
+The first inner array is the header.
+
+@@@pre
+@table |caption Corpus splits| |rows [[Group, A, B], [Teens, 8, 6.5]]|
+pre@@@
+
+@h3 Schema plus rows h3@
+
+Supply the header separately, then feed a defined collection of records as the
+body.
+
+@@@pre
+#corpus: [
+  { split - Train, docs - 40k, tokens - 12.4M }
+  { split - Dev, docs - 5k, tokens - 1.5M }
+] !!
+
+@table
+  |schema [split, docs, tokens]|
+  |rows @corpus|
+table@
+pre@@@
+
+This renders a header of @code split code@, @code docs code@, @code tokens code@
+and one row per record.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong Don't freeze the table. strong@ A frozen table written with a double
+fence does @em not em@ resolve reference rows — use a plain
+@@@code @table code@@@ so @@@code |rows @downloads| code@@@ is looked up. li@
+@li @strong Commas still split records. strong@ A cell like @code 12.4M code@ is
+fine, but @code Attention, Perception code@ inside a @@@code { } code@@@ record
+reads as two fields. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/recipes/report-live-data/| A report with live data a@ shows the
+full data flow;
+@a |href /docs/reference/core-vocabulary/| Core vocabulary a@ lists the table
+nodes.

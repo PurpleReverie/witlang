@@ -1,0 +1,114 @@
+@h1 Nodes & the mental model h1@
+
+Every structure in Wit is built from one move — a node — and every feature sits on
+one of five layers stacked on plain prose. Learn the move and the stack, and the
+rest of the language is predictable.
+
+@h2 The node: one shape for everything h2@
+
+A @strong node strong@ wraps content in a named structure: an opener
+@@@code @name code@@@, the body, and a matching closer @@@code name@ code@@@ — the
+same word with the @code @ code@ on the other side.
+
+@@@pre
+@h1 The Lamp Keeper h1@
+
+@blockquote A line worth setting apart. blockquote@
+pre@@@
+
+@@@code @h1 … h1@ code@@@ becomes an @@@code <h1> code@@@;
+@@@code @blockquote … blockquote@ code@@@ becomes a @@@code <blockquote> code@@@.
+The renderer decides whether a node is block or inline, so you don't. Nodes that
+hold nothing — a rule, an image — close themselves:
+
+@@@pre
+@hr
+
+@img |src ./lamp.png| |alt The keeper's lamp|
+pre@@@
+
+@h2 Nesting comes from pairs, not indentation h2@
+
+Nodes nest inside nodes, and scope is set entirely by the open/close pairs —
+indentation is for your eyes:
+
+@@@pre
+@ul
+  @li First li@
+  @li Second li@
+ul@
+pre@@@
+
+Written flush-left it would mean exactly the same thing; @code wit fmt code@
+re-indents to match the nesting without changing a single relationship. Forget a
+closer and the build stops with @code E_UNCLOSED_NODE code@ pointing at the opener.
+
+@h2 Body carries content; parameters carry metadata h2@
+
+You've seen @@@code @a |href …| text a@ code@@@: the address rides in a parameter,
+the link text is the body. That split is the governing rule of the language — if
+it's what the reader reads, it's the body; if it only describes the node, it's a
+parameter. A parameter never carries a node's content.
+
+@h2 The built-in vocabulary h2@
+
+You define none of these — they ship with Wit, each mapping to one semantic HTML
+element:
+
+@ul
+@li @strong Headings strong@ — @@@code @h1 code@@@ … @@@code @h6 code@@@. li@
+@li @strong Inline marks strong@ — @@@code @code code@@@, @@@code @u code@@@, @@@code @s code@@@, @@@code @sub code@@@, @@@code @sup code@@@, @@@code @mark code@@@, @@@code @small code@@@, @@@code @br code@@@, plus the @code *bold* code@ and @code _italic_ code@ shortcuts. li@
+@li @strong Lists strong@ — @@@code @ul code@@@, @@@code @ol code@@@, @@@code @li code@@@; definition lists @@@code @dl code@@@ / @@@code @dt code@@@ / @@@code @dd code@@@. li@
+@li @strong Blocks strong@ — @@@code @p code@@@, @@@code @blockquote code@@@, @@@code @pre code@@@, @@@code @hr code@@@. li@
+@li @strong Media strong@ — @@@code @a code@@@, @@@code @img code@@@, @@@code @figure code@@@, @@@code @figcaption code@@@, @@@code @audio code@@@, @@@code @video code@@@. li@
+@li @strong Sectioning strong@ — @@@code @section code@@@, @@@code @article code@@@, @@@code @aside code@@@, @@@code @header code@@@, @@@code @footer code@@@, @@@code @nav code@@@, @@@code @main code@@@. li@
+@li @strong Tables strong@ — @@@code @table code@@@ and its parts. li@
+@li @strong Layout strong@ — @@@code @row code@@@, @@@code @col code@@@, @@@code @div code@@@, @@@code @span code@@@. li@
+ul@
+
+The @a |href /docs/reference/syntax/| syntax & core-vocabulary reference a@ lists
+all 52 with their exact output. When the core doesn't have what you need, you
+@a |href /docs/write/components/| define your own node a@ and use it the same way.
+
+@h2 The five layers h2@
+
+Every feature lives on one layer of a stack built on prose. Most documents never
+leave the bottom two, and nothing above a layer costs you anything until you reach
+for it.
+
+@ol
+@li @strong Prose strong@ — ordinary paragraphs; a blank line starts a new one. A document of nothing but prose is already valid. li@
+@li @strong Nodes strong@ — the named structures above. li@
+@li @strong Definitions strong@ — name a chunk of content once with @code # code@, reuse it anywhere with a bare @@@code @name code@@@. li@
+@li @strong Data strong@ — records @@@code { key - value } code@@@ and collections @@@code [ … ] code@@@, pulled into prose with @@@code @name.field code@@@. li@
+@li @strong Logic strong@ — @@@code (if …) code@@@ and @@@code (each … as …) code@@@ shape a document from its data; a @@@code <% … %> code@@@ script is the one escape hatch for anything more. li@
+ol@
+
+Here is one document climbing all five:
+
+@@@pre
+@h1 The Lamp Keeper h1@
+
+#station: { name - Ledbury Point, years - 11 }
+
+@station.name has kept the light for @station.years years.
+
+(if @station.years is 11)
+@aside(class note) A milestone year. aside@
+(end)
+pre@@@
+
+The heading is a @strong node strong@ (layer 1) around @strong prose strong@
+(layer 0); @@@code #station code@@@ is a @strong definition holding data strong@
+(layers 2–3); @@@code @station.name code@@@ pulls @strong data into prose strong@
+(layer 3); the @@@code (if …) code@@@ is @strong logic strong@ (layer 4). Wit is
+deliberately not Turing-complete — the logic layer shapes a document from its
+data; it is not a programming language in disguise.
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/prose/| Writing prose a@ — layer 0 in depth. li@
+@li @a |href /docs/write/components/| Components & reuse a@ — definitions and parameters (layers 1–2). li@
+@li @a |href /docs/guides/data/| Data a@ and @a |href /docs/guides/logic/| Logic & assembly a@ — layers 3–4. li@
+ul@

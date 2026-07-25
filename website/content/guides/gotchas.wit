@@ -1,0 +1,205 @@
+@h1 Gotchas & anti-patterns h1@
+
+The page to read when you feel like you are fighting the parser. Most of the time
+Wit gets out of your way — natural prose that resembles syntax stays prose. But a
+handful of constructs @strong do strong@ mis-fire, a few are outright bugs to
+route around, and the last section is the do/avoid checklist. Each item is
+re-verified against the current build.
+
+@h2 Prose that safely looks like syntax h2@
+
+These all @strong stay prose strong@ — the parser is careful not to fire by
+accident:
+
+@ul
+@li @strong Em-dash is not the parameter separator. strong@ The separator is the
+exact three bytes space-hyphen-space; an em-dash and numeric ranges stay prose:
+@code The key — value pair, 1995 — 2010. code@ (em-dash-vs-hyphen). li@
+@li @strong A leading greater-than is not a blockquote. strong@ A line beginning
+@code >  code@ is ordinary text (blockquote-leader). li@
+@li @strong A mid-sentence "digit-period-space" is not an ordered list. strong@
+@code It happened in 1970. It was quiet. code@ stays one paragraph
+(year-period-space). li@
+@li @strong Digit-flanked asterisks are arithmetic, not emphasis. strong@
+@code 5*6*7 code@ and @code 2*3*4*5 code@ stay literal (mid-line-arithmetic). li@
+@li @strong A home path is not a comment. strong@ @code ~/Documents/notes.txt
+code@ in prose is text; a line comment needs a tilde @em then a space em@
+(tilde-home-path). li@
+@li @strong An apostrophe after italic is safe. strong@ @code _word_'s code@
+closes the italic and keeps the @code 's code@ (apostrophe-after-italic). li@
+@li @strong Nesting has no depth cap strong@ (deep-nesting), and @strong multiple
+blank lines collapse strong@ to a single paragraph break (multi-blank-line). li@
+ul@
+
+@h2 The one that surprises everyone: an email in prose h2@
+
+An @@@code @ code@@@ that follows a word character is @strong not strong@ read as
+opening a node — but @@@code word@ code@@@ (a word pressed against a following
+@@@code @ code@@@) @strong is read as a node close strong@. So an email address
+written plainly in prose splits the paragraph and drops the local part:
+
+@@@pre
+Contact keeper@example.org for archive access.
+pre@@@
+
+That renders as two paragraphs — @code Contact code@ and @code example.org for
+archive access. code@ — because @@@code keeper@ code@@@ was consumed as a close
+token. To show an address literally, wrap it in frozen inline code.
+
+@h2 The colon-scatter false positive h2@
+
+A space-free @code id:value code@ token buried in real prose still lifts as a
+parameter:
+
+@@@pre
+@thing the variable name:Tauraj is bad thing@
+pre@@@
+
+@code name code@ is lifted even though you meant it as prose. Fix by escaping the colon
+(@code name\: code@) or adding a space (@code name: … code@). The same bites
+URLs, ratios, and clock times written inside a scatter body.
+
+@h2 The record comma trap h2@
+
+An unquoted comma inside a record value splits the field —
+@code E_MALFORMED_RECORD code@:
+
+@@@pre
+#cite: { author - Boud, D., year - 2024 }    ~ splits into a keyless field
+#cite: { author: "Boud, D.", year: 2024 }    ~ quote to keep the comma
+pre@@@
+
+
+
+@h2 Glued statements are not recognised h2@
+
+A @@@code (if …) code@@@, @@@code (each …) code@@@, or @@@code (end) code@@@ is
+recognised only when its @code ( code@ follows whitespace or a line start. Glue
+one to a preceding @code ) code@ and it renders literally:
+
+@@@pre
+(each @xs as x)(if @x is a)Y(end)(end)      ~ inner (if …) prints as text
+(each @xs as x) (if @x is a) Y (end) (end)  ~ works
+pre@@@
+
+ Keep a space or newline between adjacent statements.
+
+@h2 The greedy-bind and mixing traps h2@
+
+A bodyless pipes call greedily swallows forward to the next matching close —
+@code E_UNCLOSED_NODE code@. Give it an explicit @@@code name@ code@@@, a blank
+line after it, or place it last. And record-arg is exclusive: combining
+@@@code { … } code@@@ with parens or pipes collected before it is
+@code E_MIXED_PARAM_SOURCE code@. Both are covered in
+@a |href /docs/guides/parameters/| Parameters a@.
+
+@h2 A comment as a container's first line h2@
+
+A @code ~comment code@ on the @strong first strong@ line of a container body,
+with content right after, collapses the following blocks into one paragraph:
+
+@@@pre
+@section
+~ note
+@h2 T h2@
+Body
+section@
+pre@@@
+
+Emits the heading wrongly nested in a paragraph —
+@@@code <section><p><h2>T</h2>Body</p></section> code@@@. @strong Fix: strong@ a
+blank line after the comment →
+@@@code <section><h2>T</h2><p>Body</p></section> code@@@ (see
+@a |href /docs/write/comments/| Comments a@; block comments close with the exact
+@code ~~/ code@ fence).
+
+@h2 Multi-word key access via spaces fails h2@
+
+A data-access segment ends at a space, so a multi-word key written with spaces
+does not resolve — @@@code @keeper.years at post code@@@ reads only
+@@@code @keeper.years code@@@. Reach multi-word keys through the space-free camel
+or snake spelling (see @a |href /docs/guides/data/| Data access a@).
+
+@h2 Index access renders unresolved h2@
+
+@@@code @list.0 code@@@ and @@@code @rec.0.field code@@@ currently emit
+@@@code <span class="wit-unresolved"> code@@@ rather than the element.
+@strong Fix: strong@ reach into collections with @@@code (each) code@@@ or
+@@@code @table |rows @ref| code@@@.
+
+@h2 The loop variable is a reference not a capture h2@
+
+Inside @@@code (each @c as item) code@@@, reference the element with
+@@@code @item code@@@ — @strong not strong@ @@@code ::item:: code@@@, which is
+capture interpolation and stays unresolved in a loop.
+
+@h2 A single-line def with captures h2@
+
+A single-line @@@code #def code@@@ that declares @@@code ||captures|| code@@@
+renders the literal capture list. @strong Fix: strong@ use the block form for any
+def with captures.
+
+@h2 Form-fill needs two or more lines h2@
+
+A bare opener with a single @@@code key: value code@@@ line is read as prose, not
+a form-fill call. @strong Fix: strong@ add a second field, or use the record-arg
+form. A @@@code key: code@@@ with an empty same-line value consumes the block
+beneath; continuation must be @strong strictly deeper strong@ indented.
+
+@h2 The multi-line-call bugs and two cosmetic quirks h2@
+
+@ul
+@li A parens call across a newline breaks — the remainder leaks into the text
+. Keep parens calls on one line. li@
+@li A newline inside a single @@@code |…| code@@@ pipe value does not span lines
+— @code E_UNCLOSED_NODE code@ (06-parameters-pipes/multi-line-value). Use a body
+form for multi-line values. li@
+@li Following a template that has no body slot with body content silently drops
+that body (05-nodes-parens/parens-then-body). Pass bodies with pipes. li@
+@li @strong Cosmetic: strong@ @@@code @figure code@@@ can wrap a block
+@@@code @figcaption code@@@ in a @code <p> code@, and a frozen
+@@@code @@table code@@@ will not resolve @@@code @ref code@@@ rows — use a plain
+@@@code @table code@@@ when rows read from data. li@
+ul@
+
+@h2 Delimiter and param traps h2@
+
+@table |rows [[Trap, What happens, Fix], [colon delimiter in a data-def record, LSP rejects it as E_MALFORMED_RECORD, use the hyphen delimiter], [multi-word colon value in parens, breaks the call, quote it or use space style], [a dotted path inside parens or record values, confuses close detection, use pipes or form-fill for path values], [an at-sign inside record values like an email, breaks parsing, keep at-strings out of record values]]| |caption Delimiter and param traps| table@
+
+@h2 Anti-patterns h2@
+
+@table |rows [[Do, Avoid], [content in the body — metadata in params, stuffing content into params], [lift duplicated lists into data plus each, hand-repeating list items], [wrap opaque nodes in named defs, scattering raw node type X calls], [name citations by idea, numbering citations by hand], [hyphen delimiter in data-defs, colon delimiter in data-defs], [conditionals and each over scripts, reaching for scripts first], [place pipes-form calls last, leaving an open pipes call before a body use], [schema-array tables, inline CSV for structured data]]| |caption Do / avoid| table@
+
+@aside(class note)
+The LSP is @strong stricter strong@ than the CLI in spots — a file can
+@code wit check code@ clean yet show IDE squiggles (notably the colon-delimiter
+record). Prefer the portable form so both agree.
+
+aside@
+
+@h2 The fixes, at a glance h2@
+
+@ul
+@li Email or @@@code word@ code@@@ in prose → wrap it in frozen inline code. li@
+@li Colon false positive → @code \: code@ or a space. li@
+@li Record comma → quote the value. li@
+@li Leading comment in a container → blank line after it. li@
+@li Bodyless pipes → explicit @@@code name@ code@@@, blank line, or last. li@
+@li Glued statements → keep a space. li@
+@li Spaced multi-word access → camel or snake spelling. li@
+@li Index access → @@@code (each) code@@@ or a data-driven @@@code @table code@@@. li@
+@li Loop element → @@@code @item code@@@, not @@@code ::item:: code@@@. li@
+@li Def with captures → block form. li@
+@li Single-line form-fill → add a field or use record-arg. li@
+@li Data in prose → @@@code @field code@@@, not @@@code {{…}} code@@@. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/guides/parameters/| Parameters a@ ·
+@a |href /docs/guides/parameters/| Colon-scatter a@ ·
+@a |href /docs/guides/escapes/| Escapes a@ ·
+@a |href /docs/guides/data/| Data access a@ ·
+@a |href /docs/guides/conditionals/| Conditionals a@ ·
+@a |href /docs/guides/iteration/| Iteration a@ ·
+@a |href /docs/reference/errors/| Errors a@

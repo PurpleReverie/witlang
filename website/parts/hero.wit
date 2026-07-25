@@ -1,5 +1,7 @@
 ~ hero.wit — the headline + code card. Exposed as #page_hero.
 
+reference ./config.wit
+
 #page_hero
 @header(class hero)
   @div(class wrap)
@@ -7,8 +9,9 @@
     @h1 Write the paper. Not the @span(class grad) preamble span@. h1@
     @p(class sub) Wit gives you typeset-quality documents without the LaTeX tax — plain, readable source with real components, data, and cross-references. One file renders to HTML, Markdown, and print-ready PDF. p@
     @div(class cta)
-      @a |class btn btn-primary| |href #features| Explore features a@
-      @a |class btn btn-ghost| |href https://github.com| View on GitHub a@
+      @a |class btn btn-primary| |href docs/index.html| Read the docs a@
+      @a |class btn btn-ghost| |href #features| Explore features a@
+      @gh_btn |label View on GitHub|
     div@
     @div(class code-card)
       @div(class code-head)

@@ -1,0 +1,159 @@
+@h1 Writing text h1@
+
+Type sentences. Separate paragraphs with a blank line. That is a complete Wit
+document — everything on this page is what to add when plain prose isn't enough.
+
+@h2 Paragraphs h2@
+
+A blank line starts a new paragraph. A single newline inside a block is a soft
+wrap: HTML collapses it to a space, so the sentence flows on.
+
+@@@pre
+The reactor logged a coolant spike at 03:12.
+
+Two operators were on shift; neither
+had left the control room.
+pre@@@
+
+That renders two paragraphs — the first line, then the two soft-wrapped lines as a
+single flowing paragraph. One blank line or several makes no difference, and
+extra blank lines never produce empty paragraphs. A "blank" line counts even if
+it holds only spaces or tabs, so text pasted from an editor that leaves trailing
+whitespace still splits correctly.
+
+Leading indentation, line length, and line endings (CRLF, CR, LF) carry no
+meaning — they are normalised before paragraphs are split. Wit has no
+Markdown-style block syntax, so a line that opens with @code - code@,
+@code * code@, @code > code@, or @code 1. code@ is literal prose, not a list or
+quote. Punctuation is never reserved: em-dashes, apostrophes, ampersands, and
+percent signs render as themselves, and quotes stay straight (no smart-quote
+substitution).
+
+@h2 Bold and italic h2@
+
+Two inline marks: @code *asterisks* code@ for *bold*, @code _underscores_ code@
+for _italic_. Each wraps a run of text and can span several words.
+
+@@@pre
+The lens held _the last of the evening light_, and the flame *never wavered*.
+pre@@@
+
+A mark only fires when the character flanks the text from the outside. Pressed
+against a digit or a letter it stays literal, which is why arithmetic and
+identifiers are safe with emphasis left on:
+
+@@@pre
+The product 5*6*7 and the path file_name_here both stay plain text.
+pre@@@
+
+Nest them with *bold on the outside*: @@@code *_both_* code@@@ gives
+bold-and-italic. The reverse, @@@code _*x*_ code@@@, leaves the inner asterisks
+literal — the parser resolves the outer mark first, and italic-outside consumes
+its span before the inner bold is seen.
+
+@aside(class note) 💡 A mark refuses to touch a token containing its own
+character — the underscore mark will not italicise @code snake_case code@. For
+that, use the node form: @@@code @em snake_case em@ code@@@ (italic) or
+@@@code @strong … strong@ code@@@ (bold). An empty pair like @code __ code@ also
+stays literal. aside@
+
+@h2 Inline mark nodes h2@
+
+For anything past bold and italic, call the mark by name. Each is an inline node
+mapping to the same-named HTML element:
+
+@@@pre
+@code … code@    inline code: commands, identifiers, paths
+@u … u@       underline (reads as a link online — use sparingly)
+@s … s@       strike-through: retractions, "was X, now Y"
+@sub … sub@     subscript: chemical formulae, footnote marks
+@sup … sup@     superscript: exponents, ordinals, note refs
+@mark … mark@    highlight: draw the eye to a phrase
+@small … small@   small print, fine print
+@br         a hard line break inside one paragraph
+pre@@@
+
+In a single run:
+
+@@@pre
+Call @code shutdown() code@ to scram; water is H@sub 2 sub@O, the area is
+4@sup 2 sup@, an @s old figure s@ became a @mark new one mark@, with
+@small caveats small@ in the footnotes.
+pre@@@
+
+@@@code @br code@@@ is self-closing and needs no body. A lone newline is a soft
+break; use @@@code @br code@@@ for a real one — an address block, a line of verse,
+a signature:
+
+@@@pre
+Ada Lovelace @br
+12 Analytical Way @br
+London
+pre@@@
+
+Markdown output has no reliable inline break, so @@@code @br code@@@ degrades to a
+space there. Keep to HTML or PDF when hard breaks matter.
+
+@h2 Comments h2@
+
+A comment is a note that never reaches the reader — stripped before any output.
+A tilde followed by a space starts a line comment to end-of-line:
+
+@@@pre
+~ verify the coolant spike time against the incident log
+
+The reactor logged a spike at 03:12.
+pre@@@
+
+Two tildes open a block comment; the fence @@@code ~~/ code@@@ closes it. It can
+vanish mid-sentence or span many lines:
+
+@@@pre
+The bell ~~ TODO: confirm the year ~~/ rang on the hour.
+
+~~
+Draft note: this passage may move to chapter two.
+Ask the editor before cutting it.
+~~/
+pre@@@
+
+Only the exact closing fence ends a block, so a home path like
+@code ~/Documents code@ or a lone doubled tilde inside the block is safe content.
+
+@aside(class note) 💡 Put a blank line on each side of a standalone comment.
+A line comment wedged between two prose lines eats the newlines around it and
+runs the paragraphs together; a comment as the first line of a container body can
+fold the next block into a paragraph. A blank line each side prevents both. aside@
+
+@h2 Escaping edge characters h2@
+
+Six characters lead a structural reader: @code @ code@, @code # code@,
+@@@code | code@@@, @@@code * code@@@, @@@code _ code@@@, and @code ~ code@. A
+backslash keeps any of them literal — the backslash is dropped, the character
+stays.
+
+@@@pre
+Email me at ada\@example.org today.
+Write \#tag for a literal hash, C\# for the key.
+The range is 4\|8 amps, a literal \*asterisk\*, and \~ leads a line.
+pre@@@
+
+The escape is only needed when the character is glued to a letter (or leads a
+line, for @code # code@ and @code ~ code@). A character before a space or a digit
+is already safe: "Meet me @ home", "in @2024", "it took ~6 hours", and
+"x ~ y" all render as typed, no backslash required. Most prose needs no escapes
+at all.
+
+@aside(class note) 💡 An email won't survive inside an inline
+@@@code @code … code@ code@@@ node — the @code @ code@ reads as the node's close.
+Escape it in prose (@@@code ada\@example.org code@@@), or open a frozen code
+node with @@@code @@@code code@@@ and close it with the matching triple-fence: it
+renders its body verbatim, at-signs and all. aside@
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/structure/| Structure a@ — headings, lists, blocks, and how nodes nest. li@
+@li @a |href /docs/write/components/| Components a@ — the node form behind every mark, and defining your own. li@
+@li @a |href /docs/start/mental-model/| Mental model a@ — the one node shape and the five layers above prose. li@
+ul@

@@ -12,6 +12,9 @@
     { "include": "#raw-frozen" },
     { "include": "#raw-style" },
     { "include": "#raw-script" },
+    { "include": "#raw-math" },
+    { "include": "#raw-diagram-graphviz" },
+    { "include": "#raw-diagram" },
     { "include": "#raw-node" },
     { "include": "#paren-statement" },
     { "include": "#value-block-terminator" },
@@ -130,6 +133,42 @@
       "patterns": [
         { "include": "#interpolation" },
         { "include": "source.js" }
+      ]
+    },
+    "raw-math": {
+      "comment": "@@math / @@mathblock ... — math body; embed LaTeX highlighting (needs a LaTeX grammar, e.g. LaTeX Workshop). {{...}} stays live.",
+      "begin": "@@(mathblock|math)\\b(\\([^)]*\\))?",
+      "end": "(mathblock|math)@@",
+      "beginCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "endCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "name": "meta.embedded.block.latex.wit",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "text.tex.latex" }
+      ]
+    },
+    "raw-diagram-graphviz": {
+      "comment": "@@diagram(engine graphviz) ... — embed Graphviz DOT highlighting (needs a DOT/Graphviz grammar).",
+      "begin": "@@diagram(\\(\\s*engine\\s+graphviz\\s*\\))",
+      "end": "diagram@@",
+      "beginCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "endCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "name": "meta.embedded.block.graphviz.wit",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "source.dot" }
+      ]
+    },
+    "raw-diagram": {
+      "comment": "@@diagram ... diagram@@ — embed Mermaid highlighting (default engine; needs a Mermaid grammar). {{...}} stays live.",
+      "begin": "@@diagram\\b(\\([^)]*\\))?",
+      "end": "diagram@@",
+      "beginCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "endCaptures": { "0": { "name": "entity.name.tag.wit" } },
+      "name": "meta.embedded.block.mermaid.wit",
+      "patterns": [
+        { "include": "#interpolation" },
+        { "include": "source.mermaid" }
       ]
     },
     "raw-node": {

@@ -1,0 +1,182 @@
+@h1 Rendering h1@
+
+Rendering is the last mile and the most configuration-light stage. It turns an
+@code ExpandedDocument code@ into a string — HTML or Markdown — with a pure tree
+walk: no I/O, no state beyond the options you pass. Know the two knobs (mode and
+CSS) and the fixed AST-to-HTML mapping and you know the whole job.
+
+@h2 HTML h2@
+
+@@@code renderHtml(doc: ExpandedDocument, options?: RenderHtmlOptions) → string code@@@.
+
+@code RenderHtmlOptions code@:
+
+@ul
+@li @code mode code@ — @@@code 'fragment' | 'document' code@@@.
+@strong Defaults to strong@ @code 'fragment' code@. @code fragment code@ emits
+just @@@code <article class="wit-doc">…</article> code@@@; @code document code@
+wraps it in a full @code <!doctype html> code@ page with the stylesheet inlined
+into @code <head> code@. li@
+@li @code title?: string code@ — the document-mode @code <title> code@ (default
+@code 'Wit document' code@). li@
+@li @code lang?: string code@ — the document-mode @@@code <html lang> code@@@
+(default @code 'en' code@). li@
+@li @code css?: string code@ — the document-mode stylesheet, inlined into
+@code <head> code@. Defaults to @code defaultThemeCss code@. Pass @code '' code@
+for an unstyled page, or your own string. li@
+ul@
+
+@aside(class note) ⚠️ @code mode code@ defaults to @code 'fragment' code@, not
+@code 'document' code@. If you want a standalone HTML file, pass
+@@@code { mode: 'document' } code@@@ explicitly. The CLI's default is the
+opposite — @code wit build code@ emits a document — so the two surfaces disagree
+by design. aside@
+
+@h2 Theming h2@
+
+Two stylesheet strings ship from @@@code @witlang/render-html code@@@:
+
+@ul
+@li @code defaultThemeCss code@ — the Word-like house style: CSS custom
+properties, a @code prefers-color-scheme code@ dark mode, print and
+@@@code @page code@@@ rules. A document with no CSS of its own renders like a
+word-processor page. li@
+@li @code rawThemeCss code@ — a mechanical reset only (box model, no body margin,
+responsive media). You style everything yourself via @@@code @@style code@@@ and
+wrapping nodes. li@
+ul@
+
+@@@pre
+import { renderHtml, defaultThemeCss, rawThemeCss } from '@witlang/render-html';
+
+renderHtml(expanded, { mode: 'document' });                    // house style
+renderHtml(expanded, { mode: 'document', css: rawThemeCss });  // bare reset
+renderHtml(expanded, { mode: 'document', css: myOwnCss });     // your CSS
+renderHtml(expanded, { mode: 'document', css: '' });           // no <style> at all
+pre@@@
+
+@h2 The AST-to-HTML mapping h2@
+
+The walk is fixed. The mappings that matter:
+
+@ul
+@li @code Paragraph code@ → @code <p> code@; empty paragraphs are dropped, so no
+stray @code <p></p> code@. li@
+@li @code Italic code@ → @code <em> code@; @code Bold code@ → @code <strong> code@;
+@code Text code@ is escaped through @code escapeHtml code@. li@
+@li Core vocab maps to its fixed element: @@@code @h1 code@@@ → @code <h1> code@,
+@@@code @a |href …| code@@@ → @@@code <a href=…> code@@@, @@@code @img code@@@ →
+@code <img> code@, @@@code @row code@@@ / @@@code @col code@@@ → flex
+@code <div> code@s, @@@code @br code@@@ / @@@code @hr code@@@ → void elements. li@
+@li @@@code @table code@@@ → its dedicated renderer (schema, rows, caption; three
+call forms). li@
+@li @@@code @bibliography code@@@ → @@@code <div class="wit-bibliography"> code@@@
+with one @code <p> code@ per entry. li@
+@li An opaque @@@code @node code@@@ → dispatched on its @code type code@ param
+(see @a |href /docs/build/custom-nodes/| Custom nodes a@). li@
+@li A definition body that collapsed to a literal @code Record code@ →
+@@@code <table class="wit-record"> code@@@; a @code Collection code@ →
+@@@code <ul class="wit-collection"> code@@@. li@
+@li A surviving unknown user @@@code @name code@@@ (rare) →
+@@@code <div|span class="wit-node" data-wit-name="…"> code@@@ with each param as
+a @code data-* code@ attribute. li@
+@li An unresolved @@@code ::x:: code@@@ interpolation →
+@@@code <span class="wit-unresolved">::x::</span> code@@@; a surviving unresolved
+access @@@code @x.y code@@@ →
+@@@code <span class="wit-unresolved">@x.y</span> code@@@ — visible, never silent. li@
+ul@
+
+@h2 Safety h2@
+
+All text and attribute values pass through @code escapeHtml code@ (@code ' code@
+→ @code &#39; code@, @code " code@ → @code &quot; code@), so malformed prose can
+never produce malformed HTML. The raw-text elements @@@code @@style code@@@ and
+@@@code @@script code@@@ emit their body @strong verbatim strong@ — CSS and JS
+must not be escaped — but the renderer guards the closing tag
+(@@@code </style code@@@ becomes @@@code <\/style code@@@ inside the body):
+
+@@@pre
+@@style .x{color:red} style@@
+// → <style>.x { color: red; }</style>
+pre@@@
+
+@aside(class note) 💡 @code WIT_DEBUG_COMMENTS=1 code@ keeps @code Comment code@
+nodes as HTML comment markers (default: dropped). @code ScriptBlock code@ and
+@code ScriptCall code@ are @strong always strong@ dropped — their effects
+already ran during @code expand code@. aside@
+
+@h2 Markdown h2@
+
+@@@code renderMarkdown(doc: ExpandedDocument) → string code@@@ is the single
+export — @strong no options. strong@ It is CommonMark-ish, hand-rolled per node
+name. The same source rendered both ways:
+
+@@@pre
+@h1 Title h1@
+
+Some *bold* and _italic_ prose.
+
+@ul
+@li One li@
+@li Two li@
+ul@
+pre@@@
+
+→ Markdown:
+
+@@@pre
+# Title
+
+Some **bold** and *italic* prose.
+
+- One
+- Two
+pre@@@
+
+Sectioning wrappers (@code section code@, @code article code@,
+@code header code@, @code footer code@, @code nav code@, @code main code@) are
+transparent; comments and scripts are dropped; unknown nodes emit their content
+unwrapped; there is no Markdown analog for the opaque container, so it emits just
+its body.
+
+@h2 Progressive examples h2@
+
+@ul
+@li @strong Fragment vs document. strong@ @@@code renderHtml(expanded) code@@@
+gives the bare @code <article> code@;
+@@@code renderHtml(expanded, { mode: 'document', title: 'Essay' }) code@@@ gives
+a full page. li@
+@li @strong Re-theme. strong@ Swap @code css: rawThemeCss code@ for the mechanical
+reset, or pass your own string. li@
+@li @strong Two targets, one source. strong@ Call @code renderHtml code@ and
+@code renderMarkdown code@ on the same @code ExpandedDocument code@. li@
+ul@
+
+@h2 Every edge h2@
+
+@ul
+@li @code mode code@ default is @code fragment code@ — easy to get wrong. li@
+@li @code css: '' code@ yields an unstyled document; the @code <style> code@ tag
+is omitted entirely. li@
+@li Because @code escapeHtml code@ runs on all text, you never double-escape by
+letting the renderer do its job. li@
+@li The PDF path (CLI) is just document-mode HTML paginated by headless Chrome —
+no renderer difference. li@
+ul@
+
+@h2 Common mistakes h2@
+
+@ul
+@li Expecting @code document code@ mode by default from @code renderHtml code@. li@
+@li Expecting @code renderMarkdown code@ to take options — it takes none. li@
+@li Double-escaping — the renderer already escapes; hand it raw strings. li@
+@li Worrying about a @@@code </style> code@@@ inside @@@code @@style code@@@ — it
+is auto-guarded. li@
+ul@
+
+@h2 See also h2@
+
+@a |href /docs/build/custom-nodes/| Custom nodes a@ (opaque dispatch) ·
+@a |href /docs/build/custom-renderer/| Build your own renderer a@ ·
+@a |href /docs/build/architecture/| Architecture a@ (render is a pure walk) ·
+@a |href /docs/build/resolve-expand/| Resolve & expand a@.

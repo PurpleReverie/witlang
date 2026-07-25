@@ -1,0 +1,221 @@
+@h1 Structure & layout h1@
+
+Headings give a document its outline; sectioning wrappers give it a skeleton;
+lists, quotes, and rules set pieces apart; rows and columns place blocks side by
+side. Every one is a node — no CSS, no floats.
+
+@h2 Headings h2@
+
+Six levels, @@@code @h1 code@@@ through @@@code @h6 code@@@. Level one is the
+title; deeper levels nest under it to trace your argument.
+
+@@@pre
+@h1 Coastal survey 2024 h1@
+@h2 Methods h2@
+@h3 Tide-gauge calibration h3@
+pre@@@
+
+Each renders straight into its tag — @@@code <h1>Coastal survey 2024</h1> code@@@ —
+with no paragraph around the text. Don't skip a level for a smaller heading; the
+jump breaks the outline, and size is a
+@a |href /docs/write/rendering/| rendering a@ concern.
+
+@h2 Sectioning wrappers h2@
+
+Semantic containers describe the shape of the page. Each maps to the same-named
+HTML element that a screen reader, print engine, or search index looks for:
+
+@@@pre
+@article … article@   a self-contained piece
+@section … section@   a thematic division
+@header  … header@    an opening block (title, byline)
+@footer  … footer@    a closing block (date, credits)
+@nav     … nav@        navigation links
+@aside   … aside@      supporting or marginal content
+@main    … main@       the primary content region
+pre@@@
+
+Nest them and the document gains real structure:
+
+@@@pre
+@article
+@header
+@h1 A survey of the northern reef h1@
+header@
+
+@section
+The season opened early this year.
+section@
+
+@footer
+@small Published 2024. small@
+footer@
+article@
+pre@@@
+
+That builds an @@@code <article> code@@@ holding a @@@code <header> code@@@,
+@@@code <section> code@@@, and @@@code <footer> code@@@. A @@@code @section code@@@
+already paragraph-wraps its prose, so don't add an inner @@@code @p … p@ code@@@.
+
+@h2 Generic containers h2@
+
+When you need a box to style or label and no semantic wrapper fits, use the
+block @@@code @div code@@@ or inline @@@code @span code@@@. Both accept
+@code |class …| code@ and @code |id …| code@ to hook them for CSS:
+
+@@@pre
+@div |class callout-card|
+A boxed note, grouped for styling.
+div@
+
+An @span |id lede| opening clause span@ inside a sentence.
+pre@@@
+
+The block becomes a @@@code <div> code@@@, the inline one a
+@@@code <span> code@@@. @a |href /docs/write/rendering/| Rendering a@ covers how a
+class name reaches your stylesheet.
+
+@h2 Bulleted & numbered lists h2@
+
+A list is a list node holding one @@@code @li code@@@ per item. The theme draws
+the markers — never type a dash or a number yourself.
+
+@@@pre
+@ul
+@li Salt marsh li@
+@li Mud flat li@
+@li Shingle bank li@
+ul@
+pre@@@
+
+Swap @@@code @ul code@@@ for @@@code @ol code@@@ and the numbers come
+automatically; reorder items and they renumber for free:
+
+@@@pre
+@ol
+@li Record the water level. li@
+@li Note wind direction. li@
+@li Photograph the transect. li@
+ol@
+pre@@@
+
+@h2 Definition lists h2@
+
+A @@@code @dl code@@@ pairs a term (@@@code @dt code@@@) with its description
+(@@@code @dd code@@@) — a glossary, a field key, a set of parameters:
+
+@@@pre
+@dl
+@dt Transect dt@
+@dd A fixed line along which measurements are repeated. dd@
+@dt Datum dt@
+@dd The reference level all heights are measured from. dd@
+dl@
+pre@@@
+
+@h2 Items hold rich content h2@
+
+An item is inline-context: a one-line item flattens to just its text, with no
+inner paragraph. But it can still carry marks, links, or a nested list — drop a
+whole list node inside an item's body to nest:
+
+@@@pre
+@ul
+@li The _daily_ readings, taken at dawn. li@
+@li Supplies aboard the tender:
+@ul
+@li spare batteries li@
+@li calibration weights li@
+ul@
+li@
+ul@
+pre@@@
+
+@h2 Block quotations h2@
+
+A @@@code @blockquote code@@@ lifts a passage off the page — an epigraph, a
+pulled quote, a cited paragraph. The theme adds a left rule and muted colour:
+
+@@@pre
+@blockquote
+"The sea, once it casts its spell, holds one in its net of wonder forever."
+— Jacques Cousteau
+blockquote@
+pre@@@
+
+For a short quoted phrase inside a sentence, plain quotation marks are enough.
+
+@h2 Preformatted text h2@
+
+A @@@code @pre code@@@ block renders monospaced — a code sample, a data
+fragment, anything shown in a fixed-width face:
+
+@@@pre
+@pre gauge.read() -> 2.41 m pre@
+pre@@@
+
+@aside(class note) 💡 An honest limit: @@@code @pre code@@@ renders monospaced,
+but its body still passes through normal paragraph-wrapping, so it is not a
+strict significant-whitespace block. Where exact indentation and line breaks
+_must_ survive, build the file and check the output. aside@
+
+@h2 Horizontal rule h2@
+
+A self-closing divider — a visual break with no heading. It takes no body:
+
+@@@pre
+The first movement ends here.
+
+@hr
+
+The second begins.
+pre@@@
+
+That produces a plain @@@code <hr> code@@@.
+
+@h2 Side-by-side: rows & columns h2@
+
+A @@@code @row code@@@ is an invisible flexbox that lays its columns out
+horizontally. A @@@code @col |size 260| code@@@ fixes a column's width; a bare
+@@@code @col code@@@ fills whatever space is left. Put anything in a column —
+prose, an image, a table:
+
+@@@pre
+@row
+@col |size 260|
+@img |src ./gauge.png| |alt The tide gauge|
+col@
+@col
+The gauge logged every hour of every tide, its readings the backbone of the
+season's survey.
+col@
+row@
+pre@@@
+
+The fixed-plus-flexible pair is the workhorse for an image beside its
+explanation. Two bare columns split the row evenly — here it is live:
+
+@row
+@col
+_The lamp room._ Glass on every side and a lens that threw the beam twenty miles
+out to the shipping lanes.
+col@
+@col
+_The watch room._ Below the light, a desk, a barometer, and the log where every
+hour of every night was accounted for.
+col@
+row@
+
+A size takes a named preset (small, medium, large — 220, 380, 600 pixels), a
+pixel number, or a percentage; several bare columns share the leftover equally.
+The row wraps: when the viewport or printed page is too narrow, the columns stack
+— two columns on a wide screen, one readable column on a phone, no media query.
+Separate a row from surrounding prose with blank lines so it stays top-level.
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/write/prose/| Writing prose a@ — text, emphasis, and the inline marks these blocks hold. li@
+@li @a |href /docs/write/tables/| Tables a@ — a captioned table to place inside a column. li@
+@li @a |href /docs/write/media/| Images & media a@ — sizing a figure in a fixed column. li@
+ul@

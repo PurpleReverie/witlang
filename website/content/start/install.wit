@@ -1,0 +1,183 @@
+@h1 Install & your first document h1@
+
+Wit runs on Node 20+. Install the command-line tool, then build a real document
+from an empty file — prose first, structure added one piece at a time.
+
+@h2 Install the CLI h2@
+
+@@@pre
+npm install -g @witlang/cli
+pre@@@
+
+Check it landed:
+
+@@@pre
+wit --version
+pre@@@
+
+That prints @code 0.2.0 code@. The @code wit code@ command has no runtime
+dependencies, so the install is quick. Below Node 20 the tool won't run — upgrade
+Node, not Wit.
+
+@h2 Write some prose h2@
+
+Make a file called @code hike.wit code@ and type ordinary sentences. A blank line
+starts a new paragraph; nothing else is required.
+
+@@@pre
+We reached Cairn Loop just after seven, ahead of the heat.
+
+The ridge was quiet — a single hawk, and the wind doing all
+the talking.
+pre@@@
+
+Build it to a web page:
+
+@@@pre
+wit build hike.wit -o hike.html
+pre@@@
+
+Open @code hike.html code@. Two clean paragraphs in a finished-looking theme — you
+wrote no CSS, because the default HTML output is a complete, self-contained styled
+page.
+
+@h2 Add a heading and emphasis h2@
+
+Put a title on top and mark two words. @code *stars* code@ make bold,
+@code _underscores_ code@ make italic:
+
+@@@pre
+@h1 Weekend hike: Cairn Loop h1@
+
+We reached Cairn Loop *just after seven*, ahead of the heat.
+The ridge was _completely_ silent.
+pre@@@
+
+Rebuild and refresh. The @@@code @h1 … h1@ code@@@ is a real heading, the starred
+words are bold, the underscored words italic. Everything you didn't mark stayed
+exactly as typed — the marks wrap a single token, so @code 5*6*7 code@ and
+@code file_name code@ are never touched.
+
+@h2 Add a list h2@
+
+@@@pre
+@h2 What we packed h2@
+
+@ul
+  @li Two litres of water each li@
+  @li Windshell and gloves li@
+  @li Trail bars li@
+ul@
+pre@@@
+
+That renders a @@@code <ul> code@@@ of three items. The indentation is for your
+eyes only — a node's scope comes from its @@@code @ul … ul@ code@@@ pair, not from
+columns. Swap @@@code @ul code@@@ for @@@code @ol code@@@ to number them.
+
+@h2 Add a table h2@
+
+Something Markdown can't do without dropping into HTML — a captioned table,
+written inline:
+
+@@@pre
+@table |rows [[Segment, Distance, Time], [Trailhead to ridge, 4.2 km, 1h10], [Ridge to summit, 2.8 km, 55m]]| |caption Splits|
+pre@@@
+
+Wit builds a full @@@code <table> code@@@: a @@@code <caption> code@@@, a
+@@@code <thead> code@@@ from the first row, and a @@@code <tbody> code@@@ from the
+rest. The rows ride in a parameter because they're structured metadata.
+
+@aside(class note) 💡 Cells in @@@code |rows [[…]]| code@@@ split on commas, and a
+comma inside a cell can't be escaped — keep cell text comma-free, or build the
+table from a @a |href /docs/guides/data/| data collection a@ instead. aside@
+
+@h2 Add a figure h2@
+
+A picture with a real caption (any @code .png code@ beside the file works for
+@code src code@):
+
+@@@pre
+@figure
+  @img |src ./ridge.png| |alt The ridge at dawn|
+  @figcaption First light on the ridge. figcaption@
+figure@
+pre@@@
+
+You get a semantic @@@code <figure> code@@@ wrapping the @@@code <img> code@@@ and
+its @@@code <figcaption> code@@@ — the @code src code@ and @code alt code@ are
+metadata in parameters; the caption is content in the body.
+
+@h2 The whole file h2@
+
+@@@pre
+@h1 Weekend hike: Cairn Loop h1@
+
+We reached Cairn Loop *just after seven*, ahead of the heat.
+The ridge was _completely_ silent.
+
+@h2 What we packed h2@
+
+@ul
+  @li Two litres of water each li@
+  @li Windshell and gloves li@
+  @li Trail bars li@
+ul@
+
+@table |rows [[Segment, Distance, Time], [Trailhead to ridge, 4.2 km, 1h10], [Ridge to summit, 2.8 km, 55m]]| |caption Splits|
+
+@figure
+  @img |src ./ridge.png| |alt The ridge at dawn|
+  @figcaption First light on the ridge. figcaption@
+figure@
+pre@@@
+
+One plain-text file — prose, a heading, emphasis, a list, a table, a figure — and
+it built to HTML at every step.
+
+@h2 The edit loop h2@
+
+Editing Wit is three beats: @strong edit strong@ the file, run @strong build strong@,
+@strong refresh strong@ the output. Two commands help alongside @code build code@:
+
+@ul
+@li @code wit check hike.wit code@ — report parse and reference errors without building. li@
+@li @code wit fmt hike.wit code@ — tidy indentation without changing meaning (@code -w code@ writes it back). li@
+ul@
+
+@aside(class note) 💡 There's no @code --watch code@ flag yet. Builds are fast
+enough to re-run on save, or wrap one in a loop:
+@code while true; do wit build hike.wit -o hike.html; sleep 1; done code@. aside@
+
+@h2 Build to PDF, Markdown, or a fragment h2@
+
+The @code -o code@ extension picks the format:
+
+@ul
+@li @code -o hike.html code@ — a complete, styled, self-contained page. li@
+@li @code -o hike.md code@ — clean Markdown, the same source for a different pipeline. li@
+@li @code -o hike.pdf code@ — a paginated, print-ready PDF. li@
+@li @strong No output flag strong@ — the HTML prints to your terminal, handy for piping. li@
+ul@
+
+Two flags fine-tune HTML: @code --fragment code@ emits just the bare
+@@@code <article> code@@@ for pasting into an existing site, and @code --raw code@
+swaps the built-in theme for a minimal reset so you can bring your own CSS.
+
+PDF is the one format with a system requirement: Wit paginates its HTML through a
+headless Chrome, so a system Chrome or Chromium must be installed. If none is
+found, the build says so and names the fix:
+
+@@@pre
+wit build: no headless Chrome/Chromium found for PDF output.
+Install Google Chrome, or point WIT_CHROME at a browser executable.
+pre@@@
+
+HTML and Markdown never need a browser; only PDF does.
+
+@h2 See also h2@
+
+@ul
+@li @a |href /docs/start/mental-model/| Nodes & the mental model a@ — the one shape behind every structure, and how the pieces layer up. li@
+@li @a |href /docs/write/prose/| Writing prose a@ — text, emphasis, comments, and escapes in depth. li@
+@li @a |href /docs/write/tables/| Tables a@ and @a |href /docs/write/media/| Images & media a@ — the constructs you just used, in full. li@
+ul@

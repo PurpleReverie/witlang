@@ -1,0 +1,142 @@
+@h1 A report with live data h1@
+
+Build a release note or status report whose version number, contributor list,
+and metrics table all come from @strong outside strong@ the document — programs
+and files resolved at build time instead of pasted in by hand. You write the
+prose once; the numbers refresh themselves every time you build.
+
+This recipe is for writers, with a developer wiring the data sources once.
+
+@h2 Step 1 — Name each input by alias h2@
+
+Inside the document you only ever name an @strong alias strong@. An alias can
+never name a command, which is exactly what keeps the document safe to share.
+
+@@@pre
+@load meta load@
+@load team load@
+@load downloads load@
+pre@@@
+
+@h2 Step 2 — Wire the aliases h2@
+
+A developer maps each alias to a program in @code wit.sources.json code@. Every
+entry has a @code run code@ (the command as an argument array) and a
+@code format code@ — @code json code@ or @code csv code@.
+
+@@@pre
+{
+  "sources": {
+    "meta":      { "run": ["node", "scripts/meta.js"], "format": "json" },
+    "team":      { "run": ["node", "scripts/team.js"], "format": "json" },
+    "downloads": { "run": ["cat", "data/downloads.csv"], "format": "csv" }
+  }
+}
+pre@@@
+
+A JSON source that prints an @strong object strong@ becomes a record; one that
+prints an @strong array strong@ becomes a collection; a CSV source becomes a
+collection of records keyed by the header row.
+
+@h2 Step 3 — Use a loaded record in prose h2@
+
+Pull a field straight into a sentence with dotted access.
+
+@@@pre
+@h1 Release @meta.version h1@
+
+Cut @meta.date on branch @env.WIT_BRANCH.
+pre@@@
+
+The built-in @code env code@ source needs no entry in the config — it exposes
+environment variables (loaded from an @code .env code@ file when you pass one).
+
+@h2 Step 4 — Iterate a loaded collection h2@
+
+Loop the contributor list into @code li code@ items.
+
+@@@pre
+@h2 Contributors h2@
+
+@ul
+(each @team as person)
+@li @person.name — @person.commits commits li@
+(end)
+ul@
+pre@@@
+
+@h2 Step 5 — Drop a CSV straight into a table h2@
+
+A loaded CSV collection renders as a table with no hand-typed rows.
+
+@@@pre
+@table |rows @downloads|
+pre@@@
+
+@h2 Step 6 — Place an image beside prose h2@
+
+@strong row strong@ is an invisible flex band; each @strong col strong@ with a
+fixed @code size code@ sits beside flowing text — no float, no clear.
+
+@@@pre
+@row
+  @col |size 260|
+    @img |src assets/downloads.svg| |alt Downloads chart|
+  col@
+  @col
+    macOS leads this cycle, with Windows a steady second and Linux climbing.
+  col@
+row@
+pre@@@
+
+@h2 Step 7 — Build with the sources config h2@
+
+Point the build at the config, hand it the environment file, and grant it
+permission to run the programs with @code --allow-exec code@.
+
+@@@pre
+wit build report.wit --sources wit.sources.json --env .env --allow-exec --fragment
+pre@@@
+
+@strong Result. strong@ A document that opens with
+@@@code <h1>Release 0.4.0</h1> code@@@ and
+@@@code <p>Cut 2026-07-05 on branch main.</p> code@@@, a contributor list
+(@code TauraJ — 42 commits code@, @code Ada Lovelace — 17 commits code@), a
+downloads table with header-derived columns, and the image-beside-prose band —
+all verified from the worked example. Swap @code --fragment code@ for
+@code -o report.pdf code@ to get a styled PDF.
+
+@h2 The trust boundary h2@
+
+The document names only an alias. Only the operator's @code wit.sources.json code@
+maps that alias to a command, and @code --allow-exec code@ must be passed for any
+program to run. Without it, only the built-in @code env code@ source resolves.
+That indirection @em is em@ the security model — a document you receive can never
+run a program you didn't wire yourself.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong Forgetting @code --allow-exec code@. strong@ Every alias other than
+the built-in @code env code@ silently fails to load without it. li@
+@li @strong Noisy sources. strong@ A JSON source must print @em only em@ JSON to
+standard output — a stray log line corrupts the parse. li@
+@li @strong Stray list wrapper. strong@ An iterated @code li code@ currently renders
+inside an auto-inserted paragraph. It is cosmetic and harmless in a browser; note
+it rather than fight it. li@
+ul@
+
+@h2 Variations h2@
+
+Any program in any language that emits JSON, CSV, or lines works — a Python
+script, a SQL client, a compiled binary. Only the value model (records,
+collections, scalars) crosses the seam. To embed this same data flow in your own
+app without the CLI, see
+@a |href /docs/recipes/embed-parser/| Embed the Wit parser a@.
+
+@h2 See also h2@
+
+@a |href /docs/recipes/csv-table/| Load a CSV into a table a@ is a focused
+excerpt of this recipe;
+@a |href /docs/recipes/embed-parser/| Embed the Wit parser a@ crosses the same
+data seam in-process.

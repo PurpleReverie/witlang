@@ -1,0 +1,80 @@
+@h1 Roadmap h1@
+
+Where Wit is today and what comes next. Pre-1.0, breaking changes are allowed
+under 0.x with notes.
+
+@h2 Status now h2@
+
+The language is feature-complete for its initial scope: nodes, definitions,
+additive partials, records, collections, data access, conditionals, iteration,
+and scripting all ship, along with two renderers (HTML and Markdown), a CLI, and
+a VS Code extension.
+
+@h2 The milestone ladder h2@
+
+@ul
+@li @strong M0–M4 strong@ — foundations, language lock, the lexer and parser, and
+the resolver and expander. Shipped. li@
+@li @strong M5 strong@ — the VS Code extension core: highlighting, diagnostics,
+hover, go-to-definition, references, outline, and completion. Shipped. li@
+@li @strong M6 strong@ — the reference renderer: HTML from any expanded AST.
+Shipped. li@
+@li @strong M7 (1.0) strong@ — the bar for 1.0 is a docs site, published packages,
+and a versioned spec. This site is itself an M7 deliverable and a dogfood
+test. li@
+ul@
+
+@h2 In progress — the literal-node layer h2@
+
+A literal-content layer that builds toward a component system.
+
+@ul
+@li @strong Shipped. strong@ Literal nodes (@@@code @@name … name@@ code@@@) and
+frozen bodies (@@@code @@@ … @@@ code@@@); @@@code {{path}} code@@@ interpolation
+inside double-fence bodies, with single braces left literal so CSS works; and
+style and script raw-text rendering in the default render path. li@
+@li @strong Designed, not yet built. strong@ The component definition
+(@@@code ##name … name## code@@@), a @code body code@ parameter, interpolation in
+strings and normal content, capture scope with parameter defaults, and
+component-CSS deduplication. li@
+ul@
+
+@h2 VS Code extension roadmap h2@
+
+The extension core has shipped; the rest is committed future work, most of it
+exposing engine capability that already exists to the editor.
+
+@ul
+@li @strong Quick wins. strong@ A live HTML preview panel, snippets for the
+preferred forms, code folding, a file icon, and palette commands. li@
+@li @strong Medium. strong@ Ctrl-clickable document links, rename-symbol, workspace
+symbol search, signature help, and quick-fix code actions. li@
+@li @strong Bigger bets. strong@ A formatter with format-on-save, embedded script
+highlighting inside the script bridge, a custom split editor, and marketplace
+publishing. li@
+ul@
+
+The value-per-effort priority is live preview, then snippets, then folding and
+the file icon, then document links and rename.
+
+@h2 Deferred to v2 h2@
+
+Non-ASCII handles, incremental reparse hooks, and a separate theme package are
+explicitly deferred. Two writer-delight candidates surfaced by onboarding are
+worth naming honestly as @strong not yet shipped strong@: a build watch mode and
+comma escaping inside record values.
+
+@h2 What is not shipped h2@
+
+@aside(class note) 💡 Do not treat these as available: the component definition
+(@@@code ##name … name## code@@@), interpolation in ordinary prose, the
+@@@code @name: … !! code@@@ form-fill invocation, a @code --watch code@ flag, and a
+@code contains code@ conditional operator. They are planned, designed, or out of
+scope — not present in the current release. aside@
+
+@h2 See also h2@
+
+@a |href /docs/project/changelog/| Changelog a@ records what has actually
+shipped;
+@a |href /docs/start/install/| Install a@ covers the VS Code extension's current
+dev-install path.

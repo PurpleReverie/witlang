@@ -29,7 +29,7 @@ import type {
   DataValue,
   NodeDef,
 } from '@witlang/parser';
-import { lookupRecordField } from './canonical-key.js';
+import { walkAccess } from './canonical-key.js';
 
 export interface DataLookups {
   dataDefs: Map<string, DataDef>;
@@ -75,7 +75,7 @@ export function resolveAccessPath(
   const rest = segments.slice(1);
   const root = resolveRoot(head, lookups);
   if (root === null) return null;
-  return walkSegments(root, rest);
+  return walkAccess(root, rest);
 }
 
 function resolveRoot(name: string, lookups: DataLookups): DataValue | null {
@@ -110,19 +110,6 @@ function nodeDefAsDataValue(def: NodeDef): DataValue | null {
   return null;
 }
 
-function walkSegments(
-  value: DataValue,
-  segments: readonly string[],
-): DataValue | null {
-  let current: DataValue = value;
-  for (const seg of segments) {
-    if (current.kind !== 'record') return null;
-    const found = lookupRecordField(current, seg);
-    if (found === undefined) return null;
-    current = found;
-  }
-  return current;
-}
 
 // ---------------------------------------------------------------------------
 // Truthiness + stringification.

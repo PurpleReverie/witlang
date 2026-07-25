@@ -1,0 +1,112 @@
+@h1 A manuscript in chapters h1@
+
+Keep a long document as one file per chapter, shared vocabulary in its own file,
+and a thin master that assembles everything in order. Adding a chapter costs one
+new file and two lines.
+
+@h2 Step 1 — Shared vocabulary h2@
+
+Put reusable templates and headings in @code shared/schema.wit code@, and
+bibliographic anchors in @code shared/sources.wit code@. A block-form definition
+declares its captures in double bars and wraps whatever the master splices in at
+the @code ... code@ point.
+
+@@@pre
+~ shared/schema.wit
+
+#cite: ::author:: (::year::) !!
+
+#section ||title||
+@h2 ::title:: h2@
+...
+section#
+pre@@@
+
+@aside(class note) 💡 Put a blank line after any comment that is the first line
+inside a definition body — without it, the following block collapses into a stray
+paragraph. aside@
+
+@h2 Step 2 — One file per chapter h2@
+
+Each chapter references the shared files, then wraps its body in a block-form
+definition so the master can place it wherever it likes.
+
+@@@pre
+~ chapters/01-introduction.wit
+
+reference ../shared/schema.wit
+reference ../shared/sources.wit
+
+#chapter_one
+@section |title The problem|
+
+Attention, as any careful reader knows, is the rarest form of generosity.
+chapter_one#
+pre@@@
+
+@h2 Step 3 — The master file h2@
+
+Reference the shared files and every chapter, add single-line metadata, then emit
+the chapters in order.
+
+@@@pre
+~ master.wit
+
+reference ./shared/schema.wit
+reference ./chapters/00-frontmatter.wit
+reference ./chapters/01-introduction.wit
+
+#thesis: { title - Attention as a Moral Practice, author - T Greig, status - draft } !!
+
+@h1 @thesis.title h1@
+
+By @thesis.author
+
+(if @thesis.status is draft)
+@watermark()
+(end)
+
+@frontmatter frontmatter@
+@chapter_one chapter_one@
+pre@@@
+
+@h2 Step 4 — Build the master h2@
+
+@@@pre
+wit build master.wit --fragment
+pre@@@
+
+Or @code -o thesis.pdf code@, or @code -o thesis.md code@ — the CLI infers the
+format from the extension.
+
+@strong Result. strong@ One document assembled from several files: the metadata
+header, a draft watermark (because @code status code@ is @code draft code@), the
+frontmatter, and every chapter in order. The worked @code examples/thesis code@
+builds green and is the reference spine.
+
+@h2 Pitfalls h2@
+
+@ul
+@li @strong No commas inside a record. strong@ Commas separate fields, so
+@code subtitle - Attention, Perception code@ throws a malformed-record error.
+Keep metadata comma-free, or model it as a collection. li@
+@li @strong Prefer single-line records for metadata. strong@ A record spanning
+several lines is not reliably classified as data under the current parser —
+write it on one line. li@
+@li @strong Emit real headings. strong@ If a section template lays down
+@code ## code@-style text it renders as literal characters in HTML. Define the
+header with @@@code @h2 ::title:: h2@ code@@@ for a genuine heading. li@
+ul@
+
+@h2 Variations h2@
+
+Gate a draft with a conditional on @code status code@; share citations across
+every chapter by referencing @code shared/sources.wit code@ — see
+@a |href /docs/recipes/bibliography/| A bibliography across files a@.
+
+@h2 See also h2@
+
+@a |href /docs/recipes/bibliography/| A bibliography across files a@ builds a
+self-gathering reference list across these same chapters;
+@a |href /docs/recipes/thesis/| A thesis to a print-ready PDF a@ covers the
+single-file case.

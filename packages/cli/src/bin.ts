@@ -26,7 +26,7 @@ import { runBuild } from './cmd-build.js';
 import { runFmt } from './cmd-fmt.js';
 import { runTour } from './cmd-tour.js';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.1';
 
 export const HELP_TEXT = [
   'wit v' + VERSION,
