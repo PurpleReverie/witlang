@@ -36,10 +36,13 @@ help:
 
 # The generator and CLI import the compiled @witlang packages. Build them once
 # if the dist is missing; after editing the parser/renderer, run `make dist`.
+# ensure-tools installs pnpm (via corepack) if it isn't already on PATH.
 $(DIST):
+	@sh ensure-tools.sh pnpm
 	cd .. && pnpm -s build
 
 dist:
+	@sh ensure-tools.sh pnpm
 	cd .. && pnpm -s build
 
 # Whole site into build/: landing at build/index.html, docs under build/docs/.
@@ -70,6 +73,7 @@ serve: build
 # server (server.mjs) reads PORT/HOST from .env. `startOrReload` starts the
 # process if it is not running, or reloads it with zero downtime if it is.
 deploy: build
+	@sh ensure-tools.sh pm2
 	pm2 startOrReload ecosystem.config.cjs --update-env
 	@pm2 save >/dev/null 2>&1 || true
 	@echo 'Deployed under pm2 as "witlang-site" — `make logs` to watch it.'
