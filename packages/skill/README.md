@@ -1,6 +1,6 @@
 # @witlang/skill
 
-A Claude Code authoring skill for the [Wit](https://github.com/PurpleReverie/prototype_language_wit)
+A Claude Code authoring skill for the [Wit](https://github.com/PurpleReverie/witlang)
 markup language. Drop it into a downstream project so any agent
 working there writes Wit idiomatically — form-fill bodies, named
 idea-citations, block-form defs — instead of reaching for pipes for

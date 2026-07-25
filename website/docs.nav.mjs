@@ -6,7 +6,7 @@
 export const site = {
   title: 'Wit',
   tagline: 'Write the paper. Not the preamble.',
-  repo: 'https://github.com/PurpleReverie/prototype_language_wit',
+  repo: 'https://github.com/PurpleReverie/witlang',
 };
 
 export const nav = [

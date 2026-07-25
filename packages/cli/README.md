@@ -18,4 +18,4 @@ wit build x.wit -o x.html
 wit build x.wit -o x.md
 ```
 
-See [github.com/PurpleReverie/prototype_language_wit](https://github.com/PurpleReverie/prototype_language_wit) for the language reference.
+See [github.com/PurpleReverie/witlang](https://github.com/PurpleReverie/witlang) for the language reference.
