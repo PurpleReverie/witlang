@@ -20,6 +20,7 @@ import { resolve, expand } from '../packages/runtime/dist/index.js';
 import { renderHtml } from '../packages/render-html/dist/index.js';
 
 import { site, nav } from './docs.nav.mjs';
+import { headTags, ogSvg } from './site-meta.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CONTENT = path.join(HERE, 'content');
@@ -208,17 +209,32 @@ function sidebar(currentSlug) {
   return groups;
 }
 
+// A meta description: the page's first paragraph text, trimmed to ~155 chars,
+// falling back to the site tagline.
+function descFromFragment(fragment) {
+  const m = /<p[^>]*>([\s\S]*?)<\/p>/.exec(fragment);
+  const text = (m ? m[1] : '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const base = text || site.tagline;
+  return base.length > 155 ? base.slice(0, 152).trimEnd() + '…' : base;
+}
+
 function layout({ slug, title, fragment }) {
   const css = relRoot(slug, 'docs/assets/docs.css');
   const home = relRoot(slug, 'index.html');
   const docsHome = relPage(slug, '') // -> docs root
     .replace(/^/, ''); // docs/ index
+  const meta = headTags({
+    title: `${title} · ${site.title} docs`,
+    description: descFromFragment(fragment),
+    path: `/docs/${slug ? slug + '/' : ''}`,
+  });
   return `<!doctype html>
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title} · ${site.title} docs</title>
+${meta}
 <link rel="stylesheet" href="${css}">
 </head>
 <body>
@@ -290,8 +306,49 @@ function main() {
   }
   writeFileSync(path.join(DOCS_OUT, 'index.html'), docsHomePage(), 'utf8');
 
+  // Site-root assets (survive the separate landing build, which only writes
+  // index.html). OG card + a friendly 404.
+  mkdirSync(OUT, { recursive: true });
+  writeFileSync(path.join(OUT, 'og.svg'), ogSvg(), 'utf8');
+  writeFileSync(path.join(OUT, '404.html'), notFoundPage(), 'utf8');
+
   console.log(`built ${n} docs pages${failed ? `, ${failed} FAILED` : ''} → website/build/docs/`);
   if (failed) process.exitCode = 1;
+}
+
+// A self-contained 404 (absolute links work on any static host).
+function notFoundPage() {
+  const meta = headTags({
+    title: `Page not found · ${site.title}`,
+    description: `That page doesn't exist. Head back to ${site.title}.`,
+    path: '/404.html',
+  });
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found · ${site.title}</title>
+${meta}
+<style>
+  :root{color-scheme:light dark}
+  body{margin:0;min-height:100vh;display:grid;place-content:center;text-align:center;
+    gap:.4rem;background:#f6f1e7;color:#221f1a;
+    font-family:"Iowan Old Style",Palatino,Georgia,serif;padding:2rem}
+  @media(prefers-color-scheme:dark){body{background:#16130d;color:#ece4d4}}
+  h1{font-size:3rem;margin:0}
+  p{color:#6d6454;margin:.2rem 0 1rem}
+  a{color:#8a2b39;font-weight:600}
+  @media(prefers-color-scheme:dark){a{color:#df909b}}
+</style>
+</head>
+<body>
+  <h1>404</h1>
+  <p>That page wandered off.</p>
+  <p><a href="/">${site.title} home</a> · <a href="/docs/">Documentation</a></p>
+</body>
+</html>
+`;
 }
 
 // ---------------------------------------------------------------------------

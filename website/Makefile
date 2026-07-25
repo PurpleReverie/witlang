@@ -55,6 +55,7 @@ docs: $(DIST)
 landing: $(DIST) config
 	@mkdir -p build
 	node $(CLI) build site.wit -o build/index.html --raw
+	@node finalize-landing.mjs
 	@echo 'built landing page -> build/index.html'
 
 serve: build
