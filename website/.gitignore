@@ -5,3 +5,9 @@ site.html
 # generated docs site (anchored so it does NOT match website/content/build/,
 # the authored Build track)
 /build/
+
+# local deploy config (secrets/host-specific) — commit .env.example instead
+.env
+
+# generated landing-page config partial (emitted by gen-config.mjs from .env)
+/parts/config.wit

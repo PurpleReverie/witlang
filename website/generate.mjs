@@ -83,9 +83,85 @@ function highlightWit(escaped) {
   });
 }
 
+// Reverse the HTML escaping renderHtml applied to a <pre> body, recovering the
+// literal Wit source so we can re-render it for a live preview.
+function unescapeHtml(s) {
+  return s
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
+// Shell/CLI snippets (npm/pnpm/yarn/node/wit/$) and plain prose aren't Wit — no
+// preview for those. A real Wit example uses at least one sigil (@node, #def,
+// bare @ref, or {{interp}}).
+function looksRenderable(src) {
+  const t = src.trim();
+  if (!t) return false;
+  const first = t.split('\n', 1)[0].trim();
+  if (/^(\$|npm|pnpm|yarn|node|wit|npx|cd|git|make|brew)\b/.test(first)) return false;
+  // Annotated / cheatsheet blocks show "source → <output>" or literal HTML as
+  // the rendered result. Re-rendering those as Wit produces noise, so skip any
+  // block with an annotation arrow or a literal HTML tag.
+  if (/[→⇒↦]|=>/.test(t)) return false;
+  if (/<\/[a-zA-Z]|<[a-zA-Z][^>]*>/.test(t)) return false;
+  // Schematic examples use `…` as a "content goes here" placeholder (e.g. the
+  // node catalogues: `@mark … mark@`). Rendering them prints literal ellipses —
+  // not a real result. Skip.
+  if (t.includes('…')) return false;
+  // Media examples reference illustrative assets that don't exist in the build
+  // (`|src ./gauge.png|`), so a preview only shows a broken image. Skip.
+  if (/@(img|audio|video)\b/.test(t) || /\|\s*src\b/.test(t)) return false;
+  // Must contain at least one Wit sigil to be worth rendering.
+  return /[@#]|\{\{/.test(t);
+}
+
+// Try to compile a snippet to an HTML fragment. Returns null when it doesn't
+// parse/resolve/expand/render cleanly (partial snippets, intentional error
+// examples, cross-file references) — those simply show source with no preview.
+function tryPreview(src) {
+  if (!looksRenderable(src)) return null;
+  try {
+    const doc = parse(src, '<example>');
+    const resolved = resolve(doc, { rootPath: HERE });
+    const expanded = expand(resolved);
+    const html = renderHtml(expanded, { mode: 'fragment' }).trim();
+    // Reject empties and pass-throughs that render to just the escaped source.
+    if (!html) return null;
+    if (html === src.trim()) return null;
+    // Reject renders with no visible result (e.g. a def-only snippet that emits
+    // just an empty <article> wrapper) — a blank result pane helps no one,
+    // unless the output is genuinely non-text (image / rule / table / figure).
+    const text = html.replace(/<[^>]+>/g, '').trim();
+    if (!text && !/<(img|hr|svg|table|figure|iframe)\b/.test(html)) return null;
+    // An unresolved marker means the snippet referenced data/captures it can't
+    // see in isolation (a def in a separate block) or a deliberately-broken
+    // demo. Either way a red "unresolved" span reads as breakage in public —
+    // show source only.
+    if (html.includes('wit-unresolved')) return null;
+    return html;
+  } catch {
+    return null;
+  }
+}
+
+// Replace each <pre> with either a highlighted source block, or — when the Wit
+// renders cleanly — a side-by-side "source | result" example. Fully static.
 function highlightPre(fragment) {
-  return fragment.replace(/<pre>([\s\S]*?)<\/pre>/g,
-    (_m, body) => `<pre class="hl">${highlightWit(body)}</pre>`);
+  return fragment.replace(/<pre>([\s\S]*?)<\/pre>/g, (_m, body) => {
+    const source = `<pre class="hl">${highlightWit(body)}</pre>`;
+    const preview = tryPreview(unescapeHtml(body));
+    if (!preview) return source;
+    // Layout examples (flex rows, tables) need full width to read; crushing
+    // them into a half-width pane misrepresents the output. Stack those (source
+    // above, result full-width below); keep prose/inline examples side by side.
+    const wide = /display:\s*flex|<table/.test(preview);
+    return `<div class="example${wide ? ' wide' : ''}">`
+      + `<div class="ex-pane ex-src"><span class="ex-label">source</span>${source}</div>`
+      + `<div class="ex-pane ex-out"><span class="ex-label">result</span>`
+      + `<div class="wit-doc ex-render">${preview}</div></div>`
+      + `</div>`;
+  });
 }
 
 // Content authored with root-relative doc links (`/docs/write/tables/`, `/`)
@@ -279,6 +355,26 @@ a{color:var(--accent)}
 .wit-doc pre{background:#1b1811;color:#d8cfbf;border:1px solid #2e2820;border-radius:11px;
   padding:1.1rem 1.3rem;overflow-x:auto;font-family:var(--mono);font-size:.85rem;line-height:1.6}
 .wit-doc pre code{background:none;padding:0;color:inherit}
+/* Side-by-side example: Wit source next to its rendered result */
+.wit-doc .example{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:1rem;align-items:start;margin:1.4em 0}
+.wit-doc .example .ex-pane{min-width:0}
+.wit-doc .example pre{margin:0}
+.wit-doc .ex-label{display:block;font-family:var(--sans);font-size:.68rem;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  font-weight:700;margin:0 0 .35rem .1rem}
+.wit-doc .ex-out .ex-render{background:var(--surface);border:1px solid var(--border);
+  border-radius:11px;padding:1rem 1.15rem;font-size:.92rem}
+.wit-doc .ex-render>:first-child{margin-top:0}
+.wit-doc .ex-render>:last-child{margin-bottom:0}
+/* Rendered previews are small — scale headings down so they read in-pane */
+.wit-doc .ex-render h1{font-size:1.5rem;margin:.2rem 0 .5rem}
+.wit-doc .ex-render h2{font-size:1.2rem;border-top:none;margin:1rem 0 .4rem;padding-top:0}
+.wit-doc .ex-render h3{font-size:1.02rem}
+/* Wide examples (flex rows, tables) stack so the result gets full width */
+.wit-doc .example.wide{grid-template-columns:1fr}
+.wit-doc .example.wide .ex-out .ex-render{font-size:.95rem}
+@media(max-width:720px){.wit-doc .example{grid-template-columns:1fr}}
 /* Wit syntax tokens (build-time highlighter) */
 .wit-doc pre .tok-com{color:#8a8069;font-style:italic}
 .wit-doc pre .tok-node{color:#e0a24f}

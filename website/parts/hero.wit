@@ -1,5 +1,7 @@
 ~ hero.wit — the headline + code card. Exposed as #page_hero.
 
+reference ./config.wit
+
 #page_hero
 @header(class hero)
   @div(class wrap)
@@ -9,7 +11,7 @@
     @div(class cta)
       @a |class btn btn-primary| |href docs/index.html| Read the docs a@
       @a |class btn btn-ghost| |href #features| Explore features a@
-      @a |class btn btn-ghost| |href https://github.com| View on GitHub a@
+      @gh_btn |label View on GitHub|
     div@
     @div(class code-card)
       @div(class code-head)

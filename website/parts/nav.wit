@@ -1,5 +1,7 @@
 ~ nav.wit — the sticky top bar. Exposed as #page_nav.
 
+reference ./config.wit
+
 #page_nav
 @nav(class nav)
   @div(class wrap)
@@ -10,7 +12,7 @@
         @a |href #examples| Examples a@
         @a |href #why| Why Wit a@
         @a |href docs/index.html| Docs a@
-        @a |href https://github.com| GitHub a@
+        @gh_link |label GitHub|
         @div(class toggle) ◑ Dark div@
       div@
     div@

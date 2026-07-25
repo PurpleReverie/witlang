@@ -17,7 +17,7 @@ CLI  := ../packages/cli/dist/bin.js
 DIST := ../packages/parser/dist/index.js
 
 .DEFAULT_GOAL := help
-.PHONY: help build docs landing serve open clean dist
+.PHONY: help build docs landing serve open clean dist config
 
 help:
 	@echo 'Wit website targets:'
@@ -26,6 +26,10 @@ help:
 	@echo '  make open    open the served site in a browser'
 	@echo '  make clean   remove build/ and site.html'
 	@echo '  make dist    force-rebuild the @witlang packages'
+	@echo '  make config  regenerate parts/config.wit from .env (repo/brand)'
+	@echo ''
+	@echo 'Deploy config lives in website/.env (copy .env.example). Set WIT_REPO_URL,'
+	@echo 'WIT_SITE_TITLE, WIT_SITE_TAGLINE, WIT_SITE_URL there — no source edits.'
 
 # The generator and CLI import the compiled @witlang packages. Build them once
 # if the dist is missing; after editing the parser/renderer, run `make dist`.
@@ -39,11 +43,16 @@ dist:
 build: docs landing
 	@echo 'Site ready in build/ — run `make serve` to preview it.'
 
+# Deploy config: read website/.env and emit parts/config.wit (repo URL, brand)
+# for the CLI-built landing page. The docs generator reads .env directly.
+config:
+	@node gen-config.mjs
+
 # Docs first (generate.mjs only wipes build/docs/, so the landing survives).
 docs: $(DIST)
 	node generate.mjs
 
-landing: $(DIST)
+landing: $(DIST) config
 	@mkdir -p build
 	node $(CLI) build site.wit -o build/index.html --raw
 	@echo 'built landing page -> build/index.html'
