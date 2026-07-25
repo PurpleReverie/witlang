@@ -17,7 +17,7 @@ CLI  := ../packages/cli/dist/bin.js
 DIST := ../packages/parser/dist/index.js
 
 .DEFAULT_GOAL := help
-.PHONY: help build docs landing serve open clean dist config
+.PHONY: help build docs landing serve open clean dist config deploy undeploy logs
 
 help:
 	@echo 'Wit website targets:'
@@ -27,9 +27,12 @@ help:
 	@echo '  make clean   remove build/ and site.html'
 	@echo '  make dist    force-rebuild the @witlang packages'
 	@echo '  make config  regenerate parts/config.wit from .env (repo/brand)'
+	@echo '  make deploy  build, then serve build/ under pm2 (port/host from .env)'
+	@echo '  make undeploy  stop and remove the pm2 process'
+	@echo '  make logs    tail the pm2 process logs'
 	@echo ''
-	@echo 'Deploy config lives in website/.env (copy .env.example). Set WIT_REPO_URL,'
-	@echo 'WIT_SITE_TITLE, WIT_SITE_TAGLINE, WIT_SITE_URL there — no source edits.'
+	@echo 'Config lives in website/.env (copy .env.example). Set WIT_REPO_URL,'
+	@echo 'WIT_SITE_TITLE, WIT_SITE_TAGLINE, WIT_SITE_URL, and PORT/HOST there.'
 
 # The generator and CLI import the compiled @witlang packages. Build them once
 # if the dist is missing; after editing the parser/renderer, run `make dist`.
@@ -62,6 +65,21 @@ serve: build
 	@echo 'Serving http://localhost:$(PORT)/  (landing)   and   /docs/  (documentation)'
 	@echo 'Press Ctrl-C to stop.'
 	@python3 -m http.server $(PORT) --directory build
+
+# Production deploy: build the static site, then run it under pm2. The Node
+# server (server.mjs) reads PORT/HOST from .env. `startOrReload` starts the
+# process if it is not running, or reloads it with zero downtime if it is.
+deploy: build
+	pm2 startOrReload ecosystem.config.cjs --update-env
+	@pm2 save >/dev/null 2>&1 || true
+	@echo 'Deployed under pm2 as "witlang-site" — `make logs` to watch it.'
+
+undeploy:
+	-pm2 delete witlang-site
+	@pm2 save >/dev/null 2>&1 || true
+
+logs:
+	pm2 logs witlang-site
 
 open:
 	@open 'http://localhost:$(PORT)/'

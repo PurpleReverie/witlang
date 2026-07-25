@@ -33,4 +33,7 @@ export const config = {
   title:   env.WIT_SITE_TITLE  || 'Wit',
   tagline: env.WIT_SITE_TAGLINE || 'Write the paper. Not the preamble.',
   siteUrl: env.WIT_SITE_URL    || '',
+  // Runtime server (server.mjs / pm2). PORT and HOST come from .env.
+  port:    Number(env.PORT) || 8000,
+  host:    env.HOST || '0.0.0.0',
 };
